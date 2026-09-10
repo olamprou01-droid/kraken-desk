@@ -425,6 +425,11 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
  .kpi:nth-child(1),.kpi:nth-child(2){grid-column:span 2}
  .kpi:nth-child(1) .v,.kpi:nth-child(2) .v{font-size:22px}
  .kpi:nth-child(1) .s,.kpi:nth-child(2) .s{display:block}
+ /* portfolio: subtotal and grand-total rows are strips, not cards */
+ tbody tr.sumrow{background:var(--panel3);border-color:var(--line3);padding:10px 14px}
+ tbody tr.sumrow td:first-child{border-bottom:0;margin:0;padding:0 0 6px;font-size:12px;
+   letter-spacing:.6px;color:var(--dim);text-transform:uppercase;font-family:var(--sans);font-weight:700}
+ tbody tr.sumrow td{font-size:13.5px;padding:3px 0}
  /* thumb-reach bar */
  .mbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:10px;
    padding:10px 12px calc(10px + env(safe-area-inset-bottom));
@@ -467,7 +472,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 <div class="tabs">
   <button class="pausebtn" id="pausebtn" title="Freeze the screen — stops the clock and auto-redraw">❚❚ PAUSE</button>
   <button data-p="desk" class="on">DESK</button>
-  <button data-p="pf" style="display:none">PORTFOLIO</button>
+  <button data-p="pf">PORTFOLIO</button>
 </div>
 
 <div class="fbar">
@@ -548,7 +553,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>KRAKEN DESK <b style="color:var(--txt2)">v3.8 MOBILE</b></span>
+  <span>KRAKEN DESK <b style="color:var(--txt2)">v3.9 MOBILE · PORTFOLIO</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -1197,12 +1202,40 @@ var SEED=[
    UPnL = (current/buy - 1) * invested  (currency-neutral price return).
    Prices are each instrument's OWN quote currency: EGLN/ISOD GBP, SSLN GBX,
    NUCG/RMS EUR, rest USD. Invariants: invested 980.91, realized 64.37. */
-var OPEN=[]; /* real-money portfolio not published to the hosted copy */
-var CLOSED=[];
+var OPEN=[
+ {plat:'eToro',sym:'PLTR',name:'Palantir',qty:0.428464,buy:107.36,cur:132.90,ath:207.52,inv:46.00,pATH:42.92,fee:0,ccy:'USD'},
+ {plat:'eToro',sym:'OKLO',name:'Oklo',qty:1.01714,buy:53.09,cur:46.76,ath:193.84,inv:54.00,pATH:143.16,fee:0,ccy:'USD'},
+ {plat:'Kraken',sym:'ETH',name:'Ether',qty:0.32183,buy:1678.68,cur:1933.00,ath:4953.73,inv:540.25,pATH:1054.01,fee:7.10,ccy:'USD'},
+ {plat:'Trading 212',sym:'EGLN',name:'iShares Physical Gold',qty:0.79548488,buy:68.11,cur:69.25,ath:107.69,inv:61.88,pATH:31.49,fee:0,ccy:'GBP'},
+ {plat:'Trading 212',sym:'ISOD',name:'iShares Oil & Gas E&P Acc',qty:1.96899416,buy:27.47,cur:28.09,ath:55.99,inv:61.77,pATH:56.16,fee:0,ccy:'GBP'},
+ {plat:'Trading 212',sym:'SSLN',name:'iShares Physical Silver',qty:0.48005511,buy:4128.07,cur:4194.00,ath:8383.00,inv:26.52,pATH:2042.60,fee:0.03,ccy:'GBX'},
+ {plat:'Trading 212',sym:'NUCG',name:'VanEck Uranium & Nuclear Acc',qty:0.52797003,buy:40.12,cur:38.15,ath:53.61,inv:28.35,pATH:7.12,fee:0.05,ccy:'EUR'},
+ {plat:'Trading 212',sym:'LMT',name:'Lockheed Martin',qty:0.09139277,buy:526.96,cur:519.39,ath:692.00,inv:48.16,pATH:15.08,fee:0.07,ccy:'USD'},
+ {plat:'Trading 212',sym:'MU',name:'Micron Technology',qty:0.043419,buy:903.52,cur:981.19,ath:1255.00,inv:39.23,pATH:15.26,fee:0.06,ccy:'USD'},
+ {plat:'Trading 212',sym:'PLTR',name:'Palantir',qty:0.31401937,buy:124.32,cur:133.71,ath:207.52,inv:39.04,pATH:26.13,fee:0.06,ccy:'USD'},
+ {plat:'Trading 212',sym:'OKLO',name:'Oklo',qty:0.34389152,buy:49.00,cur:46.39,ath:193.84,inv:16.85,pATH:49.81,fee:0.02,ccy:'USD'},
+ {plat:'Trading 212',sym:'XOM',name:'ExxonMobil',qty:0.01765237,buy:137.09,cur:144.88,ath:176.41,inv:2.42,pATH:0.69,fee:0,ccy:'USD'},
+ {plat:'Trading 212',sym:'RMS',name:'Hermes Intl',qty:0.00892777,buy:1611.82,cur:1644.50,ath:2951.29,inv:16.44,pATH:11.96,fee:0.06,ccy:'EUR'}
+];
+var CLOSED=[
+ {sym:'OKLO',name:'Oklo Inc',qty:2.469022,open:45.84,close:67.75,plat:'eToro',od:'2026-03-30',cd:'2026-04-21',rpnl:54.10},
+ {sym:'XRP',name:'XRP',qty:153.403188,open:1.12,close:1.22,plat:'eToro',od:'2026-06-10',cd:'2026-06-15',rpnl:15.29},
+ {sym:'ETH',name:'Ethereum',qty:0.100117,open:1671.60,close:1751.30,plat:'eToro',od:'2026-06-12',cd:'2026-06-15',rpnl:7.98},
+ {sym:'ETH',name:'Ethereum',qty:0.112139,open:2056.00,close:1940.10,plat:'eToro',od:'2026-02-05',cd:'2026-07-15',rpnl:-13.00}
+];
 /* Verified portfolio prices, each with its real as-of. ISOD/NUCG stay unpriceable:
    ISOD has no working public quote page and NUCG's only free quote is the GBP LSE
    line while this holding is the EUR listing — converting would be a guess. */
-var PFPX={};
+var PFPX={
+ PLTR:{p:170.24,asof:'2026-08-13',src:'perp ticker'},
+ OKLO:{p:45.13,asof:'2026-08-12',src:'stockanalysis close'},
+ LMT:{p:606.72,asof:'2026-08-12',src:'stockanalysis close'},
+ MU:{p:913.38,asof:'2026-08-13',src:'perp ticker'},
+ XOM:{p:155.06,asof:'2026-08-03',src:'stockanalysis close (stale)'},
+ EGLN:{p:71.55,asof:'2026-08-06',src:'LON delayed, EUR'},
+ SSLN:{p:4438.54,asof:'2026-07-03',src:'LON delayed, GBX'},
+ RMS:{p:1643.50,asof:'2026-08-11',src:'EPA delayed, EUR'}
+};
 
 /* ==== helpers ==== */
 function $(i){return document.getElementById(i);}
@@ -3235,13 +3268,21 @@ function renderWhy(){
    phone stylesheet can render a row as a labelled card instead of a wide table.
    Reads the DOM the renderers already produced; changes no value and no decision. */
 function labelCells(){
-  ['#buys','#open','#done'].forEach(function(sel){
+  ['#buys','#open','#done','#p-pf'].forEach(function(sel){
     var root=document.querySelector(sel);if(!root)return;
     Array.prototype.forEach.call(root.querySelectorAll('table'),function(t){
       var hs=Array.prototype.map.call(t.querySelectorAll('thead th'),function(h){return h.textContent.trim();});
       Array.prototype.forEach.call(t.querySelectorAll('tbody tr'),function(tr){
-        Array.prototype.forEach.call(tr.children,function(td,i){
-          if(hs[i])td.setAttribute('data-l',hs[i]);});});});});}
+        /* subtotal / grand-total rows use colspan, so a card layout must treat them
+           as a summary strip rather than a titled card. Mark them for the phone CSS. */
+        var span=false;
+        Array.prototype.forEach.call(tr.children,function(td){if(td.getAttribute('colspan'))span=true;});
+        if(span)tr.className+=' sumrow';
+        var col=0;
+        Array.prototype.forEach.call(tr.children,function(td){
+          var cs=+(td.getAttribute('colspan')||1);
+          if(hs[col]&&cs===1)td.setAttribute('data-l',hs[col]);
+          col+=cs;});});});});}
 
 /* ==== RENDER: adaptive learning panel ==== */
 function renderLearn(){
