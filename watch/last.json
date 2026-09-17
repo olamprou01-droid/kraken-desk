@@ -1,1 +1,120 @@
-{"ran":null,"note":"empty state before the first real run","regimeOn":null,"alerted":{},"signals":[],"heartbeatDay":null,"coins":[],"stops":[],"events":[]}
+{
+ "ran": "2026-09-17T14:43:05.582Z",
+ "ms": 783,
+ "liveSrc": "kraken",
+ "topic": "ownbook-356ba5c8fc6a5b7454",
+ "barDate": "2026-09-16",
+ "regimeOn": false,
+ "regime": {
+  "px": 76144.99,
+  "sma": 78082.5945,
+  "mom": 0.17514301729294668,
+  "g1": false,
+  "g2": true
+ },
+ "equity": 10020.065763547116,
+ "cushion": 520.0657635471161,
+ "coins": [
+  {
+   "sym": "BTC",
+   "live": 76587.2,
+   "level": 82283,
+   "distPct": 7.4370129734472545,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "ETH",
+   "live": 2463.89,
+   "level": 2667.01,
+   "distPct": 8.243874523619166,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "XRP",
+   "live": 1.3063,
+   "level": 1.4914,
+   "distPct": 14.169792543826087,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "ADA",
+   "live": 0.20259,
+   "level": 0.23208,
+   "distPct": 14.556493410336158,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "SOL",
+   "live": 101.2,
+   "level": 110.65,
+   "distPct": 9.337944664031617,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "DOGE",
+   "live": 0.0818247,
+   "level": 0.09522,
+   "distPct": 16.370729131912487,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "LINK",
+   "live": 11.32659,
+   "level": 13.68,
+   "distPct": 20.777745111282385,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "LTC",
+   "live": 53.04,
+   "level": 59.422,
+   "distPct": 12.03242835595777,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "AVAX",
+   "live": 7.604,
+   "level": 8.197,
+   "distPct": 7.7985270910047255,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "DOT",
+   "live": 1.034,
+   "level": 1.2838,
+   "distPct": 24.158607350096716,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "ATOM",
+   "live": 1.5379,
+   "level": 2.0416,
+   "distPct": 32.75245464594576,
+   "buyable": false,
+   "fail": "regime"
+  },
+  {
+   "sym": "UNI",
+   "live": 7.3114,
+   "level": 7.4831,
+   "distPct": 2.3483874497360446,
+   "buyable": false,
+   "fail": "regime"
+  }
+ ],
+ "stops": [],
+ "events": [],
+ "alerted": {},
+ "heartbeatDay": null,
+ "signals": []
+}
