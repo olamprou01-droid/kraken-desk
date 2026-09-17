@@ -5,15 +5,15 @@
 <meta name="mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-capable" content="yes"/>
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
-<meta name="apple-mobile-web-app-title" content="Kraken Desk"/>
+<meta name="apple-mobile-web-app-title" content="Own Book"/>
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2306090d'/%3E%3Cpath d='M32 10 L54 32 L32 54 L10 32 Z' fill='none' stroke='%233d9bff' stroke-width='5'/%3E%3C/svg%3E"/>
 <link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%2306090d'/%3E%3Cpath d='M32 10 L54 32 L32 54 L10 32 Z' fill='none' stroke='%233d9bff' stroke-width='5'/%3E%3C/svg%3E"/>
-<title>KRAKEN DESK — Kraken Funded $10K</title>
+<title>OWN BOOK — Proprietary Trading Desk</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"/>
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet"/>
 <style>
 /* ============================================================================
-   KRAKEN DESK — terminal skin.
+   OWN BOOK — terminal skin.
    Visual language deliberately matched to the three reference terminals:
      · dense monospace numerics, uppercase micro-labels, wide letter-spacing
      · panel grid with titled headers and right-aligned controls
@@ -264,6 +264,9 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .chbar .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.8px;color:var(--faint);text-transform:uppercase;margin-right:2px}
 .chbar .pills span{padding:3px 8px}
 .chbar .pills span.on{color:var(--txt);background:var(--panel3)}
+.chbar .pills span i{font-style:normal;margin-left:5px;font-size:8.5px;color:#5d6b7c}
+.chbar .pills span i.near{color:#c084fc}
+.chbar .pills span i.at{color:var(--up);font-weight:700}
 .chleg{font-family:var(--mono);font-size:10.5px;color:var(--dim);padding:6px 13px 0;display:flex;gap:14px;flex-wrap:wrap;min-height:22px}
 .chleg b{color:var(--txt2);font-weight:600}
 .chleg .i{display:inline-flex;align-items:center;gap:5px}
@@ -290,177 +293,145 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 @keyframes sp{to{transform:rotate(360deg)}}
 
 /* ============================================================================
-   PHONE SKIN (<= 720px) — appearance only. Not one number, threshold or decision
-   differs from the desktop view; this restyles the same DOM.
-
-   Design taken from the Kraken app and the crypto apps he showed: Kraken's
-   violet as the accent, a soft near-black ground rather than pure black, large
-   rounded cards with generous padding, real sans-serif for words and monospace
-   only for numbers so figures still align, one glance per card. Tables are
-   hostile on a phone, so every row becomes a labelled card via the data-l
-   attributes labelCells() writes. A thumb-reach REFRESH bar sits at the bottom
-   because ↻ in the top corner is unreachable one-handed.
+   PHONE APP (<= 720px). A real phone layout, not the desktop restyled.
+   Language borrowed from the Trading 212 and Kraken apps: one hero number,
+   a progress ring/bar toward the goal, list rows of two lines (name left,
+   number right, percentage coloured), pill buttons, a bottom tab bar. No
+   sentences, no labels repeated on every value, no tables.
+   Engine, thresholds and decisions are identical to the desktop view.
    ========================================================================= */
+#mob{display:none}
 @media(max-width:720px){
  :root{
-  --bg:#0d0d14; --panel:#16161f; --panel2:#1c1c28; --panel3:#242432;
-  --line:#262633; --line2:#30303f; --line3:#3d3d4f;
-  --txt:#f4f4f8; --txt2:#c3c3d2; --dim:#8b8ba3; --faint:#6a6a82;
-  --up:#00c37a; --upbg:rgba(0,195,122,.12); --upln:rgba(0,195,122,.38);
-  --dn:#f6465d; --dnbg:rgba(246,70,93,.12); --dnln:rgba(246,70,93,.38);
-  --warn:#f0b90b; --acc:#7b5cff; --accbg:rgba(123,92,255,.14);
+  --bg:#0b0b12; --panel:#15151e; --panel2:#1b1b26; --panel3:#232331;
+  --line:#242430; --line2:#2e2e3c; --line3:#3a3a4a;
+  --txt:#ffffff; --txt2:#c9c9d8; --dim:#8a8a a0; --faint:#6a6a80;
+  --up:#00d18c; --dn:#ff5a6e; --warn:#ffc148; --acc:#7b5cff;
  }
- body{padding-bottom:86px;font-size:15px;line-height:1.5}
+ body{background:var(--bg);padding:0;font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+ /* hide the whole desktop app on a phone */
+ .top,.tabs,.fbar,.wrap,.foot,.rprog{display:none!important}
+ #mob{display:block;padding-bottom:78px}
 
- /* header: name, mode, one row of round buttons */
- .top{gap:10px;padding:12px 14px;border-bottom:1px solid var(--line)}
- .brand{font-size:15px;letter-spacing:.4px;font-weight:800}
- .brand .dia{font-size:14px}.brand em{display:none}
- .sess{display:none}
- .badge{font-size:10px;padding:5px 10px;border-radius:99px;letter-spacing:1px}
- .icb{width:42px;height:42px;font-size:18px;border-radius:12px;background:var(--panel2);border-color:var(--line2)}
- .icb:active{background:var(--panel3)}
- #rf{display:none}          /* the bottom bar owns refresh on a phone */
+ /* --- top bar --- */
+ .mtop{position:sticky;top:0;z-index:30;background:rgba(11,11,18,.94);backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--line);padding:14px 18px 12px}
+ .mtop .mt1{display:flex;align-items:center;gap:10px}
+ .mtop .mt1 b{font-size:16px;font-weight:800;letter-spacing:.2px}
+ .mtop .mt1 .sp{flex:1}
+ .mpill{font-size:10.5px;font-weight:800;letter-spacing:.8px;padding:5px 11px;border-radius:99px;
+  border:1px solid;text-transform:uppercase}
+ .mpill.p{color:var(--warn);border-color:rgba(255,193,72,.4);background:rgba(255,193,72,.12)}
+ .mib{width:40px;height:40px;border-radius:50%;border:1px solid var(--line2);background:var(--panel2);
+  color:var(--txt2);font-size:17px;display:inline-flex;align-items:center;justify-content:center;padding:0}
+ .mib.on{color:var(--up);border-color:rgba(0,209,140,.4)}
+ .mib.warnb{color:var(--warn);border-color:rgba(255,193,72,.4)}
 
- /* tabs + rule strip */
- .tabs{padding:10px 14px 0;gap:8px}
- .tabs button{padding:10px 16px;font-size:12px;border-radius:99px;font-family:var(--sans);letter-spacing:.4px}
- .pausebtn{display:none}
- .fbar{padding:10px 14px 12px;margin-bottom:10px;border-bottom:1px solid var(--line);gap:10px}
- .fld>label{font-size:9.5px;letter-spacing:1px}
- #rulestate{font-size:12.5px!important}
- #detbtn{display:none}
+ /* --- hero number --- */
+ .mhero{padding:22px 18px 16px}
+ .mhero .lab{font-size:12px;font-weight:600;color:var(--dim);letter-spacing:.3px}
+ .mhero .big{font-size:44px;font-weight:800;letter-spacing:-1.6px;line-height:1.05;margin-top:4px;
+  font-variant-numeric:tabular-nums}
+ .mhero .chg{font-size:15px;font-weight:700;margin-top:6px;display:flex;align-items:center;gap:8px}
+ .mhero .chg .arw{font-size:13px}
+ .mbarw{margin-top:16px}
+ .mbarw .track{height:10px;border-radius:99px;background:var(--panel3);overflow:hidden;position:relative}
+ .mbarw .fill{height:100%;border-radius:99px;background:linear-gradient(90deg,var(--acc),var(--up));transition:width .3s}
+ .mbarw .ends{display:flex;justify-content:space-between;margin-top:7px;font-size:11.5px;color:var(--dim);
+  font-variant-numeric:tabular-nums}
+ .mbarw .ends b{color:var(--txt2)}
 
- .wrap{padding:0 12px}
+ /* --- action card --- */
+ .mact{margin:4px 14px 14px;border-radius:20px;padding:20px 18px;border:1px solid var(--line2);background:var(--panel)}
+ .mact.buy{border-color:rgba(0,209,140,.45);background:linear-gradient(165deg,rgba(0,209,140,.16),rgba(0,209,140,.03))}
+ .mact.sell{border-color:rgba(255,90,110,.5);background:linear-gradient(165deg,rgba(255,90,110,.18),rgba(255,90,110,.03))}
+ .mact .w{font-size:34px;font-weight:800;letter-spacing:-.6px;line-height:1}
+ .mact.buy .w{color:var(--up)} .mact.sell .w{color:var(--dn)} .mact.wait .w{color:var(--txt2)}
+ .mact .sub{font-size:13px;color:var(--dim);margin-top:8px;font-variant-numeric:tabular-nums}
+ .mgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+ .mgrid .c{background:rgba(255,255,255,.045);border-radius:14px;padding:11px 10px}
+ .mgrid .c .k{font-size:10px;font-weight:700;color:var(--dim);letter-spacing:.5px;text-transform:uppercase}
+ .mgrid .c .v{font-size:17px;font-weight:800;margin-top:4px;font-variant-numeric:tabular-nums;letter-spacing:-.3px}
+ .mbtn{width:100%;margin-top:16px;padding:17px;border:0;border-radius:16px;font-size:16.5px;font-weight:800;
+  letter-spacing:.3px;color:#fff;background:var(--acc);box-shadow:0 8px 24px rgba(123,92,255,.32)}
+ .mbtn.go{background:var(--up);color:#04241a;box-shadow:0 8px 24px rgba(0,209,140,.3)}
+ .mbtn.red{background:var(--dn);color:#2a0509;box-shadow:0 8px 24px rgba(255,90,110,.3)}
+ .mbtn:active{transform:scale(.99)}
+ .mbtn.ghost{background:var(--panel2);color:var(--txt2);border:1px solid var(--line2);box-shadow:none}
 
- /* KPIs: two per row, big friendly numbers */
- .kpis{grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:12px}
- .kpi{padding:13px 14px 12px;border-radius:16px;border-color:var(--line)}
- .kpi .k{font-size:10px;letter-spacing:.9px;font-family:var(--sans);font-weight:600;color:var(--dim)}
- .kpi .v{font-size:23px;letter-spacing:-.5px;margin-top:6px}
- .kpi .s{font-size:11px;margin-top:4px}
- .kpi::after{height:3px}
+ /* --- stat pair strip --- */
+ .mstats{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;padding:0 14px 14px}
+ .mstat{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:13px 14px}
+ .mstat .k{font-size:11px;font-weight:600;color:var(--dim)}
+ .mstat .v{font-size:21px;font-weight:800;margin-top:3px;font-variant-numeric:tabular-nums;letter-spacing:-.4px}
 
- /* the one instruction — the whole point of the screen */
- .act{padding:18px 16px;border-radius:18px;margin-bottom:12px;gap:12px}
- .act .t{font-size:26px;letter-spacing:.2px;font-weight:800}
- .act .m{font-size:13px;line-height:1.5;color:var(--txt2)}
- .act .btn,.act .btn.go,.act .btn.sell{padding:15px 22px;font-size:15px;border-radius:14px;
-   width:100%;font-family:var(--sans);font-weight:700;letter-spacing:.3px}
- .act.b{background:linear-gradient(160deg,rgba(0,195,122,.18),rgba(0,195,122,.04))}
- .act.s{background:linear-gradient(160deg,rgba(246,70,93,.20),rgba(246,70,93,.04))}
+ /* --- section + list rows (Trading 212 style) --- */
+ .msec{padding:6px 18px 8px;display:flex;align-items:baseline;gap:8px}
+ .msec h4{margin:0;font-size:13.5px;font-weight:800;letter-spacing:.1px}
+ .msec .sp{flex:1}
+ .msec span{font-size:11.5px;color:var(--dim);font-variant-numeric:tabular-nums}
+ .mlist{margin:0 14px 16px;background:var(--panel);border:1px solid var(--line);border-radius:18px;overflow:hidden}
+ .mrow{display:flex;align-items:center;gap:13px;padding:15px 16px;border-bottom:1px solid var(--line)}
+ .mrow:last-child{border-bottom:0}
+ .mrow .av{width:38px;height:38px;border-radius:50%;flex:0 0 auto;display:flex;align-items:center;
+  justify-content:center;font-size:11.5px;font-weight:800;background:var(--panel3);color:var(--txt2);letter-spacing:.2px}
+ .mrow .nm{flex:1;min-width:0}
+ .mrow .nm b{display:block;font-size:15.5px;font-weight:700;letter-spacing:.1px}
+ .mrow .nm span{display:block;font-size:11.5px;color:var(--dim);margin-top:2px;font-variant-numeric:tabular-nums;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+ .mrow .rt{text-align:right;flex:0 0 auto}
+ .mrow .rt b{display:block;font-size:15.5px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.2px}
+ .mrow .rt span{display:block;font-size:12px;font-weight:700;margin-top:2px;font-variant-numeric:tabular-nums}
+ .g{color:var(--up)} .r{color:var(--dn)} .d{color:var(--dim)}
+ .mempty{padding:34px 18px;text-align:center;color:var(--faint);font-size:13px}
+ .mnote{margin:0 14px 16px;padding:13px 15px;border-radius:14px;background:var(--panel2);
+  border:1px solid var(--line2);font-size:12.5px;color:var(--dim);line-height:1.55}
+ .mnote b{color:var(--txt2)}
 
- /* panels */
- .grid.g2,.grid.g3{grid-template-columns:1fr}
- .pnl,.chpnl{border-radius:16px;border-color:var(--line)}
- .pnl>.ph{padding:12px 14px;background:transparent;border-bottom:1px solid var(--line)}
- .pnl>.ph h3{font-size:12px;letter-spacing:.6px;font-family:var(--sans);font-weight:700;text-transform:none;color:var(--txt)}
- .pnl>.ph .meta{font-size:11px}
+ /* --- coin chips + chart --- */
+ .mchips{display:flex;gap:8px;overflow-x:auto;padding:2px 14px 14px;scrollbar-width:none}
+ .mchips::-webkit-scrollbar{display:none}
+ .mchips button{flex:0 0 auto;padding:9px 15px;border-radius:99px;font-size:13px;font-weight:700;
+  background:var(--panel2);border:1px solid var(--line2);color:var(--dim)}
+ .mchips button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+ .mtf{display:flex;gap:8px;padding:0 14px 12px}
+ .mtf button{flex:1;padding:10px;border-radius:12px;font-size:13px;font-weight:700;
+  background:var(--panel2);border:1px solid var(--line2);color:var(--dim)}
+ .mtf button.on{background:var(--panel3);border-color:var(--line3);color:var(--txt)}
+ .mcv{display:block;width:calc(100% - 28px);height:270px;margin:0 14px 14px;border-radius:16px;background:var(--panel)}
+ .mlv{display:flex;gap:14px;padding:0 18px 14px;font-size:12px;color:var(--dim);flex-wrap:wrap;
+  font-variant-numeric:tabular-nums}
+ .mlv b{color:var(--txt2)}
 
- /* chart */
- .chhead{gap:12px;padding:14px}
- .chhead .pair{order:1;width:100%}.chhead .pair b{font-size:19px}
- .chhead .last{order:2;font-size:30px;letter-spacing:-1px;width:100%;margin-top:-6px}
- .chhead .stat{order:3;min-width:70px}
- .chhead .stat .k{font-size:9px;font-family:var(--sans);letter-spacing:.6px}
- .chhead .stat .v{font-size:12px}
- .chbar{padding:8px 12px;gap:8px}
- .chbar .lbl{display:none}
- .chbar .pills{flex-wrap:wrap;gap:6px}
- .chbar .pills span{padding:8px 13px;font-size:12px;border-radius:99px;background:var(--panel2);
-   border-color:var(--line2);color:var(--dim);font-family:var(--sans);font-weight:600}
- .chbar .pills span.on{background:var(--acc);border-color:var(--acc);color:#fff}
- .chleg{font-size:10.5px;gap:10px;padding:8px 12px 0;line-height:1.6}
- .chcv{height:300px}
- .chfoot{font-size:10px;padding:6px 12px 10px;gap:10px}
+ /* --- bottom tab bar --- */
+ .mnav{position:fixed;left:0;right:0;bottom:0;z-index:60;display:grid;grid-template-columns:repeat(4,1fr);
+  background:rgba(11,11,18,.97);backdrop-filter:blur(14px);border-top:1px solid var(--line);
+  padding:8px 4px calc(8px + env(safe-area-inset-bottom))}
+ .mnav button{background:0;border:0;display:flex;flex-direction:column;align-items:center;gap:3px;
+  font-size:10.5px;font-weight:700;color:var(--faint);padding:4px 0}
+ .mnav button .mi{font-size:19px;line-height:1}
+ .mnav button.on{color:var(--acc)}
 
- /* ---- tables become cards ---- */
- .scroll{overflow:visible}
- table{min-width:0;width:100%;border-collapse:separate;border-spacing:0 10px}
- thead{display:none}
- tbody tr{display:block;background:var(--panel2);border:1px solid var(--line2);
-   border-radius:14px;padding:12px 14px;margin:0 12px 10px}
- tbody tr:hover td{background:transparent}
- tbody td{display:flex;align-items:baseline;justify-content:space-between;gap:14px;
-   padding:5px 0;border:0;white-space:normal;font-size:14px;text-align:right!important}
- tbody td::before{content:attr(data-l);font-family:var(--sans);font-size:11.5px;font-weight:600;
-   color:var(--dim);text-align:left;flex:0 0 auto;letter-spacing:.2px}
- tbody td:empty{display:none}
- tbody td[data-l=""]{justify-content:flex-end}
- /* first cell (the coin) is the card title */
- tbody td:first-child{display:block;text-align:left!important;padding:0 0 8px;
-   margin-bottom:6px;border-bottom:1px solid var(--line);font-size:17px}
- tbody td:first-child::before{display:none}
- tbody td:first-child .tick{font-size:19px;font-weight:800;letter-spacing:.3px}
- tbody td .btn,tbody td .btn.go,tbody td .btn.sell{width:100%;padding:14px;font-size:15px;
-   border-radius:12px;margin-top:6px;font-family:var(--sans);font-weight:700}
- tbody td:last-child{padding-top:2px}
- .ck{font-size:10px;padding:3px 6px;border-radius:6px}
- .tag{font-size:10px;padding:3px 7px;border-radius:6px;letter-spacing:.5px}
- .empty{padding:30px 16px;font-size:12.5px;letter-spacing:.8px;font-family:var(--sans)}
- .note{font-size:12px;line-height:1.6;padding:12px 14px}
- .newsig{padding:14px 16px;border-radius:14px;font-size:13px;font-family:var(--sans);font-weight:600}
- .btn{padding:12px 16px;font-size:13px;border-radius:12px}
-
- /* go-live checklist + heat grid read better roomier */
- .gr{padding:12px 14px;gap:12px}.gr .gn{font-size:13.5px}.gr .gv{font-size:12.5px}
- .gb{width:20px;height:20px;line-height:18px}
- .ready{padding:14px;font-size:12.5px}
- .hm{grid-template-columns:repeat(auto-fit,minmax(92px,1fr));gap:8px;padding:12px}
-
- /* Action first. On a phone the instruction must be the first thing on screen,
-    so the pane becomes a flex column and the KPI strip is reordered below it.
-    Order only — no element is added, removed or recomputed. */
- .pane.on{display:flex;flex-direction:column}
- #act{order:-2;margin-top:2px}
- #whybar,#sellguard{order:-1}
- #stats{order:0}
- .chwrap{order:1}#buys{order:2}
- /* Balance and To-pass full width; the rest as a compact strip of four */
- .kpis{grid-template-columns:repeat(4,1fr);gap:7px}
- .kpi{padding:10px 9px 9px;border-radius:13px}
- .kpi .k{font-size:8.5px;letter-spacing:.4px}
- .kpi .v{font-size:15px;margin-top:4px;letter-spacing:-.3px}
- .kpi .s{display:none}
- .kpi:nth-child(1),.kpi:nth-child(2){grid-column:span 2}
- .kpi:nth-child(1) .v,.kpi:nth-child(2) .v{font-size:22px}
- .kpi:nth-child(1) .s,.kpi:nth-child(2) .s{display:block}
- /* portfolio: subtotal and grand-total rows are strips, not cards */
- tbody tr.sumrow{background:var(--panel3);border-color:var(--line3);padding:10px 14px}
- tbody tr.sumrow td:first-child{border-bottom:0;margin:0;padding:0 0 6px;font-size:12px;
-   letter-spacing:.6px;color:var(--dim);text-transform:uppercase;font-family:var(--sans);font-weight:700}
- tbody tr.sumrow td{font-size:13.5px;padding:3px 0}
- /* thumb-reach bar */
- .mbar{position:fixed;left:0;right:0;bottom:0;z-index:60;display:flex;gap:10px;
-   padding:10px 12px calc(10px + env(safe-area-inset-bottom));
-   background:linear-gradient(180deg,rgba(13,13,20,0),rgba(13,13,20,.96) 30%);
-   border-top:1px solid var(--line)}
- .mrf{flex:1;font-family:var(--sans);font-size:16px;font-weight:800;letter-spacing:.6px;
-   background:var(--acc);color:#fff;border:0;border-radius:14px;padding:16px;cursor:pointer;
-   box-shadow:0 6px 22px rgba(123,92,255,.34)}
- .mrf:active{transform:scale(.985)}
- .mrf:disabled{opacity:.5}
- .mdet{font-family:var(--sans);font-size:13px;font-weight:700;letter-spacing:.4px;
-   background:var(--panel2);color:var(--txt2);border:1px solid var(--line2);border-radius:14px;
-   padding:16px 18px;cursor:pointer}
- .foot{position:static;height:auto;padding:14px 14px 8px;background:transparent;border:0;
-   flex-wrap:wrap;gap:8px 14px;font-size:10.5px;justify-content:center;text-align:center}
- .foot .sp{display:none}
- .bnr{min-width:0;width:calc(100vw - 20px);max-width:none;border-radius:0 0 16px 16px;padding:14px 16px}
- .bnr .bt{font-size:14px}.bnr .bb{font-size:12.5px}
- .rprog{right:12px;left:12px;width:auto;bottom:92px;border-radius:14px;padding:13px 15px}
- .rprog .rp-head{font-size:11px}.rprog .rp-step{white-space:normal;font-size:11px}
- .toast{bottom:96px;font-size:12.5px;padding:12px 16px;border-radius:12px;max-width:calc(100vw - 24px)}
+ /* banners / toast sit above the tab bar */
+ .bnr{min-width:0;width:calc(100vw - 20px);max-width:none;border-radius:0 0 18px 18px;padding:15px 17px}
+ .bnr .bt{font-size:15px}.bnr .bb{font-size:13px}
+ .toast{bottom:90px;font-size:13px;padding:13px 17px;border-radius:14px;max-width:calc(100vw - 28px);
+  font-family:var(--sans);border-color:var(--line3);background:var(--panel3)}
+ .mprog{margin:0 14px 14px;padding:14px 16px;border-radius:16px;background:var(--panel);border:1px solid var(--line2)}
+ .mprog .h{display:flex;font-size:12px;font-weight:700;color:var(--acc)}
+ .mprog .h .sp{flex:1}
+ .mprog .t{height:6px;border-radius:99px;background:var(--panel3);overflow:hidden;margin:9px 0 7px}
+ .mprog .f{height:100%;background:var(--acc);transition:width .2s}
+ .mprog .s{font-size:11.5px;color:var(--dim)}
 }
-@media(min-width:721px){.mbar{display:none}}
-@media(max-width:400px){
- .kpi .v{font-size:20px}.act .t{font-size:23px}.chhead .last{font-size:26px}
- tbody tr{margin:0 8px 10px}
+@media(max-width:380px){
+ .mhero .big{font-size:38px}.mact .w{font-size:30px}.mgrid .c .v{font-size:15px}
 }
+
 
 </style></head><body>
 <div class="top">
-  <div class="brand"><span class="dia">◈</span> KRAKEN DESK <em>KRAKEN FUNDED · $10K · CRYPTO · LONG ONLY</em></div>
+  <div class="brand"><span class="dia">◈</span> OWN BOOK <em>DEALING ON OWN ACCOUNT · $10K CAPITAL · CRYPTO · LONG ONLY</em></div>
   <div class="sp"></div>
   <span class="badge paper" id="mode"><span class="dot"></span>PAPER</span>
   <span class="sess" id="sess">—</span>
@@ -524,8 +495,8 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
       <span class="meta" id="whmeta">—</span></div>
       <div class="pb" id="whales"></div></div>
   </div>
-  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Go-live checklist</h3><div class="sp"></div>
-    <span class="meta">paper → live</span></div><div class="pb" id="gate"></div></div>
+  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Capital release</h3><div class="sp"></div>
+    <span class="meta">simulated → own capital</span></div><div class="pb" id="gate"></div></div>
   <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Adaptive learning</h3><div class="sp"></div>
     <span class="meta" id="lrnmeta">—</span></div>
     <div class="pb" id="learn"></div></div>
@@ -553,8 +524,8 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>KRAKEN DESK <b style="color:var(--txt2)">v3.9 MOBILE · PORTFOLIO</b></span>
-  <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.6 SELF-RUNNING</b></span>
+  <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
   <span id="fcheck"></span>
@@ -563,6 +534,21 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 <div class="mbar" id="mbar">
   <button class="mrf" id="mrf">↻ &nbsp;REFRESH</button>
   <button class="mdet" id="mdet">DETAILS</button>
+</div>
+<!-- ==== PHONE APP ====================================================
+     A screen designed for a phone, not the desktop grid restyled. Its own
+     markup, built by renderMobile() from the same engine values: one big
+     number per screen, two-line rows, no sentences, bottom tab bar.
+     Hidden above 720px; the desktop view is hidden below it. -->
+<div id="mob">
+  <div id="mtop" class="mtop"></div>
+  <div id="mbody" class="mbody"></div>
+  <div class="mnav" id="mnav">
+    <button data-mt="desk"><span class="mi">◈</span><span>Desk</span></button>
+    <button data-mt="chart"><span class="mi">📈</span><span>Chart</span></button>
+    <button data-mt="pf"><span class="mi">◍</span><span>Portfolio</span></button>
+    <button data-mt="hist"><span class="mi">☰</span><span>History</span></button>
+  </div>
 </div>
 <div class="bnr" id="bnr"></div>
 <div class="rprog" id="rprog">
@@ -575,7 +561,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 (function(){
 'use strict';
 /* ====================================================================
-   KRAKEN DESK  ·  Kraken Funded $10,000  ·  crypto, long only
+   OWN BOOK  ·  proprietary $10,000 book  ·  crypto, long only
    Rules verified 24 Aug 2026 from support.kraken.com/articles/funded
    and kraken.com/features/funded:
      pass +12% = $11,200 · out below $9,500 (fixed, from START, never moves)
@@ -1200,41 +1186,53 @@ var SEED=[
 
 /* ==== PORTFOLIO — ported unchanged from signal-desk.html ====
    UPnL = (current/buy - 1) * invested  (currency-neutral price return).
-   Prices are each instrument's OWN quote currency: EGLN/ISOD GBP, SSLN GBX,
-   NUCG/RMS EUR, rest USD. Invariants: invested 980.91, realized 64.37. */
+   Prices are each instrument's OWN quote currency, settled by the Trading 212
+   statement 13 Sep 2026: EGLN/ISOD/RMS EUR, NUCG GBP, SSLN GBX, rest USD. Invariants: invested 934.91, realized 93.19 (eToro PLTR closed 20 Aug 2026). */
 var OPEN=[
- {plat:'eToro',sym:'PLTR',name:'Palantir',qty:0.428464,buy:107.36,cur:132.90,ath:207.52,inv:46.00,pATH:42.92,fee:0,ccy:'USD'},
  {plat:'eToro',sym:'OKLO',name:'Oklo',qty:1.01714,buy:53.09,cur:46.76,ath:193.84,inv:54.00,pATH:143.16,fee:0,ccy:'USD'},
  {plat:'Kraken',sym:'ETH',name:'Ether',qty:0.32183,buy:1678.68,cur:1933.00,ath:4953.73,inv:540.25,pATH:1054.01,fee:7.10,ccy:'USD'},
- {plat:'Trading 212',sym:'EGLN',name:'iShares Physical Gold',qty:0.79548488,buy:68.11,cur:69.25,ath:107.69,inv:61.88,pATH:31.49,fee:0,ccy:'GBP'},
- {plat:'Trading 212',sym:'ISOD',name:'iShares Oil & Gas E&P Acc',qty:1.96899416,buy:27.47,cur:28.09,ath:55.99,inv:61.77,pATH:56.16,fee:0,ccy:'GBP'},
- {plat:'Trading 212',sym:'SSLN',name:'iShares Physical Silver',qty:0.48005511,buy:4128.07,cur:4194.00,ath:8383.00,inv:26.52,pATH:2042.60,fee:0.03,ccy:'GBX'},
- {plat:'Trading 212',sym:'NUCG',name:'VanEck Uranium & Nuclear Acc',qty:0.52797003,buy:40.12,cur:38.15,ath:53.61,inv:28.35,pATH:7.12,fee:0.05,ccy:'EUR'},
- {plat:'Trading 212',sym:'LMT',name:'Lockheed Martin',qty:0.09139277,buy:526.96,cur:519.39,ath:692.00,inv:48.16,pATH:15.08,fee:0.07,ccy:'USD'},
- {plat:'Trading 212',sym:'MU',name:'Micron Technology',qty:0.043419,buy:903.52,cur:981.19,ath:1255.00,inv:39.23,pATH:15.26,fee:0.06,ccy:'USD'},
- {plat:'Trading 212',sym:'PLTR',name:'Palantir',qty:0.31401937,buy:124.32,cur:133.71,ath:207.52,inv:39.04,pATH:26.13,fee:0.06,ccy:'USD'},
- {plat:'Trading 212',sym:'OKLO',name:'Oklo',qty:0.34389152,buy:49.00,cur:46.39,ath:193.84,inv:16.85,pATH:49.81,fee:0.02,ccy:'USD'},
- {plat:'Trading 212',sym:'XOM',name:'ExxonMobil',qty:0.01765237,buy:137.09,cur:144.88,ath:176.41,inv:2.42,pATH:0.69,fee:0,ccy:'USD'},
- {plat:'Trading 212',sym:'RMS',name:'Hermes Intl',qty:0.00892777,buy:1611.82,cur:1644.50,ath:2951.29,inv:16.44,pATH:11.96,fee:0.06,ccy:'EUR'}
+ {plat:'Trading 212',sym:'EGLN',name:'iShares Physical Gold',qty:0.79548488,buy:68.10940266,cur:73.08,ath:107.69,inv:61.88,pATH:31.49,fee:0,ccy:'EUR'},
+ {plat:'Trading 212',sym:'ISOD',name:'iShares Oil & Gas E&P Acc',qty:1.96899416,buy:27.4658001,cur:31.505,ath:55.99,inv:61.77,pATH:56.16,fee:0,ccy:'EUR'},
+ {plat:'Trading 212',sym:'SSLN',name:'iShares Physical Silver',qty:0.48005511,buy:4128.06771289,cur:4538.00,ath:8383.00,inv:26.52,pATH:2042.60,fee:0.03,ccy:'GBX'},
+ {plat:'Trading 212',sym:'NUCG',name:'VanEck Uranium & Nuclear Acc',qty:0.52797003,buy:40.1159134,cur:38.99,ath:53.61,inv:28.35,pATH:7.12,fee:0.05,ccy:'GBP'},
+ {plat:'Trading 212',sym:'LMT',name:'Lockheed Martin',qty:0.09139277,buy:526.95634458,cur:524.74,ath:692.00,inv:48.16,pATH:15.08,fee:0.07,ccy:'USD'},
+ {plat:'Trading 212',sym:'MU',name:'Micron Technology',qty:0.043419,buy:903.5214998,cur:975.45,ath:1255.00,inv:39.23,pATH:15.26,fee:0.06,ccy:'USD'},
+ {plat:'Trading 212',sym:'PLTR',name:'Palantir',qty:0.31401937,buy:124.32354093,cur:167.39,ath:207.52,inv:39.04,pATH:26.13,fee:0.06,ccy:'USD'},
+ {plat:'Trading 212',sym:'OKLO',name:'Oklo',qty:0.34389152,buy:48.9980096,cur:36.30,ath:193.84,inv:16.85,pATH:49.81,fee:0.02,ccy:'USD'},
+ {plat:'Trading 212',sym:'XOM',name:'ExxonMobil',qty:0.01765237,buy:137.09207319,cur:166.17,ath:176.41,inv:2.42,pATH:0.69,fee:0,ccy:'USD'},
+ {plat:'Trading 212',sym:'RMS',name:'Hermes Intl',qty:0.00892777,buy:1611.82467738,cur:1399.50,ath:2951.29,inv:16.44,pATH:11.96,fee:0.06,ccy:'EUR'}
 ];
 var CLOSED=[
  {sym:'OKLO',name:'Oklo Inc',qty:2.469022,open:45.84,close:67.75,plat:'eToro',od:'2026-03-30',cd:'2026-04-21',rpnl:54.10},
+ /* closed 20 Aug 2026, from the eToro account statement 1 Jan - 13 Sep 2026:
+    position 3495727752, 0.428464 units, open 107.36, close 174.63, profit +28.82 USD */
+ {sym:'PLTR',name:'Palantir Technologies',qty:0.428464,open:107.36,close:174.63,plat:'eToro',od:'2026-06-25',cd:'2026-08-20',rpnl:28.82},
  {sym:'XRP',name:'XRP',qty:153.403188,open:1.12,close:1.22,plat:'eToro',od:'2026-06-10',cd:'2026-06-15',rpnl:15.29},
  {sym:'ETH',name:'Ethereum',qty:0.100117,open:1671.60,close:1751.30,plat:'eToro',od:'2026-06-12',cd:'2026-06-15',rpnl:7.98},
- {sym:'ETH',name:'Ethereum',qty:0.112139,open:2056.00,close:1940.10,plat:'eToro',od:'2026-02-05',cd:'2026-07-15',rpnl:-13.00}
+ {sym:'ETH',name:'Ethereum',qty:0.112139,open:2056.07,close:1940.10,plat:'eToro',od:'2026-02-05',cd:'2026-07-15',rpnl:-13.00}
 ];
-/* Verified portfolio prices, each with its real as-of. ISOD/NUCG stay unpriceable:
-   ISOD has no working public quote page and NUCG's only free quote is the GBP LSE
-   line while this holding is the EUR listing — converting would be a guess. */
+/* Portfolio prices, 13 Sep 2026 — every one taken from a broker statement rather
+   than a quote page, so the whole table shares one honest as-of:
+     · the 10 Trading 212 lines come from the Invest open-positions summary in
+       Activity-Statement 29 Jun – 13 Sep 2026 (PRICE column, each in the
+       instrument's own quote currency);
+     · OKLO $36.30 is independently corroborated by the eToro statement, whose
+       ending unrealized equity 111.70 minus cash 74.82 over 1.01714 units implies
+       $36.26 — two unrelated documents within 1%.
+   ISOD and NUCG are no longer unpriceable: Trading 212 quotes them directly, and
+   the statement also settles their currencies (ISOD and EGLN are EUR, not GBP;
+   NUCG is GBP, not EUR), which is why no public page ever matched them. */
 var PFPX={
- PLTR:{p:170.24,asof:'2026-08-13',src:'perp ticker'},
- OKLO:{p:45.13,asof:'2026-08-12',src:'stockanalysis close'},
- LMT:{p:606.72,asof:'2026-08-12',src:'stockanalysis close'},
- MU:{p:913.38,asof:'2026-08-13',src:'perp ticker'},
- XOM:{p:155.06,asof:'2026-08-03',src:'stockanalysis close (stale)'},
- EGLN:{p:71.55,asof:'2026-08-06',src:'LON delayed, EUR'},
- SSLN:{p:4438.54,asof:'2026-07-03',src:'LON delayed, GBX'},
- RMS:{p:1643.50,asof:'2026-08-11',src:'EPA delayed, EUR'}
+ PLTR:{p:167.39,asof:'2026-09-13',src:'Trading 212 statement'},
+ OKLO:{p:36.30,asof:'2026-09-13',src:'Trading 212 statement (eToro implies 36.26)'},
+ LMT:{p:524.74,asof:'2026-09-13',src:'Trading 212 statement'},
+ MU:{p:975.45,asof:'2026-09-13',src:'Trading 212 statement'},
+ XOM:{p:166.17,asof:'2026-09-13',src:'Trading 212 statement'},
+ EGLN:{p:73.08,asof:'2026-09-13',src:'Trading 212 statement, EUR'},
+ ISOD:{p:31.505,asof:'2026-09-13',src:'Trading 212 statement, EUR'},
+ NUCG:{p:38.99,asof:'2026-09-13',src:'Trading 212 statement, GBP'},
+ SSLN:{p:4538.00,asof:'2026-09-13',src:'Trading 212 statement, GBX'},
+ RMS:{p:1399.50,asof:'2026-09-13',src:'Trading 212 statement, EUR'}
 };
 
 /* ==== helpers ==== */
@@ -1456,16 +1454,41 @@ function rpShow(pct,step,cls,title){
     $('rp-pct').textContent=Math.round(pct)+'%';
     $('rp-fill').style.width=Math.max(0,Math.min(100,pct))+'%';
     $('rp-step').textContent=step;
+    var mp=$('mprogw');if(mp){mp.style.display='block';mp.innerHTML='<div class="h"><span>'+(title||'REFRESHING')+'</span><span class="sp"></span><span>'+Math.round(pct)+'%</span></div><div class="t"><div class="f" style="width:'+pct+'%"></div></div><div class="s">'+step+'</div>';}
     if(title)$('rp-title').textContent=title;
   }catch(e){}}
 function rpHide(delay){
   setTimeout(function(){RPROG.active=false;
     try{var w=$('rprog');if(w)w.className='rprog';}catch(e){}},delay==null?2600:delay);}
 var REFRESHING=false;
+
+/* ==== THE WATCHER (17 Sep 2026) ==============================================
+   The same rule, run on GitHub's servers every 30 minutes (watch/watch.js, proven
+   identical to this file by watch/test.js) and pushed to your phone through
+   ntfy.sh. It writes watch/last.json after every run; this page reads it so you
+   can see the software is alive without opening GitHub. Zero Claude, zero cost. */
+var WATCH={st:null,at:0,err:null};
+function watchLoad(){
+  if(typeof fetch!=='function')return Promise.resolve(false);
+  if(location.protocol==='file:'){WATCH.err='file';return Promise.resolve(false);}
+  return fetch('watch/last.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
+   .then(function(j){WATCH.st=j;WATCH.at=Date.now();WATCH.err=null;return true;})
+   .catch(function(e){WATCH.err=(e&&e.message)||'fetch';return false;});}
+function watchTxt(){
+  var w=WATCH.st;
+  if(!w||!w.ran)return WATCH.err==='file'?'WATCHER <span class="warnf">OPEN THE HOSTED APP</span>':(WATCH.err?'WATCHER <span class="warnf">NOT DEPLOYED</span>':'WATCHER …');
+  var min=Math.round((Date.now()-Date.parse(w.ran))/60000);
+  var col=min>90?'var(--dn)':(min>40?'var(--warn)':'var(--up)');
+  var near=(w.coins||[]).filter(function(c){return c.distPct!=null;}).sort(function(a,b){return a.distPct-b.distPct;})[0];
+  return 'WATCHER <span style="color:'+col+'">'+(min<1?'JUST NOW':min+'M AGO')+'</span> · REGIME '+(w.regimeOn?'<span style="color:var(--up)">ON</span>':'OFF')+
+    (near?' · '+near.sym+' '+(near.distPct<=0?'<span style="color:var(--up)">AT LEVEL</span>':'+'+nf(near.distPct,1)+'%'):'')+
+    ((w.stops||[]).some(function(x){return x.hitStop;})?' · <span style="color:var(--dn)">SELL PENDING</span>':'');}
+
 function refreshAll(reason){
   if(REFRESHING)return Promise.resolve(null);
   REFRESHING=true;
   var t0=Date.now(),rec={ts:new Date().toISOString(),reason:reason||'manual'};
+  try{watchLoad();}catch(e){}
   var btn=$('rf');if(btn){btn.disabled=true;btn.className='icb spin';}
   rpShow(4,'starting…','','REFRESHING');
   var fail=function(where,e){rec.err=where+': '+((e&&e.message)||e||'failed');};
@@ -1583,7 +1606,7 @@ function notifyAsk(){
   if(!notifySupported()){toast('This browser has no notification support — sound + in-page banner only.');return Promise.resolve('unsupported');}
   try{
     if(Notification.permission==='granted'){toast('Banner alerts are already on. Test sent.');
-      notify('Kraken Desk','Banner alerts are working. You will see these over any window.',true);return Promise.resolve('granted');}
+      notify('Own Book','Banner alerts are working. You will see these over any window.',true);return Promise.resolve('granted');}
     if(Notification.permission==='denied'){
       toast('Windows/Chrome has BLOCKED notifications for this page. Click the padlock/page icon left of the address bar → Notifications → Allow, then press 🔔 again.');
       return Promise.resolve('denied');}
@@ -1591,7 +1614,7 @@ function notifyAsk(){
     if(!p||!p.then){toast('Could not ask for permission from a file:// page. Sound + in-page banner still work.');return Promise.resolve('error');}
     return p.then(function(r){
       if(r==='granted'){toast('Banner alerts ON. Test sent — you should see it over any window.');
-        notify('Kraken Desk','Banner alerts are working. You will see these over any window.',true);}
+        notify('Own Book','Banner alerts are working. You will see these over any window.',true);}
       else if(r==='denied')toast('Permission refused — sound + in-page banner only.');
       else toast('Permission dismissed — press 🔔 again to allow banner alerts.');
       render();return r;})
@@ -1635,7 +1658,7 @@ function announceClosed(list){
      ' on the '+(t.closedBar||t.exitDay)+' bar. It is in the journal below, not lost.')
   : (fresh.length+' trades closed: '+fresh.map(function(x){return x.sym+' '+x.status;}).join(', ')+
      ' — all in the journal below.');
- buzz(); notify('Kraken Desk — trade closed',line);
+ buzz(); notify('Own Book — trade closed',line);
  return line;}
 /* Called from render with the currently buyable list. */
 function announce(list){
@@ -1653,7 +1676,7 @@ function announce(list){
        ' · SL '+px(c.sym,c.stop)+' · TP '+px(c.sym,c.tp))
     : (fresh.length+' new buy signals: '+fresh.map(function(x){return x.sym;}).join(', '));
   buzz();
-  notify('Kraken Desk — buy signal',line);
+  notify('Own Book — buy signal',line);
   return line;}
 
 /* ==== journal / account ==== */
@@ -1750,7 +1773,7 @@ var FSJ={handle:null,state:'unsupported',lastWrite:null,
       .then(function(){toast('Journal file linked. Every trade now writes to kraken-journal.json automatically. If Chrome asks, choose "Allow on every visit" so it never asks again.');render();return true;});});};
    if(FSJ.handle)return go(FSJ.handle);
    return window.showSaveFilePicker({suggestedName:'kraken-journal.json',
-     types:[{description:'Kraken Desk journal',accept:{'application/json':['.json']}}]})
+     types:[{description:'Own Book journal',accept:{'application/json':['.json']}}]})
      .then(go).catch(function(e){if(e&&e.name==='AbortError')return false;toast('Could not link file: '+(e&&e.message||e));return false;});}};
 
 /* Add a trade to JOURNAL unless it is already there. Same id = same trade.
@@ -1863,7 +1886,7 @@ var FACTORS=[
  {id:'data',   n:'Enough history',  kind:'gate',
   t:'At least '+ (20+1) +' daily bars so a 20-day high and a 14-day ATR can be computed at all.'},
  {id:'regime', n:'BTC trend',       kind:'gate',
-  t:"Two tests on Bitcoin's last complete daily bar: close above its 20-day average, AND close more than 10% above where it was 60 days ago. The first says buyers are in control today; the second says there is an actual trend to ride. Over 9 years the second test took challenge passes for 2022-24 start dates from 19 to 33 out of 36."},
+  t:"Two tests on Bitcoin's last complete daily bar: close above its 20-day average, AND close more than 10% above where it was 60 days ago. The first says buyers are in control today; the second says there is an actual trend to ride. Over 9 years the second test took winning book runs for 2022-24 start dates from 19 to 33 out of 36."},
  {id:'breakout',n:'20-day breakout',kind:'gate',
   t:"The coin's latest daily close above the highest high of the previous 20 days."},
  {id:'vertical',n:'Not vertical',   kind:'gate',
@@ -2041,7 +2064,7 @@ function learnStats(){return statsOf(learnPool(),backfilled().length===0);}
 function gate(){
  var s=stats();
  var rows=[
-  {t:'Finished paper trades',ok:s.n>=GATE.minTrades,v:s.n+' / '+GATE.minTrades},
+  {t:'Finished simulated trades',ok:s.n>=GATE.minTrades,v:s.n+' / '+GATE.minTrades},
   {t:'Average result per trade',ok:s.expR!=null&&s.expR>GATE.minExpR,v:s.expR==null?'—':nf(s.expR,2)+'R'},
   {t:'Profit factor',ok:s.pf!=null&&s.pf>=GATE.minPF,v:s.pf==null?'—':nf(s.pf,2)+' / '+GATE.minPF},
   /* must not tick green on an empty record: 0% drawdown from zero trades is not
@@ -2301,7 +2324,7 @@ function lessons(){
      trades with real ones is how a backtest gets mistaken for a track record. */
   out.push({k:'i',t:'<b>Sample:</b> '+st.n+' resolved — <b>'+my+' yours</b>, <b>'+bf+' replayed</b> '+
     'by the rule over real past bars. Replayed trades teach; they do not count toward the '+
-    'go-live gate and never touch your balance.'});
+    'capital release and never touch your equity.'});
   out.push({k:st.expR>0?'w':'l',
     t:'<b>Record:</b> '+st.n+' closed, '+st.wins+' won ('+nf(100*st.wins/st.n,0)+'%), average <b>'+
       nf(st.expR,2)+'R</b> per trade, profit factor '+nf(st.pf,2)+
@@ -2352,7 +2375,7 @@ function lessons(){
   for(var i=MY.length-1;i>=0;i--){if(MY[i].status==='LOSS')streak++;else break;}
   if(streak>=3)out.push({k:'l',t:'<b>'+streak+' losses in a row.</b> Your position size has already shrunk '+
     'automatically (25% of a smaller buffer). Do not override it — that shrinking is what keeps the '+
-    'challenge alive through a bad run.'});
+    'book alive through a bad run.'});
   // hold time
   var held=C.filter(function(t){return t.exitDay&&t.day;}).map(function(t){
     return Math.round((new Date(t.exitDay)-new Date(t.day))/86400000);});
@@ -2533,7 +2556,7 @@ function wfAdapt(force){
     RULES[best.param]=best.to;rulesSave();
     changed={kind:'change',ts:new Date().toISOString(),param:best.param,from:best.from,to:best.to,
       why:'OOS '+nf(best.row.expR-best.gain,2)+'R -> '+nf(best.row.expR,2)+'R on '+best.row.n+' trades; both neighbours agree; '+
-          'challenge starts '+best.cohCur.pass+'/'+best.cohCur.fail+' -> '+best.coh.pass+'/'+best.coh.fail+' pass/fail',
+          'book runs '+best.cohCur.pass+'/'+best.cohCur.fail+' -> '+best.coh.pass+'/'+best.coh.fail+' pass/fail',
       oos:[W.oos0,W.oos1],cohort:[W.coh0,W.coh1]};}
   if(changed){WF.log.unshift(changed);try{toast('Rule adapted: '+changed.param+' '+changed.from+' → '+changed.to);}catch(e){}}
   else WF.log.unshift({kind:'hold',ts:new Date().toISOString(),why:'no candidate passed all three tests'});
@@ -2678,6 +2701,16 @@ function chFetch(reason){
 function chSma(B,n,i){if(i<n-1)return null;var t=0;for(var k=i-n+1;k<=i;k++)t+=B[k].c;return t/n;}
 function chHi(B,n,i){if(i-n<0)return null;var m=-Infinity;for(var k=i-n;k<i;k++)if(B[k].h>m)m=B[k].h;return m;}
 function chAtr(B,n,i){if(i<n)return null;var t=0;for(var k=i-n+1;k<=i;k++){var pv=B[k-1].c;t+=Math.max(B[k].h-B[k].l,Math.abs(B[k].h-pv),Math.abs(B[k].l-pv));}return t/n;}
+function chDist(sy){
+  /* how far the live price is from the level a breakout must clear.
+     Same HIST bars, same chHi(), same RULES.lookback the gates use. */
+  var b=bars(sy)||[];if(b.length<RULES.lookback+2)return null;
+  var B=b.map(function(r){return{h:r[2],c:r[4]};});
+  var i=B.length-1,lvl=chHi(B,RULES.lookback,i);
+  if(lvl==null)return null;
+  var p=price(sy);if(p==null)p=B[i].c;
+  return {lvl:lvl,px:p,pct:(lvl/p-1)*100};
+}
 function chFmt(v){var d=DEC[CH.sym]!=null?DEC[CH.sym]:2;return nf(v,d);}
 function chFmtV(v){if(v==null)return '—';if(v>=1e9)return nf(v/1e9,2)+'B';if(v>=1e6)return nf(v/1e6,2)+'M';if(v>=1e3)return nf(v/1e3,1)+'K';return nf(v,0);}
 
@@ -2698,9 +2731,14 @@ function renderChart(){
     '<div class="stat"><span class="k">24h vwap</span><span class="v">'+(tk?chFmt(tk.vwap):'—')+'</span></div>'+
     '<div class="stat"><span class="k">source</span><span class="v">'+(CH.at?('kraken · '+ageTxt(new Date(CH.at).toISOString())):'<span class="warnf">not fetched — press ↻</span>')+'</span></div>';
   /* ---- coin pills ---- */
-  var P=$('chsyms');if(P&&P.childElementCount!==SYMS().length){P.innerHTML=SYMS().map(function(x){return '<span data-sym="'+x+'">'+x+'</span>';}).join('');
+  var P=$('chsyms');if(P&&P.childElementCount!==SYMS().length){P.innerHTML=SYMS().map(function(x){return '<span data-sym="'+x+'">'+x+'<i></i></span>';}).join('');
     Array.prototype.forEach.call(P.querySelectorAll('[data-sym]'),function(x){x.onclick=function(){CH.sym=x.getAttribute('data-sym');CH.off=0;CH.hover=null;renderChart();chFetch('switch');};});}
-  if(P)Array.prototype.forEach.call(P.querySelectorAll('[data-sym]'),function(x){x.className=x.getAttribute('data-sym')===sym?'on':'';});
+  if(P)Array.prototype.forEach.call(P.querySelectorAll('[data-sym]'),function(x){
+    var sy=x.getAttribute('data-sym');x.className=sy===sym?'on':'';
+    var q=x.querySelector('i');if(!q)return;var d=chDist(sy);
+    if(!d){q.textContent='';q.className='';return;}
+    q.textContent=d.pct<=0?'AT':('+'+nf(d.pct,1)+'%');
+    q.className=d.pct<=0?'at':(d.pct<=5?'near':'');});
   var TF=$('chtfs');if(TF)Array.prototype.forEach.call(TF.querySelectorAll('[data-tf]'),function(x){x.className=x.getAttribute('data-tf')===CH.tf?'on':'';
     if(!x._b){x._b=1;x.onclick=function(){CH.tf=x.getAttribute('data-tf');CH.off=0;CH.hover=null;renderChart();if(CH.tf!=='1D'&&!CH.intra[chKey(CH.sym,CH.tf)])chFetch('tf');};}});
   /* ---- book + trades ---- */
@@ -2778,7 +2816,8 @@ function renderChart(){
     ctx.fillStyle=fill?'#06090d':color;ctx.textAlign='left';ctx.fillText(txt,x1+7,y);};
   if(open){ctx.setLineDash([]);tag(open.entry,'IN '+chFmt(open.entry),'#3d9bff',false);tag(open.stop,'STOP '+chFmt(open.stop),'#ff5568',false);tag(open.tp,'TP '+chFmt(open.tp),'#22c977',false);}
   else if(sig&&sig.stop){ctx.setLineDash([3,4]);tag(sig.stop,'stop '+chFmt(sig.stop),'rgba(255,85,104,.8)',false);tag(sig.tp,'tp '+chFmt(sig.tp),'rgba(34,201,119,.8)',false);ctx.setLineDash([]);}
-  if(hi[lastI]!=null){ctx.setLineDash([4,3]);tag(hi[lastI],'LVL '+chFmt(hi[lastI]),'#c084fc',false);ctx.setLineDash([]);}
+  if(hi[lastI]!=null){var _dp=(live!=null&&live>0)?(hi[lastI]/live-1)*100:null;ctx.setLineDash([4,3]);
+    tag(hi[lastI],'BUY \u2265 '+chFmt(hi[lastI])+(_dp!=null?('  '+(_dp<=0?'AT':'+'+nf(_dp,1)+'%')):''),'#c084fc',false);ctx.setLineDash([]);}
   if(live!=null){var prev=B[lastI].c;tag(live,chFmt(live),live>=prev?'#22c977':'#ff5568',true);}
   /* crosshair */
   if(CH.hover!=null&&V[CH.hover]){var hx=X(CH.hover),hy=CH.hoverY!=null?CH.hoverY:Y(V[CH.hover].c);
@@ -2786,7 +2825,11 @@ function renderChart(){
     if(hy>=top&&hy<=top+priceH){ctx.beginPath();ctx.moveTo(x0,hy);ctx.lineTo(x1,hy);ctx.stroke();var pv2=hiP-(hy-top)/priceH*(hiP-lo);
       ctx.setLineDash([]);ctx.fillStyle='#243040';ctx.fillRect(x1+2,hy-8,padR-4,16);ctx.fillStyle='#dde6ef';ctx.textAlign='left';ctx.fillText(chFmt(pv2),x1+7,hy);}
     ctx.setLineDash([]);}
+  var _dd=chDist(sym),_rg=null;try{_rg=scan().regime;}catch(e){}
   if(F)F.innerHTML='<span>'+B.length+' bars'+(CH.off?(' · −'+CH.off):'')+'</span>'+
+    (_dd?('<span>buy at <b style="color:#c084fc">'+chFmt(_dd.lvl)+'</b> · '+
+      (_dd.pct<=0?'<b style="color:var(--up)">AT THE LEVEL</b>':'<b>'+nf(_dd.pct,1)+'%</b> to go')+'</span>'):'')+
+    (_rg&&!_rg.on?('<span class="warnf">regime OFF — nothing buyable until BTC closes above '+nf(_rg.sma,0)+'</span>'):'')+
     (open?'<span style="color:var(--acc)">OPEN '+sym+' in '+chFmt(open.entry)+' · stop '+chFmt(open.stop)+' · tp '+chFmt(open.tp)+(offTp?' <span class="warnf">(target '+nf((offTp/(live||B[lastI].c)-1)*100,0)+'% above view)</span>':'')+'</span>':'')+
     (sig?'<span style="color:var(--up)">SIGNAL NOW — the dashed lines are the ticket you would get</span>':'')+
     (CH.err?'<span class="warnf">last chart fetch failed: '+CH.err+'</span>':'');
@@ -2879,6 +2922,7 @@ function render(){
    '</span> ('+nl+'/'+SYMS().length+')'+
    (_rl?'':' <span class="warnf">MANUAL — NEVER REFRESHED</span>');
  $('fwh').textContent='WHALE '+whaleAge().toUpperCase();
+ var _fw=$('fwatch');if(_fw)_fw.innerHTML=watchTxt();
  var _u=unsavedTrades().length;
  var _fs=FSJ.state==='ok'?'<span style="color:var(--up)">FILE ✓'+(FSJ.lastWrite?(' '+ageTxt(FSJ.lastWrite).toUpperCase()):'')+'</span>'
         :FSJ.state==='relink'?'<span class="warnf">📁 RE-LINK FILE</span>'
@@ -2891,15 +2935,15 @@ function render(){
 
  var K=$('stats');K.innerHTML='';
  var _g=gate();
- [['Balance',usd(eq,2),(eq>=RULES.start?'pos':'neg'),pc(gainPct,2)],
-  ['To pass',usd(toPass,0),'info',nf(12-gainPct,2)+'%'],
-  ['Buffer',usd(cu,0),(cu<200?'neg':'pos'),'floor '+usd(RULES.floor,0)],
+ [['Equity',usd(eq,2),(eq>=RULES.start?'pos':'neg'),pc(gainPct,2)],
+  ['To target',usd(toPass,0),'info',nf(12-gainPct,2)+'%'],
+  ['Buffer',usd(cu,0),(cu<200?'neg':'pos'),'limit '+usd(RULES.floor,0)],
   ['Open',op.length+' / '+RULES.maxConc,(op.length?'info':''),''],
   ['Next risk',usd(RULES.cushionRisk*cu,0),'warnk','25% of buffer'],
   ['Signals',String(sc.list.filter(function(c){return !c.skip;}).length),
    (sc.list.filter(function(c){return !c.skip;}).length?'pos':''),''],
   ['Closed',String(closes().length),'info',(closes().length?(nf(stats().expR,2)+'R avg'):'')],
-  ['Go-live',_g.s.n+' / '+GATE.minTrades,(_g.pass?'pos':'info'),_g.pass?'READY':'paper']
+  ['Release',_g.s.n+' / '+GATE.minTrades,(_g.pass?'pos':'info'),_g.pass?'READY':'paper']
  ].forEach(function(x){var d=el('div','kpi '+x[2]);
   d.innerHTML='<div class="k">'+x[0]+'</div><div class="v">'+x[1]+'</div><div class="s">'+x[3]+'</div>';
   K.appendChild(d);});
@@ -2920,19 +2964,19 @@ function render(){
  var A=$('act');
  if(danger.length){A.className='act s';
   A.innerHTML='<div><div class="t">SELL '+danger.map(function(t){return t.sym;}).join(' + ')+' NOW</div>'+
-   '<div class="m">at or below your stop · Kraken Funded has no resting stop order · price '+
+   '<div class="m">at or below your stop · no resting stop order on this book · price '+
    ((liveFresh()&&isLivePx(danger[0].sym))?('live '+liveAgeTxt())
      :('NOT LIVE, '+(LIVE&&LIVE.ts?ageTxt(LIVE.ts):'unknown age')+' — press ↻ to confirm before you sell'))+'</div></div>';
   /* the live price (60s loop) crossed a stop — sound + notification, once per trade,
      re-armed if price recovers above the stop and breaks it again later */
   danger.forEach(function(t){var key='stop|'+t.id;
    if(!CSEEN[key]){CSEEN[key]=1;try{localStorage.setItem('kraken_desk_cseen',JSON.stringify(CSEEN));}catch(e){}
-    if(alertsOn()){buzz();notify('Kraken Desk — SELL '+t.sym+' NOW',
+    if(alertsOn()){buzz();notify('Own Book — SELL '+t.sym+' NOW',
       t.sym+' '+px(t.sym,price(t.sym))+' is at or under your stop '+px(t.sym,t.stop)+'. No resting stop exists — sell by hand.');}}});}
  else{op.forEach(function(t){var key='stop|'+t.id;var p=price(t.sym);
    if(CSEEN[key]&&p!=null&&p>t.stop*1.01){delete CSEEN[key];try{localStorage.setItem('kraken_desk_cseen',JSON.stringify(CSEEN));}catch(e){}}});}
  if(danger.length){ /* already rendered above */ }
- else if(eq<=RULES.floor){A.className='act s';A.innerHTML='<div class="t">FLOOR HIT — CHALLENGE OVER</div>';}
+ else if(eq<=RULES.floor){A.className='act s';A.innerHTML='<div class="t">RISK LIMIT HIT — BOOK STOPPED</div>';}
  else if(eq>=RULES.target){A.className='act b';
   A.innerHTML='<div><div class="t">TARGET HIT — STOP TRADING</div><div class="m">sell all back to USD</div></div>';}
  else if(op.length>=RULES.maxConc){A.className='act w';
@@ -3082,7 +3126,7 @@ function render(){
  G.rows.forEach(function(r){gh+='<div class="gr"><div class="gb '+(r.ok?'ok':'no')+'">'+
    (r.ok?'✓':'')+'</div><div class="gn">'+r.t+'</div><div class="gv '+(r.ok?'ok':'')+'">'+r.v+'</div></div>';});
  gh+='<div class="ready '+(G.pass?'yes':'no')+'">'+(G.pass
-   ?'✓ READY — TELL CLAUDE TO SWITCH YOU LIVE':'PAPER UNTIL ALL FOUR ARE GREEN')+'</div>';
+   ?'✓ READY — RELEASE OWN CAPITAL':'SIMULATED UNTIL ALL FOUR ARE GREEN')+'</div>';
  $('gate').innerHTML=gh;
 
  /* Shows EVERY trade you ever logged — open and closed together — so nothing can
@@ -3173,7 +3217,8 @@ function render(){
  Array.prototype.forEach.call(document.querySelectorAll('[data-s]'),function(x){
   x.onclick=function(){sellRequest(x.getAttribute('data-s'));};});
  renderPF();
- try{labelCells();}catch(e){}   /* appearance only: label cells for the phone card layout */
+ try{labelCells();}catch(e){}
+ try{renderMobile();}catch(e){}   /* the phone app, same values */
 }
 
 
@@ -3284,6 +3329,268 @@ function labelCells(){
           if(hs[col]&&cs===1)td.setAttribute('data-l',hs[col]);
           col+=cs;});});});});}
 
+/* ============================================================================
+   renderMobile() — the phone app.
+
+   Reads the same functions the desktop view reads (scan, opens, closes, equity,
+   cushion, gate, OPEN/CLOSED/pfRow) and lays them out for a thumb: one hero
+   number per screen, a progress bar to the target, an action card with at most
+   three figures, and list rows of two lines. No sentences. Four tabs at the
+   bottom. Every button calls the same handler the desktop button calls, so a
+   decision made here is the same decision made there.
+   ========================================================================= */
+var MOB={tab:'desk'};
+try{var _mt=localStorage.getItem('kraken_desk_mtab');if(_mt)MOB.tab=_mt;}catch(e){}
+function mArrow(v){return v>0?'▲':(v<0?'▼':'•');}
+function mCls(v){return v>0?'g':(v<0?'r':'d');}
+function renderMobile(){
+ var M=$('mbody'),T=$('mtop');if(!M||!T)return;
+ var eq=equity(),cu=cushion(),op=opens(),sc=scan(),st=stats();
+ var gainPct=(eq-RULES.start)/RULES.start*100;
+ var toPass=RULES.target-eq;
+ var live=sc.list.filter(function(c){return !c.skip;});
+ /* Same guard the desktop uses: a stop is only breached by a price stamped AFTER
+    the trade was opened. A price older than the entry cannot prove anything, so it
+    is refused and named rather than turned into a SELL. */
+ var _pxAt=(LIVE&&LIVE.ts)?new Date(LIVE.ts).getTime():0,_withheld=[];
+ var danger=op.filter(function(t){var p=price(t.sym);
+  if(p==null||p>t.stop)return false;
+  var te=t.t?new Date(t.t).getTime():0;
+  if(_pxAt&&te&&_pxAt<te){_withheld.push(t.sym);return false;}
+  return true;});
+ var _ns=notifyState(),_ao=alertsOn();
+ T.innerHTML='<div class="mt1"><b>Own Book</b>'+
+   '<span class="mpill p">'+(isLive()?'LIVE':'PAPER')+'</span><span class="sp"></span>'+
+   '<button class="mib '+(!_ao?'':(_ns==='granted'?'on':'warnb'))+'" id="mbell">'+(_ao?'🔔':'🔕')+'</button>'+
+   '<button class="mib" id="mrfr" style="margin-left:8px">'+(REFRESHING?'…':'↻')+'</button></div>';
+
+ var h='<div id="mprogw" class="mprog" style="display:none"></div>';
+
+ /* ================= DESK ================= */
+ if(MOB.tab==='desk'){
+  var pct=Math.max(0,Math.min(100,(eq-RULES.floor)/(RULES.target-RULES.floor)*100));
+  h+='<div class="mhero"><div class="lab">Book equity</div>'+
+     '<div class="big">'+usd(eq,2)+'</div>'+
+     '<div class="chg '+mCls(gainPct)+'"><span class="arw">'+mArrow(gainPct)+'</span>'+
+      usd(eq-RULES.start,2)+' &nbsp;·&nbsp; '+pc(gainPct,2)+'</div>'+
+     '<div class="mbarw"><div class="track"><div class="fill" style="width:'+pct.toFixed(1)+'%"></div></div>'+
+      '<div class="ends"><span>Limit <b>'+usd(RULES.floor,0)+'</b></span>'+
+      '<span>Target <b>'+usd(RULES.target,0)+'</b></span></div></div></div>';
+
+  if(_withheld.length){
+   h+='<div class="mact wait"><div class="w">TAP ↻</div>'+
+      '<div class="sub">stop check withheld for '+_withheld.join(', ')+
+      ' — the price on screen is older than the trade</div>'+
+      '<button class="mbtn" id="mrf2">REFRESH</button></div>';
+  }else if(danger.length){
+   var d0=danger[0],dp=price(d0.sym);
+   h+='<div class="mact sell"><div class="w">SELL '+d0.sym+'</div>'+
+      '<div class="mgrid"><div class="c"><div class="k">Now</div><div class="v">'+px(d0.sym,dp)+'</div></div>'+
+      '<div class="c"><div class="k">Stop</div><div class="v">'+px(d0.sym,d0.stop)+'</div></div>'+
+      '<div class="c"><div class="k">P&L</div><div class="v '+mCls(dp/d0.entry-1)+'">'+
+        usd((dp/d0.entry-1)*d0.size,0)+'</div></div></div>'+
+      '<button class="mbtn red" data-msell="'+d0.id+'">SELL NOW</button></div>';
+  }else if(eq>=RULES.target){
+   h+='<div class="mact buy"><div class="w">TARGET HIT</div><div class="sub">'+usd(eq,2)+' · sell back to USD</div></div>';
+  }else if(eq<=RULES.floor){
+   h+='<div class="mact sell"><div class="w">OUT</div><div class="sub">floor '+usd(RULES.floor,0)+'</div></div>';
+  }else if(!liveFresh()){
+   h+='<div class="mact wait"><div class="w">TAP ↻</div><div class="sub">prices '+liveAgeTxt()+'</div>'+
+      '<button class="mbtn" id="mrf2">REFRESH</button></div>';
+  }else if(op.length>=RULES.maxConc){
+   h+='<div class="mact wait"><div class="w">HOLD</div><div class="sub">'+op.length+' of '+RULES.maxConc+' slots used</div></div>';
+  }else if(!sc.regime.on){
+   var R=sc.regime;
+   h+='<div class="mact wait"><div class="w">WAIT</div>'+
+      '<div class="mgrid"><div class="c"><div class="k">BTC</div><div class="v">'+px('BTC',R.px)+'</div></div>'+
+      '<div class="c"><div class="k">20d avg</div><div class="v '+(R.g1?'g':'r')+'">'+px('BTC',R.sma)+'</div></div>'+
+      '<div class="c"><div class="k">60d</div><div class="v '+(R.g2?'g':'r')+'">'+pc(R.mom*100,1)+'</div></div></div></div>';
+  }else if(!live.length){
+   h+='<div class="mact wait"><div class="w">NO SIGNAL</div><div class="sub">'+SYMS().length+' coins · live '+liveAgeTxt()+'</div></div>';
+  }else{
+   var b=live[0],z=b.size;
+   h+='<div class="mact buy"><div class="w">BUY '+b.sym+'</div>'+
+      '<div class="sub">'+PAIR[b.sym]+' · market · '+usd(z?z.notional:0,0)+'</div>'+
+      '<div class="mgrid"><div class="c"><div class="k">Entry</div><div class="v">'+px(b.sym,b.buy)+'</div></div>'+
+      '<div class="c"><div class="k">Stop</div><div class="v r">'+px(b.sym,b.stop)+'</div></div>'+
+      '<div class="c"><div class="k">Target</div><div class="v g">'+px(b.sym,b.tp)+'</div></div></div>'+
+      '<div class="mgrid"><div class="c"><div class="k">Risk</div><div class="v r">'+(z?usd(z.risk,0):'—')+'</div></div>'+
+      '<div class="c"><div class="k">Gain</div><div class="v g">'+(z?usd(z.risk*RULES.rr,0):'—')+'</div></div>'+
+      '<div class="c"><div class="k">R:R</div><div class="v">1:'+nf(RULES.rr,0)+'</div></div></div>'+
+      '<button class="mbtn go" data-mbuy="'+b.sym+'">I BOUGHT '+b.sym+'</button></div>';
+  }
+
+  h+='<div class="mstats">'+
+     '<div class="mstat"><div class="k">To target</div><div class="v">'+usd(toPass,0)+'</div></div>'+
+     '<div class="mstat"><div class="k">Risk budget</div><div class="v '+(cu<200?'r':'g')+'">'+usd(cu,0)+'</div></div>'+
+     '<div class="mstat"><div class="k">Next risk</div><div class="v">'+usd(RULES.cushionRisk*cu,0)+'</div></div>'+
+     '<div class="mstat"><div class="k">Release</div><div class="v">'+st.n+' / '+GATE.minTrades+'</div></div></div>';
+
+  h+='<div class="msec"><h4>Open</h4><div class="sp"></div><span>'+op.length+' of '+RULES.maxConc+'</span></div>';
+  if(!op.length)h+='<div class="mlist"><div class="mempty">No open positions</div></div>';
+  else{h+='<div class="mlist">';
+   op.forEach(function(t){var p=price(t.sym),f=p!=null?(p/t.entry-1)*t.size:null,rr=(f!=null&&t.riskAmt)?f/t.riskAmt:null;
+    h+='<div class="mrow"><div class="av">'+t.sym+'</div><div class="nm"><b>'+t.sym+'</b>'+
+       '<span>in '+px(t.sym,t.entry)+' · sl '+px(t.sym,t.stop)+' · tp '+px(t.sym,t.tp)+'</span></div>'+
+       '<div class="rt"><b class="'+mCls(f)+'">'+usd(f,2)+'</b><span class="'+mCls(f)+'">'+
+       (rr!=null?((rr>=0?'+':'')+nf(rr,2)+'R'):'')+'</span></div></div>';});
+   h+='</div>';}
+ }
+
+ /* ================= CHART ================= */
+ if(MOB.tab==='chart'){
+  var sym=CH.sym,tk=(CH.tk&&CH.tk.sym===sym)?CH.tk:null;
+  var last=tk?tk.last:price(sym),chg=tk&&tk.open?(tk.last/tk.open-1)*100:null;
+  h+='<div class="mhero"><div class="lab">'+sym+'/USD · '+(NAMES[sym]||'')+'</div>'+
+     '<div class="big">'+(last!=null?chFmt(last):'—')+'</div>'+
+     '<div class="chg '+mCls(chg)+'"><span class="arw">'+mArrow(chg)+'</span>'+
+      (chg==null?'—':(pc(chg,2)+(tk?(' · '+chFmt(tk.last-tk.open)):'')))+'</div></div>';
+  h+='<div class="mchips">'+SYMS().map(function(x){
+      return '<button data-mc="'+x+'" class="'+(x===sym?'on':'')+'">'+x+'</button>';}).join('')+'</div>';
+  h+='<div class="mtf">'+['1H','4H','1D'].map(function(t){
+      return '<button data-mtf="'+t+'" class="'+(t===CH.tf?'on':'')+'">'+t+'</button>';}).join('')+'</div>';
+  h+='<canvas class="mcv" id="mcv"></canvas><div class="mlv" id="mlv"></div>';
+  if(tk)h+='<div class="mstats"><div class="mstat"><div class="k">24h high</div><div class="v">'+chFmt(tk.high)+'</div></div>'+
+     '<div class="mstat"><div class="k">24h low</div><div class="v">'+chFmt(tk.low)+'</div></div></div>';
+ }
+
+ /* ================= PORTFOLIO ================= */
+ if(MOB.tab==='pf'){
+  var invT=0,upT=0,feeT=0,athT=0,rows=[];
+  OPEN.forEach(function(r){var u=pfRow(r);invT+=r.inv;upT+=u.upnl;feeT+=r.fee;athT+=r.pATH;rows.push({r:r,u:u});});
+  var rz=CLOSED.reduce(function(a,c){return a+c.rpnl;},0);
+  h+='<div class="mhero"><div class="lab">Portfolio value</div>'+
+     '<div class="big">'+usd(invT+upT,2)+'</div>'+
+     '<div class="chg '+mCls(upT)+'"><span class="arw">'+mArrow(upT)+'</span>'+usd(upT,2)+
+      ' &nbsp;·&nbsp; '+pc(invT?upT/invT*100:0,2)+'</div></div>';
+  h+='<div class="mstats">'+
+     '<div class="mstat"><div class="k">Invested</div><div class="v">'+usd(invT,2)+'</div></div>'+
+     '<div class="mstat"><div class="k">Realized</div><div class="v '+mCls(rz)+'">'+usd(rz,2)+'</div></div>'+
+     '<div class="mstat"><div class="k">Fees</div><div class="v">'+usd(-feeT,2)+'</div></div>'+
+     '<div class="mstat"><div class="k">If all hit ATH</div><div class="v g">'+usd(athT,0)+'</div></div></div>';
+  rows.sort(function(a,b){return b.u.upnl-a.u.upnl;});
+  h+='<div class="msec"><h4>Holdings</h4><div class="sp"></div><span>'+rows.length+'</span></div><div class="mlist">';
+  rows.forEach(function(o){var r=o.r,u=o.u;
+   h+='<div class="mrow"><div class="av">'+r.sym.slice(0,4)+'</div>'+
+      '<div class="nm"><b>'+r.sym+'</b><span>'+r.plat+' · '+nf(r.qty,r.qty<1?4:2)+' @ '+nf(r.buy)+
+      (u.q?'':' · no quote')+'</span></div>'+
+      '<div class="rt"><b>'+usd(r.inv+u.upnl,2)+'</b><span class="'+mCls(u.upnl)+'">'+pc(u.upct)+'</span></div></div>';});
+  h+='</div>';
+  if(CLOSED.length){
+   h+='<div class="msec"><h4>Closed</h4><div class="sp"></div><span>'+usd(rz,2)+'</span></div><div class="mlist">';
+   CLOSED.forEach(function(c){
+    h+='<div class="mrow"><div class="av">'+c.sym.slice(0,4)+'</div>'+
+       '<div class="nm"><b>'+c.sym+'</b><span>'+(c.plat||'')+(c.days!=null?(' · '+c.days+'d held'):'')+'</span></div>'+
+       '<div class="rt"><b class="'+mCls(c.rpnl)+'">'+usd(c.rpnl,2)+'</b></div></div>';});
+   h+='</div>';}
+ }
+
+ /* ================= HISTORY ================= */
+ if(MOB.tab==='hist'){
+  var C=mine().slice().reverse(),bfR=resolvedOf(backfilled());
+  h+='<div class="mhero"><div class="lab">Your record</div>'+
+     '<div class="big">'+st.n+' <span style="font-size:20px;color:var(--dim);font-weight:600">closed</span></div>'+
+     '<div class="chg '+(st.n?(st.expR>0?'g':'r'):'d')+'">'+
+      (st.n?((st.expR>=0?'+':'')+nf(st.expR,2)+'R average · '+st.wins+'W / '+(st.n-st.wins)+'L'):'nothing closed yet')+'</div>'+
+     '<div class="mbarw"><div class="track"><div class="fill" style="width:'+
+      Math.min(100,st.n/GATE.minTrades*100).toFixed(0)+'%"></div></div>'+
+      '<div class="ends"><span>Simulated</span><span>Release at <b>'+GATE.minTrades+'</b></span></div></div></div>';
+  h+='<div class="msec"><h4>Trades</h4><div class="sp"></div><span>'+mine().length+' logged</span></div>';
+  if(!C.length)h+='<div class="mlist"><div class="mempty">No trades logged yet</div></div>';
+  else{h+='<div class="mlist">';
+   C.forEach(function(t){var isOpen=t.status==='OPEN',p=isOpen?price(t.sym):null;
+    var f=isOpen&&p!=null?(p/t.entry-1)*t.size:t.pnl;
+    h+='<div class="mrow"><div class="av">'+t.sym+'</div>'+
+       '<div class="nm"><b>'+t.sym+' <span style="font-size:11px;font-weight:700;color:'+
+       (isOpen?'var(--acc)':(t.status==='WIN'?'var(--up)':'var(--dn)'))+'">'+t.status+'</span></b>'+
+       '<span>'+t.day+(t.exitDay?(' → '+t.exitDay):'')+' · '+px(t.sym,t.entry)+
+       (t.exit!=null?(' → '+px(t.sym,t.exit)):'')+'</span></div>'+
+       '<div class="rt"><b class="'+mCls(f)+'">'+usd(f,2)+'</b><span class="'+mCls(f)+'">'+
+       (t.R!=null?((t.R>=0?'+':'')+nf(t.R,2)+'R'):'')+'</span></div></div>';});
+   h+='</div>';}
+  if(bfR.length){var bst=statsOf(bfR,false);
+   h+='<div class="msec"><h4>Replayed by the rule</h4><div class="sp"></div><span>not counted</span></div>'+
+      '<div class="mnote">'+bfR.length+' trades · <b>'+bst.wins+'W / '+bst.losses+'L</b> · '+
+      nf(bst.expR,2)+'R average. What the rule would have done on past bars. Teaches only; '+
+      'never touches your equity or the release count.</div>';}
+  h+='<div style="padding:0 14px 18px"><button class="mbtn ghost" id="mcopy">COPY JOURNAL</button></div>';
+ }
+
+ M.innerHTML=h;
+
+ /* ---- wiring: the same handlers the desktop buttons use ---- */
+ var bell=$('mbell');if(bell)bell.onclick=function(){
+   if(!alertsOn()){setAlerts(true);armAudio();render();notifyAsk();}
+   else if(notifyState()!=='granted'){armAudio();notifyAsk();}
+   else{setAlerts(false);render();}};
+ [$('mrfr'),$('mrf2')].forEach(function(b){if(b)b.onclick=function(){refreshAll('manual');};});
+ var cp=$('mcopy');if(cp)cp.onclick=exportJournal;
+ Array.prototype.forEach.call(document.querySelectorAll('[data-mbuy]'),function(x){
+   x.onclick=function(){buy(x.getAttribute('data-mbuy'));};});
+ Array.prototype.forEach.call(document.querySelectorAll('[data-msell]'),function(x){
+   x.onclick=function(){sellRequest(x.getAttribute('data-msell'));};});
+ Array.prototype.forEach.call(document.querySelectorAll('[data-mc]'),function(x){
+   x.onclick=function(){CH.sym=x.getAttribute('data-mc');CH.off=0;CH.hover=null;renderMobile();chFetch('switch');};});
+ Array.prototype.forEach.call(document.querySelectorAll('[data-mtf]'),function(x){
+   x.onclick=function(){CH.tf=x.getAttribute('data-mtf');CH.off=0;CH.hover=null;renderMobile();
+     if(CH.tf!=='1D'&&!CH.intra[chKey(CH.sym,CH.tf)])chFetch('tf');};});
+ Array.prototype.forEach.call(document.querySelectorAll('#mnav [data-mt]'),function(x){
+   x.className=x.getAttribute('data-mt')===MOB.tab?'on':'';
+   x.onclick=function(){MOB.tab=x.getAttribute('data-mt');
+     try{localStorage.setItem('kraken_desk_mtab',MOB.tab);}catch(e){}
+     window.scrollTo(0,0);renderMobile();};});
+ if(MOB.tab==='chart')try{drawMobileChart();}catch(e){}
+}
+
+/* Same candles, sized for a phone: candles, SMA20, the 20-bar high, and the
+   levels of an open trade. Reads chBars(), so it is the rule's own data. */
+function drawMobileChart(){
+ var cv=$('mcv');if(!cv)return;
+ var B=chBars(),sym=CH.sym,L=$('mlv');
+ if(!B.length){if(L)L.innerHTML='<span style="color:var(--warn)">no bars — tap ↻</span>';return;}
+ var W=cv.clientWidth||340,H=cv.clientHeight||270,dpr=window.devicePixelRatio||1;
+ cv.width=Math.round(W*dpr);cv.height=Math.round(H*dpr);
+ var ctx=null;try{ctx=cv.getContext('2d');}catch(e){}
+ var n=Math.min(B.length,60),V=B.slice(B.length-n),start=B.length-n,lastI=B.length-1;
+ var sma=[],hi=[];for(var i=0;i<B.length;i++){sma.push(chSma(B,20,i));hi.push(chHi(B,RULES.lookback,i));}
+ var open=opens().filter(function(t){return t.sym===sym;})[0];
+ var lo=Infinity,hiP=-Infinity;
+ V.forEach(function(b,i){lo=Math.min(lo,b.l);hiP=Math.max(hiP,b.h);
+   var s2=sma[start+i];if(s2!=null){lo=Math.min(lo,s2);hiP=Math.max(hiP,s2);}});
+ if(open&&open.stop>=lo*0.85)lo=Math.min(lo,open.stop);
+ var pd=(hiP-lo)*0.08||1;lo-=pd;hiP+=pd;
+ var lb=V[V.length-1];
+ if(L)L.innerHTML='<span>O <b>'+chFmt(lb.o)+'</b></span><span>H <b>'+chFmt(lb.h)+'</b></span>'+
+   '<span>L <b>'+chFmt(lb.l)+'</b></span><span>C <b>'+chFmt(lb.c)+'</b></span>'+
+   (sma[lastI]!=null?'<span style="color:#f0b90b">SMA20 <b>'+chFmt(sma[lastI])+'</b></span>':'')+
+   (hi[lastI]!=null?'<span style="color:#c084fc">Level <b>'+chFmt(hi[lastI])+'</b></span>':'');
+ if(!ctx)return;
+ ctx.setTransform(dpr,0,0,dpr,0,0);ctx.clearRect(0,0,W,H);
+ var padR=58,top=12,bot=H-16,ph=bot-top,x0=10,x1=W-padR,bw=(x1-x0)/n,cw=Math.max(1.5,bw*0.62);
+ var Y=function(p){return top+(hiP-p)/(hiP-lo)*ph;},X=function(i){return x0+i*bw+bw/2;};
+ ctx.font='10px ui-monospace,Menlo,monospace';ctx.textBaseline='middle';ctx.textAlign='left';
+ for(var g=0;g<=4;g++){var pv=lo+(hiP-lo)*g/4,y=Y(pv);
+  ctx.strokeStyle='rgba(255,255,255,.05)';ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();
+  ctx.fillStyle='#6a6a80';ctx.fillText(chFmt(pv),x1+6,y);}
+ ctx.strokeStyle='#c084fc';ctx.setLineDash([3,3]);ctx.lineWidth=1;ctx.beginPath();var pen=false;
+ V.forEach(function(b,i){var v=hi[start+i];if(v==null){pen=false;return;}var y=Y(v);
+  if(!pen){ctx.moveTo(X(i)-bw/2,y);pen=true;}else ctx.lineTo(X(i)-bw/2,y);ctx.lineTo(X(i)+bw/2,y);});
+ ctx.stroke();ctx.setLineDash([]);
+ ctx.strokeStyle='#f0b90b';ctx.lineWidth=1.6;ctx.beginPath();pen=false;
+ V.forEach(function(b,i){var v=sma[start+i];if(v==null){pen=false;return;}
+  if(!pen){ctx.moveTo(X(i),Y(v));pen=true;}else ctx.lineTo(X(i),Y(v));});
+ ctx.stroke();
+ V.forEach(function(b,i){var up=b.c>=b.o,x=X(i);ctx.strokeStyle=ctx.fillStyle=up?'#00d18c':'#ff5a6e';
+  ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(x,Y(b.h));ctx.lineTo(x,Y(b.l));ctx.stroke();
+  var yo=Y(b.o),yc=Y(b.c);ctx.fillRect(x-cw/2,Math.min(yo,yc),cw,Math.max(1.5,Math.abs(yc-yo)));});
+ var tag=function(pv,txt,col){var y=Y(pv);if(y<top||y>bot)return;
+  ctx.strokeStyle=col;ctx.setLineDash([4,3]);ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x1,y);ctx.stroke();ctx.setLineDash([]);
+  ctx.fillStyle=col;ctx.fillRect(x1+2,y-8,padR-4,16);ctx.fillStyle='#0b0b12';
+  ctx.font='bold 9px ui-monospace,monospace';ctx.fillText(txt,x1+5,y);ctx.font='10px ui-monospace,monospace';};
+ if(open){tag(open.entry,'IN','#7b5cff');tag(open.stop,'SL','#ff5a6e');if(open.tp<=hiP)tag(open.tp,'TP','#00d18c');}
+ var lp=price(sym);if(lp!=null)tag(lp,String(chFmt(lp)).slice(0,7),lp>=B[lastI].c?'#00d18c':'#ff5a6e');
+}
+
 /* ==== RENDER: adaptive learning panel ==== */
 function renderLearn(){
  var st=learnStats(),F=failureTable(),P=proposal(),L=$('learn');
@@ -3364,10 +3671,10 @@ function renderLearn(){
  if(!Rp){
   h+='<div class="sub" style="margin-top:6px;line-height:1.5">Runs once a day after the history fetch: replays this rule over every bar the desk holds, '+
      'tests each setting against the last 3 years it was never fitted on, and changes a value only when the '+
-     'neighbouring values agree and no challenge start turns into a failure.</div>';
+     'neighbouring values agree and no book run turns into a failure.</div>';
  }else{
   h+='<div class="sub" style="margin-top:5px">'+Rp.bars+' daily bars · out-of-sample '+Wd.oos0+' → '+Wd.oos1+
-     ' · challenge starts '+Wd.coh0.slice(0,7)+' → '+Wd.coh1.slice(0,7)+'</div>';
+     ' · book runs '+Wd.coh0.slice(0,7)+' → '+Wd.coh1.slice(0,7)+'</div>';
   if(Rp.changed){
    var c=Rp.changed;
    h+='<div style="margin-top:7px;background:var(--panel2);border:1px solid var(--upln);border-radius:3px;padding:8px 10px;font-size:11.5px">'+
@@ -3381,7 +3688,7 @@ function renderLearn(){
     var verdict=r.isCur?'<span class="tag b">CURRENT</span>'
       :(!r.beats?'<span class="sub">no gain</span>'
       :(!r.plateau?'<span class="tag y">gain, neighbours disagree</span>'
-      :(r.safe===false?'<span class="tag r">gain, but adds challenge failures</span>'
+      :(r.safe===false?'<span class="tag r">gain, but adds book failures</span>'
       :(r.safe?'<span class="tag g">passes all 3'+(r.coh?(' · '+r.coh.pass+'/'+r.coh.fail):'')+'</span>':'<span class="tag y">plateau</span>'))));
     h+='<tr'+(r.isCur?' style="background:rgba(61,155,255,.06)"':'')+'><td>'+(i===0?'<b>'+E.param+'</b>':'')+'</td><td class="mono">'+r.v+'</td>'+
        '<td class="n">'+(r.n||0)+'</td><td class="n" style="color:'+((r.expR||0)>0?'var(--up)':'var(--dn)')+'">'+nf(r.expR,2)+'</td>'+
@@ -3454,9 +3761,8 @@ function renderPF(){
   '<td class="n" style="color:var(--up)"><b>'+usd(athT,2)+'</b></td></tr></tbody>';
  $('pfo').innerHTML=h;
  $('pfnmeta').textContent=(OPEN.length-nq)+'/'+OPEN.length+' priced';
- $('pfn').innerHTML='<b>'+(OPEN.length-nq)+' of '+OPEN.length+'</b> priced from a real quote · <b>'+nq+
-  '</b> unpriceable: ISOD has no working public quote page, and NUCG’s only free quote is the GBP LSE line '+
-  'while this holding is the EUR listing — converting would be a guess. Those two show stored reference. '+
+ $('pfn').innerHTML='<b>'+(OPEN.length-nq)+' of '+OPEN.length+'</b> priced'+(nq?(' · <b>'+nq+'</b> without a quote'):'')+
+  ' · Trading 212 lines and OKLO from the broker statements dated 13 Sep 2026, ETH live. '+
   'Each price carries its own as-of date.';
 
  var H=$('pfh');H.innerHTML='';var hm=el('div','hm');
@@ -3547,7 +3853,7 @@ function selfCheck(){
  if(bad.length){
   try{var s=$('stamp');s.innerHTML='<b style="color:var(--dn)">SELF-CHECK FAILED: '+
     bad.length+' problem(s) — '+bad[0]+'</b>';}catch(e){}
-  try{console.error('KRAKEN DESK self-check failed:',bad);}catch(e){}
+  try{console.error('OWN BOOK self-check failed:',bad);}catch(e){}
  }
  return bad;}
 
@@ -3567,6 +3873,21 @@ var SC=selfCheck();
 if(!SC.length){try{var st=$('stamp');st.innerHTML+=' · <span style="color:var(--up)">checks ok</span>';}catch(e){}}
 
 $('rf').onclick=function(){refreshAll('manual');};
+
+/* ==== REFRESH ITSELF ON OPEN AND ON RETURN (17 Sep 2026) =====================
+   Your browser fetching Coinbase and Kraken costs nothing and uses no Claude.
+   So when the page opens, and whenever you come back to this tab, if the prices
+   are outside the 5-minute live window it presses ↻ for you. Never on a timer:
+   nothing runs while you are away, and the live gate still governs every BUY. */
+function autoRefresh(why){
+  if(REFRESHING||liveFresh()||typeof fetch!=='function')return;
+  refreshAll(why);}
+setTimeout(function(){autoRefresh('open');},500);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){autoRefresh('return');watchLoad().then(function(){render();});}});
+window.addEventListener('focus',function(){autoRefresh('return');});
+watchLoad().then(function(){render();});
+(function(){var w=$('fwatch');if(w)w.onclick=function(){var t=(WATCH.st&&WATCH.st.topic)||null;
+  if(t)window.open('https://ntfy.sh/'+t,'_blank');else toast('Watcher not deployed yet — see DEPLOY.md');};w.style.cursor='pointer';})();
 (function(){var m=$('mrf');if(m)m.onclick=function(){refreshAll('manual');};
   var md=$('mdet');if(md)md.onclick=function(){var b=$('detbtn');if(b)b.click();
     var d=$('details');if(d&&d.className.indexOf('on')>=0)d.scrollIntoView({behavior:'smooth'});};})();
