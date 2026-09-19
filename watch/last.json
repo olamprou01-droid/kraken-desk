@@ -1,15 +1,15 @@
 {
- "ran": "2026-09-18T23:23:49.212Z",
- "ms": 700,
+ "ran": "2026-09-19T01:18:29.286Z",
+ "ms": 1087,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
- "barDate": "2026-09-17",
- "regimeOn": false,
+ "barDate": "2026-09-18",
+ "regimeOn": true,
  "regime": {
-  "px": 76348.74,
-  "sma": 78008.07200000001,
-  "mom": 0.18037475159156102,
-  "g1": false,
+  "px": 80875.04,
+  "sma": 78140.1275,
+  "mom": 0.24016650041671084,
+  "g1": true,
   "g2": true
  },
  "equity": 10020.065763547116,
@@ -17,104 +17,145 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 81064.6,
+   "live": 81206.9,
    "level": 82283,
-   "distPct": 1.502998842898129,
+   "distPct": 1.3251337016928488,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "ETH",
-   "live": 2615.99,
+   "live": 2609.29,
    "level": 2667.01,
-   "distPct": 1.9503132657235023,
+   "distPct": 2.2120960107922194,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "XRP",
-   "live": 1.39876,
+   "live": 1.39962,
    "level": 1.4914,
-   "distPct": 6.623008950784981,
+   "distPct": 6.557494176990897,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "ADA",
-   "live": 0.225019,
+   "live": 0.225663,
    "level": 0.23208,
-   "distPct": 3.137957239166478,
+   "distPct": 2.843620797383717,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "SOL",
-   "live": 113.08,
-   "level": 110.14,
-   "distPct": -2.5999292536257546,
-   "buyable": false,
-   "fail": "regime"
+   "live": 113.23,
+   "level": 107.47,
+   "distPct": -5.086991080102454,
+   "buyable": true,
+   "fail": null
   },
   {
    "sym": "DOGE",
-   "live": 0.0878539,
+   "live": 0.0875917,
    "level": 0.09522,
-   "distPct": 8.38448833802483,
+   "distPct": 8.7089301840243,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "LINK",
-   "live": 12.26747,
+   "live": 12.29983,
    "level": 13.68,
-   "distPct": 11.5144361469806,
+   "distPct": 11.221049396617676,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "LTC",
-   "live": 57.76,
+   "live": 57.82,
    "level": 59.422,
-   "distPct": 2.8774238227146753,
+   "distPct": 2.77066758906952,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "AVAX",
-   "live": 8.195,
+   "live": 8.307,
    "level": 8.197,
-   "distPct": 0.024405125076243372,
-   "buyable": false,
-   "fail": "regime"
+   "distPct": -1.324184422775987,
+   "buyable": true,
+   "fail": null
   },
   {
    "sym": "DOT",
-   "live": 1.1318,
+   "live": 1.1253,
    "level": 1.2838,
-   "distPct": 13.429934617423589,
+   "distPct": 14.085132853461314,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "ATOM",
-   "live": 1.7265,
+   "live": 1.7094,
    "level": 2.0416,
-   "distPct": 18.25079640891978,
+   "distPct": 19.433719433719432,
    "buyable": false,
-   "fail": "regime"
+   "fail": "breakout"
   },
   {
    "sym": "UNI",
-   "live": 8.9074,
-   "level": 7.4831,
-   "distPct": -15.990075667422598,
+   "live": 8.8202,
+   "level": 7.85,
+   "distPct": -10.999750572549383,
    "buyable": false,
-   "fail": "regime"
+   "fail": "vertical"
   }
  ],
  "stops": [],
- "events": [],
- "alerted": {},
+ "events": [
+  {
+   "k": "buy",
+   "sym": "SOL"
+  },
+  {
+   "k": "buy",
+   "sym": "AVAX"
+  },
+  {
+   "k": "regime",
+   "on": true
+  }
+ ],
+ "alerted": {
+  "buy:SOL": true,
+  "buy:AVAX": true
+ },
  "heartbeatDay": "2026-09-18",
- "signals": []
+ "signals": [
+  {
+   "sym": "SOL",
+   "date": "2026-09-19",
+   "t": "2026-09-19T01:18:29.286Z",
+   "entry": 113.23,
+   "stop": 105.90464285714286,
+   "tp": 157.18214285714288,
+   "level": 107.47,
+   "size": 2009.6988193899845,
+   "risk": 130.01644088677904,
+   "status": "OPEN"
+  },
+  {
+   "sym": "AVAX",
+   "date": "2026-09-19",
+   "t": "2026-09-19T01:18:29.286Z",
+   "entry": 8.307,
+   "stop": 7.725535714285715,
+   "tp": 11.795785714285714,
+   "level": 8.197,
+   "size": 1857.4598663780646,
+   "risk": 130.01644088677904,
+   "status": "OPEN"
+  }
+ ]
 }
