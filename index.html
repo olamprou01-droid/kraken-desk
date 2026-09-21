@@ -535,7 +535,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.9 DEVICE SYNC</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.10 ONE APP</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -569,6 +569,15 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 <div class="toast" id="toast"></div>
 <script>
+/* ==== ONE APP (21 Sep 2026) ====================================================
+   There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
+   Opening the file on disk takes you there, so the PC and the phone can never
+   drift apart again. Append ?dev=1 to work on the file itself. */
+var APP_VERSION='4.10', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
+  document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
+  location.replace(HOSTED+'?from=file');
+}
 (function(){
 'use strict';
 /* ====================================================================
@@ -4021,6 +4030,21 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 window.addEventListener('focus',function(){autoRefresh('return');});
 /* watcher state first (it carries the inbox topic and the open signals), then the shared journal */
 watchLoad().then(function(){render();return syncPull();});
+
+/* ==== SELF-UPDATE (21 Sep 2026) ================================================
+   The hosted page checks its own source when it opens and whenever you come back
+   to it, and reloads itself when a newer version has been published. Updates
+   arrive on their own; nobody has to be told to reload. */
+function selfUpdate(){
+  if(location.protocol==='file:'||typeof fetch!=='function')return;
+  if(Date.now()-(SYNC.upAt||0)<10*60*1000)return;SYNC.upAt=Date.now();
+  fetch(location.pathname+'?u='+Date.now(),{cache:'no-store'}).then(function(r){return r.ok?r.text():'';}).then(function(h){
+    var m=h.match(/var APP_VERSION='([\d.]+)'/);if(!m||m[1]===APP_VERSION)return;
+    try{if(sessionStorage.getItem('ob_reloaded')===m[1])return;sessionStorage.setItem('ob_reloaded',m[1]);}catch(e){}
+    try{toast('New version '+m[1]+' — updating');}catch(e){}
+    setTimeout(function(){location.reload();},900);}).catch(function(){});}
+setTimeout(selfUpdate,2500);
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible')selfUpdate();});
 (function(){var w=$('fwatch');if(w)w.onclick=function(){var t=(WATCH.st&&WATCH.st.topic)||null;
   if(t)window.open('https://ntfy.sh/'+t,'_blank');else toast('Watcher not deployed yet — see DEPLOY.md');};w.style.cursor='pointer';})();
 (function(){var m=$('mrf');if(m)m.onclick=function(){refreshAll('manual');};
