@@ -25,10 +25,11 @@ jobs:
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
         run: node watch/watch.js
-      - name: save state for the app and the next run
+      - name: save state and the shared journal for the app and the next run
         run: |
           git config user.name  "own-book-watcher"
-          git config user.email "watcher@users.noreply.github.com"
-          git add watch/last.json
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add watch/last.json kraken-journal.json
           git diff --cached --quiet || git commit -m "watch: $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase -q origin main || true
           git push
