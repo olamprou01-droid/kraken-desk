@@ -535,7 +535,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.10 ONE APP</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.11 ONE APP</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -573,7 +573,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.10', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.11', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -1528,6 +1528,17 @@ function syncPush(t){
 function syncMergeTrade(e){          /* same rules as the load-time merge: by id, never drop, adopt a close */
   if(!e||!e.id||e.origin!=='me')return false;
   var same=JOURNAL.filter(function(x){return x.id===e.id||x.browserId===e.id;})[0];
+  if(!same){
+    /* the same real position recorded twice - two devices, or a reconstruction
+       written from a screenshot - is one trade: same coin, open, entry within 1% */
+    same=JOURNAL.filter(function(x){return x.origin==='me'&&x.sym===e.sym&&x.id!==e.id&&
+      (x.status==='OPEN'||e.status==='OPEN')&&x.entry&&e.entry&&Math.abs(x.entry/e.entry-1)<0.01;})[0];
+    if(same){same.browserId=e.id;
+      /* a reconstruction yields to the copy that carries the button press */
+      if(same.recon&&!e.recon){['entry','stop','tp','size','riskAmt','t','day','level','reason'].forEach(function(k){if(e[k]!=null)same[k]=e[k];});delete same.recon;}
+      var chg=true;
+      if(same.status==='OPEN'&&e.status&&e.status!=='OPEN'){['status','exitDay','pnl','R','how','exit','why'].forEach(function(k){if(e[k]!=null)same[k]=e[k];});}
+      return chg;}}
   if(same){var ch=false;
     if(same.status==='OPEN'&&e.status&&e.status!=='OPEN'){['status','exitDay','pnl','R','how','exit','why'].forEach(function(k){if(e[k]!=null){same[k]=e[k];ch=true;}});}
     ['stop','tp','size','riskAmt','entry','logged'].forEach(function(k){if(same[k]==null&&e[k]!=null){same[k]=e[k];ch=true;}});
