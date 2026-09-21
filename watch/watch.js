@@ -157,6 +157,10 @@ async function notify(title, body, priority, tags) {
       size: g.size || 0, riskAmt: g.risk || 0, virtual: true }))) };
   const ev      = R.evaluate(bars, live, journal);          // coins, regime, slots, equity: real book
   ev.stops      = R.evaluate(bars, live, virt).stops;       // stops: real + virtual
+  /* A coin the watcher has already signalled, and whose signal is still open, is
+     never signalled again - you may well be holding it. It does not, however, use
+     up one of the two slots for other coins: an alert you ignored costs nothing. */
+  for (const c of ev.coins) if (c.buyable && signals.some(g => g.sym === c.sym && g.status === 'OPEN')) { c.buyable = false; c.firstFail = 'signalled'; }
   const now     = new Date();
   const nowIso  = now.toISOString();
   const alerted = {};
