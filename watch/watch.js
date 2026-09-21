@@ -69,6 +69,39 @@ async function fetchLive(inprog) {
 
 function readJSON(p, fallback) { try { return JSON.parse(fs.readFileSync(p, 'utf8')); } catch (e) { return fallback; } }
 
+/* ---- 3b. the shared journal inbox (21 Sep 2026) ----
+   Every I BOUGHT / SOLD / LOG in any copy of the app is posted to <topic>-inbox.
+   Read what arrived since last time, merge it into kraken-journal.json by id,
+   never drop anything, adopt a close over an open. The workflow commits the file,
+   and every copy of the app pulls it on open. ntfy keeps 12h of history; we run
+   more often than that. */
+async function pollInbox(since) {
+  const url = 'https://ntfy.sh/' + TOPIC + '-inbox/json?poll=1&since=' + (since || 'all');
+  const r = await fetch(url, { headers: { 'User-Agent': 'ownbook-watch/1.0' } });
+  if (!r.ok) throw new Error('inbox HTTP ' + r.status);
+  const text = await r.text();
+  const out = []; let last = since || null;
+  for (const line of text.split('\n')) {
+    if (!line.trim()) continue;
+    let m; try { m = JSON.parse(line); } catch (e) { continue; }
+    if (m.event !== 'message' || !m.message) continue;
+    let t; try { t = JSON.parse(m.message); } catch (e) { continue; }
+    if (t && t.id && t.origin === 'me' && t.sym) { out.push(t); last = m.time; }
+  }
+  return { trades: out, last: last };
+}
+function mergeTrade(journal, e) {
+  journal.trades = journal.trades || [];
+  const same = journal.trades.find(x => x.id === e.id || x.browserId === e.id);
+  if (!same) { journal.trades.push(e); return 'new'; }
+  let ch = false;
+  if (same.status === 'OPEN' && e.status && e.status !== 'OPEN')
+    for (const k of ['status','exitDay','pnl','R','how','exit','why']) if (e[k] != null) { same[k] = e[k]; ch = true; }
+  for (const k of ['stop','tp','size','riskAmt','entry','logged','level'])
+    if (same[k] == null && e[k] != null) { same[k] = e[k]; ch = true; }
+  return ch ? 'updated' : null;
+}
+
 /* ---- 6. notify ---- */
 async function notify(title, body, priority, tags) {
   const line = '[' + (priority || 'default') + '] ' + title + ' — ' + body;
@@ -94,16 +127,36 @@ async function notify(title, body, priority, tags) {
   }
 
   const journal = readJSON(JOURNAL, { trades: [] });
-  const prev    = readJSON(STATE, { alerted: {}, regimeOn: null, heartbeatDay: null, signals: [] });
+  const prev    = readJSON(STATE, { alerted: {}, regimeOn: null, heartbeatDay: null, signals: [], inboxSince: null });
   const signals = Array.isArray(prev.signals) ? prev.signals : [];
-  /* virtual book: every BUY the watcher itself sent, until it hits stop or target.
-     If you took the trade, this is your position. If you did not, the alert is moot. */
-  const jSyms = new Set((journal.trades || []).filter(t => t.origin === 'me' && t.status === 'OPEN').map(t => t.sym));
+
+  /* 3b. merge whatever the apps posted since last run into the repo journal */
+  let inbox = { trades: [], last: prev.inboxSince || null }, inboxNote = '';
+  if (!DRY) {
+    try { inbox = await pollInbox(prev.inboxSince); }
+    catch (e) { inboxNote = 'inbox unreachable: ' + e.message; inbox.last = prev.inboxSince || null; }
+  } else if (fs.existsSync(path.join(__dirname, 'inbox-fixture.json'))) {
+    inbox = { trades: readJSON(path.join(__dirname, 'inbox-fixture.json'), []), last: 'fixture' };
+  }
+  const merged = { new: 0, updated: 0 };
+  for (const t of inbox.trades) { const r = mergeTrade(journal, t); if (r) merged[r]++; }
+  if (merged.new || merged.updated) {
+    journal.written = new Date().toISOString();
+    journal.note = 'merged by the watcher from the shared inbox; every copy of the app pulls this file';
+    try { journal.trades.sort((a, b) => String(a.t || a.day).localeCompare(String(b.t || b.day))); } catch (e) {}
+    fs.writeFileSync(JOURNAL, JSON.stringify(journal, null, 1));
+  }
+
+  /* Real positions decide slots and equity. The virtual book (BUY signals the
+     watcher sent that are not in the journal) only gets its stops watched, so an
+     alert you did not act on can never block the next one. */
+  const jOpenSyms = new Set((journal.trades || []).filter(t => t.origin === 'me' && t.status === 'OPEN').map(t => t.sym));
   const virt  = { trades: (journal.trades || []).concat(
-    signals.filter(g => g.status === 'OPEN' && !jSyms.has(g.sym)).map(g => ({
+    signals.filter(g => g.status === 'OPEN' && !jOpenSyms.has(g.sym)).map(g => ({
       id: 'W' + g.date + g.sym, origin: 'me', sym: g.sym, status: 'OPEN', entry: g.entry, stop: g.stop, tp: g.tp,
       size: g.size || 0, riskAmt: g.risk || 0, virtual: true }))) };
-  const ev      = R.evaluate(bars, live, virt);
+  const ev      = R.evaluate(bars, live, journal);          // coins, regime, slots, equity: real book
+  ev.stops      = R.evaluate(bars, live, virt).stops;       // stops: real + virtual
   const now     = new Date();
   const nowIso  = now.toISOString();
   const alerted = {};
@@ -156,7 +209,9 @@ async function notify(title, body, priority, tags) {
   /* daily heartbeat so you know it is alive */
   const day = nowIso.slice(0, 10);
   const nearest = ev.coins.filter(c => c.distPct != null).sort((a, b) => a.distPct - b.distPct)[0];
-  if (now.getUTCHours() === HEARTBEAT_UTC_HOUR && prev.heartbeatDay !== day) {
+  /* GitHub runs free-tier cron every 2-5 hours, not every 30 minutes, so the
+     heartbeat goes on the first run at or after the hour, not in that exact hour */
+  if (now.getUTCHours() >= HEARTBEAT_UTC_HOUR && prev.heartbeatDay !== day) {
     events.push({ k: 'heartbeat' });
     await notify('Own Book · ' + day,
       'regime ' + (ev.regime.on ? 'ON' : 'OFF') + ' · BTC ' + R.px('BTC', ev.regime.px) + ' vs 20d ' + R.px('BTC', ev.regime.sma) +
@@ -175,12 +230,15 @@ async function notify(title, body, priority, tags) {
     coins: ev.coins.map(c => ({ sym: c.sym, live: live[c.sym], level: c.level, distPct: c.distPct, buyable: c.buyable, fail: c.firstFail })),
     stops: ev.stops.map(s => ({ sym: s.sym, live: s.live, stop: s.stop, tp: s.tp, hitStop: s.hitStop, hitTp: s.hitTp, r: s.r })),
     events: events, alerted: alerted, heartbeatDay: prev.heartbeatDay,
+    inboxSince: inbox.last, inboxMerged: merged, inboxNote: inboxNote || undefined,
+    journalOpen: [...jOpenSyms],
     signals: signals.filter(g => g.status === 'OPEN' || (g.closed && (Date.now() - Date.parse(g.closed)) < 30 * 864e5))
   };
   fs.writeFileSync(STATE, JSON.stringify(state, null, 1));
 
   console.log('ran ' + nowIso + ' in ' + state.ms + 'ms · live ' + liveSrc + ' · bar ' + state.barDate +
     ' · regime ' + (ev.regime.on ? 'ON' : 'OFF') + ' · buyable ' + buyable.map(c => c.sym).join(',') +
-    ' · open ' + ev.stops.length + ' · events ' + events.length +
+    ' · open ' + ev.stops.length + ' (journal ' + jOpenSyms.size + ') · inbox +' + merged.new + '/~' + merged.updated +
+    (inboxNote ? ' (' + inboxNote + ')' : '') + ' · events ' + events.length +
     (nearest ? ' · nearest ' + nearest.sym + ' ' + nearest.distPct.toFixed(2) + '%' : ''));
 })().catch(e => { console.error('watch failed: ' + (e && e.stack || e)); process.exit(1); });
