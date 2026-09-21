@@ -92,7 +92,20 @@ async function pollInbox(since) {
 }
 function mergeTrade(journal, e) {
   journal.trades = journal.trades || [];
-  const same = journal.trades.find(x => x.id === e.id || x.browserId === e.id);
+  let same = journal.trades.find(x => x.id === e.id || x.browserId === e.id);
+  if (!same) {
+    /* the same real position recorded twice (two devices, or a reconstruction from a
+       screenshot) is one trade: same coin, open, entry within 1%. The copy that carries
+       the actual button press replaces a reconstruction. */
+    same = journal.trades.find(x => x.origin === 'me' && x.sym === e.sym && x.id !== e.id &&
+      (x.status === 'OPEN' || e.status === 'OPEN') && x.entry && e.entry && Math.abs(x.entry / e.entry - 1) < 0.01);
+    if (same) {
+      same.browserId = e.id;
+      if (same.recon && !e.recon) { for (const k of ['entry','stop','tp','size','riskAmt','t','day','level','reason']) if (e[k] != null) same[k] = e[k]; delete same.recon; }
+      if (same.status === 'OPEN' && e.status && e.status !== 'OPEN') for (const k of ['status','exitDay','pnl','R','how','exit','why']) if (e[k] != null) same[k] = e[k];
+      return 'updated';
+    }
+  }
   if (!same) { journal.trades.push(e); return 'new'; }
   let ch = false;
   if (same.status === 'OPEN' && e.status && e.status !== 'OPEN')
