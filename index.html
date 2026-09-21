@@ -535,7 +535,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.8 SHARED JOURNAL</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.9 DEVICE SYNC</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -1514,15 +1514,36 @@ function syncMergeTrade(e){          /* same rules as the load-time merge: by id
     ['stop','tp','size','riskAmt','entry','logged'].forEach(function(k){if(same[k]==null&&e[k]!=null){same[k]=e[k];ch=true;}});
     return ch;}
   e.syncedFrom='repo';JOURNAL.push(e);return true;}
+/* Two sources, one merge, then push back what only this device knows:
+     1. the repo journal        durable, written by the watcher, hours behind
+     2. the inbox itself        ntfy keeps 12h of posts and answers cross-origin,
+                                so a trade logged on the phone is on the desktop the
+                                next time the desktop opens - no watcher in between
+     3. anything local that neither source has yet is posted to the inbox now, so a
+        device that logged trades before this version existed catches up by itself. */
+function syncInbox(){
+  return fetch('https://ntfy.sh/'+syncTopic()+'/json?poll=1&since=all',{cache:'no-store'})
+   .then(function(r){if(!r.ok)throw new Error('inbox http '+r.status);return r.text();})
+   .then(function(txt){var out=[];txt.split('\n').forEach(function(line){if(!line.trim())return;
+       var m;try{m=JSON.parse(line);}catch(e){return;}if(!m||m.event!=='message'||!m.message)return;
+       var t;try{t=JSON.parse(m.message);}catch(e){return;}if(t&&t.id&&t.origin==='me'&&t.sym)out.push(t);});return out;});}
 function syncPull(){
   if(typeof fetch!=='function')return Promise.resolve(false);
-  return fetch(repoUrl('kraken-journal.json'),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
-   .then(function(j){var n=0;((j&&j.trades)||[]).forEach(function(e){if(syncMergeTrade(e))n++;});
-     SYNC.at=Date.now();SYNC.err=null;
+  if(SYNC.busy)return Promise.resolve(false);SYNC.busy=true;setTimeout(function(){SYNC.busy=false;},4000);
+  var seen={},n=0,pushed=0;
+  var repo=fetch(repoUrl('kraken-journal.json'),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
+     .then(function(j){return (j&&j.trades)||[];}).catch(function(e){SYNC.err='repo: '+((e&&e.message)||'failed');return [];});
+  var inbox=syncInbox().catch(function(e){SYNC.err='inbox: '+((e&&e.message)||'failed');return [];});
+  return Promise.all([repo,inbox]).then(function(rs){
+     rs[0].concat(rs[1]).forEach(function(e){if(!e||!e.id)return;seen[e.id]=e.status||'OPEN';if(syncMergeTrade(e))n++;});
+     /* what only this device knows: a trade the others have never seen, or a close they still show as open */
+     mine().forEach(function(t){var s=seen[t.id]||seen[t.browserId];
+       if(s==null||(s==='OPEN'&&t.status!=='OPEN')){syncPush(t);pushed++;}});
+     SYNC.at=Date.now();if(n||pushed)SYNC.err=null;
      if(n){SYNC.pulled+=n;try{JOURNAL.sort(function(a,b){return String(a.t||a.day).localeCompare(String(b.t||b.day));});}catch(e){}
-       save();try{toast(n+' trade'+(n===1?'':'s')+' arrived from the shared journal');}catch(e){}render();}
-     return n;})
-   .catch(function(e){SYNC.err='pull: '+((e&&e.message)||'failed');return false;});}
+       save();try{toast(n+' trade'+(n===1?'':'s')+' arrived from your other device');}catch(e){}render();}
+     else if(pushed){try{toast(pushed+' trade'+(pushed===1?'':'s')+' sent to your other devices');}catch(e){}}
+     return n;});}
 
 /* LOG A TRADE — a position you took from a phone alert, after the signal on screen
    has gone. Stop and target come from the watcher's own signal for that coin when
