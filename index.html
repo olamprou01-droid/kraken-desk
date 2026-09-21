@@ -535,7 +535,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.11 ONE APP</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.12 STOP NEAR</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -573,7 +573,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.11', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.12', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -1973,6 +1973,14 @@ function realised(){return closes().reduce(function(a,t){return a+(t.pnl||0);},0
 function floatPnl(){return opens().reduce(function(a,t){var p=price(t.sym);
  return a+(p!=null?(p/t.entry-1)*t.size:0);},0);}
 function equity(){return RULES.start+realised()+floatPnl();}
+/* how far each open trade has travelled from entry towards its stop: 0 = at entry,
+   1 = at the stop. Returns those at 75%+ (a quarter of the risk left), with the level
+   crossed, so the desk and the watcher warn on the same line. */
+var NEAR_LEVELS=[0.75,0.90];
+function stopNear(list){var out=[];(list||opens()).forEach(function(t){var p=price(t.sym);if(p==null||p<=t.stop)return;
+  var d=t.entry-t.stop;if(!(d>0))return;var prog=(t.entry-p)/d,lvl=0;
+  NEAR_LEVELS.forEach(function(n){if(prog>=n)lvl=n;});if(prog<0.60)lvl=0;
+  if(lvl)out.push({t:t,p:p,prog:prog,lvl:lvl});});return out;}
 function cushion(){return Math.max(0,equity()-RULES.floor);}
 function cashFree(){return Math.max(0,equity()-opens().reduce(function(a,t){return a+t.size;},0));}
 
@@ -3118,10 +3126,25 @@ function render(){
       t.sym+' '+px(t.sym,price(t.sym))+' is at or under your stop '+px(t.sym,t.stop)+'. No resting stop exists — sell by hand.');}}});}
  else{op.forEach(function(t){var key='stop|'+t.id;var p=price(t.sym);
    if(CSEEN[key]&&p!=null&&p>t.stop*1.01){delete CSEEN[key];try{localStorage.setItem('kraken_desk_cseen',JSON.stringify(CSEEN));}catch(e){}}});}
+ /* STOP NEAR (21 Sep 2026). There is no resting stop on this book; the sell is your
+    hand, and a hand needs warning time. At 75% of the way from entry to stop (a quarter
+    of the risk left) you are told once; at 90% again; both re-arm if price recovers
+    above 60%. Same thresholds in the watcher, so the phone hears it while you sleep. */
+ var near=stopNear(op);
+ near.forEach(function(n){var key='near|'+n.t.id,prev=CSEEN[key]||0;
+   if(n.lvl>prev){CSEEN[key]=n.lvl;try{localStorage.setItem('kraken_desk_cseen',JSON.stringify(CSEEN));}catch(e){}
+     if(alertsOn()){buzz();notify('Own Book — STOP NEAR '+n.t.sym,
+       n.t.sym+' '+px(n.t.sym,n.p)+' · stop '+px(n.t.sym,n.t.stop)+' is '+nf((n.p/n.t.stop-1)*100,1)+'% away · '+
+       Math.round(n.prog*100)+'% of the risk used · be ready to sell by hand');}}});
+ op.forEach(function(t){var key='near|'+t.id;if(CSEEN[key]&&!near.some(function(n){return n.t.id===t.id;})){delete CSEEN[key];try{localStorage.setItem('kraken_desk_cseen',JSON.stringify(CSEEN));}catch(e){}}});
  if(danger.length){ /* already rendered above */ }
  else if(eq<=RULES.floor){A.className='act s';A.innerHTML='<div class="t">RISK LIMIT HIT — BOOK STOPPED</div>';}
  else if(eq>=RULES.target){A.className='act b';
   A.innerHTML='<div><div class="t">TARGET HIT — STOP TRADING</div><div class="m">sell all back to USD</div></div>';}
+ else if(near.length){A.className='act w';
+  A.innerHTML='<div><div class="t">STOP NEAR '+near.map(function(n){return n.t.sym;}).join(' + ')+'</div><div class="m">'+
+   near.map(function(n){return n.t.sym+' '+px(n.t.sym,n.p)+' · stop '+px(n.t.sym,n.t.stop)+' · '+nf((n.p/n.t.stop-1)*100,1)+'% away · '+Math.round(n.prog*100)+'% of the risk used';}).join(' &nbsp;·&nbsp; ')+
+   ' · no resting stop on this book — be ready to sell by hand</div></div>';}
  else if(op.length>=RULES.maxConc){A.className='act w';
   A.innerHTML='<div><div class="t">HOLD</div><div class="m">'+op.length+'/'+RULES.maxConc+' open — limit reached</div></div>';}
  else if(!sc.regime.on){A.className='act w';
@@ -3257,9 +3280,9 @@ function render(){
  else{var ho='<div class="scroll"><table><thead><tr><th>Coin</th><th class="n">Entry</th>'+
    '<th class="n">Now</th><th class="n">P&L</th><th class="n">Stop</th><th class="n">Target</th>'+
    '<th class="n">Amount</th><th>Opened</th><th></th></tr></thead><tbody>';
-  op.forEach(function(t){var p=price(t.sym),f=p!=null?(p/t.entry-1)*t.size:0,hit=p!=null&&p<=t.stop;
+  op.forEach(function(t){var p=price(t.sym),f=p!=null?(p/t.entry-1)*t.size:0,hit=p!=null&&p<=t.stop,nr=!hit&&stopNear([t])[0];
    ho+='<tr><td><span class="tick">'+t.sym+'</span> '+
-    (hit?'<span class="tag r">SELL</span>':'<span class="tag g">OPEN</span>')+'</td>'+
+    (hit?'<span class="tag r">SELL</span>':(nr?'<span class="tag" style="color:var(--warn);border-color:var(--warn)">NEAR '+Math.round(nr.prog*100)+'%</span>':'<span class="tag g">OPEN</span>'))+'</td>'+
     '<td class="n">'+px(t.sym,t.entry)+'</td><td class="n">'+px(t.sym,p)+'</td>'+
     '<td class="n" style="color:'+(f>=0?'var(--up)':'var(--dn)')+'">'+usd(f,2)+'</td>'+
     '<td class="n" style="color:var(--dn)">'+px(t.sym,t.stop)+'</td>'+
@@ -3543,6 +3566,14 @@ function renderMobile(){
    h+='<div class="mact buy"><div class="w">TARGET HIT</div><div class="sub">'+usd(eq,2)+' · sell back to USD</div></div>';
   }else if(eq<=RULES.floor){
    h+='<div class="mact sell"><div class="w">OUT</div><div class="sub">floor '+usd(RULES.floor,0)+'</div></div>';
+  }else if(stopNear(op).length){
+   var n0=stopNear(op)[0];
+   h+='<div class="mact wait" style="border-color:var(--warn)"><div class="w" style="color:var(--warn)">STOP NEAR '+n0.t.sym+'</div>'+
+      '<div class="mgrid"><div class="c"><div class="k">Now</div><div class="v">'+px(n0.t.sym,n0.p)+'</div></div>'+
+      '<div class="c"><div class="k">Stop</div><div class="v r">'+px(n0.t.sym,n0.t.stop)+'</div></div>'+
+      '<div class="c"><div class="k">Risk used</div><div class="v r">'+Math.round(n0.prog*100)+'%</div></div></div>'+
+      '<div class="sub">'+nf((n0.p/n0.t.stop-1)*100,1)+'% above the stop · no resting stop · be ready to sell by hand</div>'+
+      '<button class="mbtn red" data-msell="'+n0.t.id+'">SELL NOW</button></div>';
   }else if(!liveFresh()){
    h+='<div class="mact wait"><div class="w">TAP ↻</div><div class="sub">prices '+liveAgeTxt()+'</div>'+
       '<button class="mbtn" id="mrf2">REFRESH</button></div>';
@@ -3582,7 +3613,8 @@ function renderMobile(){
   if(!op.length)h+='<div class="mlist"><div class="mempty">No open positions</div></div>';
   else{h+='<div class="mlist">';
    op.forEach(function(t){var p=price(t.sym),f=p!=null?(p/t.entry-1)*t.size:null,rr=(f!=null&&t.riskAmt)?f/t.riskAmt:null;
-    h+='<div class="mrow"><div class="av">'+t.sym+'</div><div class="nm"><b>'+t.sym+'</b>'+
+    var _nr=stopNear([t]).length?' style="border-left:3px solid var(--warn)"':'';
+    h+='<div class="mrow"'+_nr+'><div class="av">'+t.sym+'</div><div class="nm"><b>'+t.sym+'</b>'+
        '<span>in '+px(t.sym,t.entry)+' · sl '+px(t.sym,t.stop)+' · tp '+px(t.sym,t.tp)+'</span></div>'+
        '<div class="rt"><b class="'+mCls(f)+'">'+usd(f,2)+'</b><span class="'+mCls(f)+'">'+
        (rr!=null?((rr>=0?'+':'')+nf(rr,2)+'R'):'')+'</span></div></div>';});
