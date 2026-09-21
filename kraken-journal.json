@@ -1,7 +1,7 @@
 {
  "v": 3,
- "written": "2026-09-17T14:24:08.388Z",
- "note": "Your trades only (origin me), exported from the app SEED on 17 Sep 2026. The watcher reads OPEN rows here to watch stops. Keep it current with the app 📁 button, or the watcher falls back to its own signals.",
+ "written": "2026-09-21T07:19:10.237Z",
+ "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
   "floor": 9500,
@@ -86,6 +86,23 @@
    "whaleAtEntry": null,
    "reason": "broke 20d high 12.608",
    "note": "second paper trade, pasted from the browser journal 7 Sep 2026. Risk is $178 not $125 because UNI's unrealised profit had already widened the buffer to $713 - the cushion rule scaling up exactly as designed. Whale read unavailable at entry (WHALE block stale), which is info-only and never gates. Sell by hand at or under 12.37. Stopped 8 Sep at 12.31756 (0.4% under the 12.36703 stop, exactly the modelled manual-stop slippage)."
+  },
+  {
+   "id": "T1789972865319",
+   "origin": "me",
+   "sym": "AVAX",
+   "day": "2026-09-20",
+   "t": "2026-09-21T06:41:05.319Z",
+   "entry": 11.152,
+   "stop": 10.212357142857142,
+   "tp": 16.789857142857144,
+   "size": 1553,
+   "riskAmt": 130.85945737127986,
+   "status": "OPEN",
+   "mode": "paper",
+   "reason": "broke 20d high 10.169",
+   "level": 10.169,
+   "regimeOff": false
   }
  ],
  "adapted": []
