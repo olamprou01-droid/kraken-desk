@@ -1411,11 +1411,18 @@ function fetchHistory(){
    fall back to the in-progress Coinbase candle captured by the last history pull. */
 function fetchLive(){
   if(typeof fetch!=='function')return Promise.resolve({ok:0,err:'this browser cannot fetch'});
+  var got={};
   var accept=function(sym,v,rej){
     if(!sym||!isFinite(v)||v<=0)return false;
-    var old=price(sym);
-    if(old!=null&&Math.abs(v/old-1)>0.40){rej.push(sym);return false;}
-    LIVE.px[sym]=v;return true;};
+    /* Bad-tick guard: a live print more than 40% from the LAST DAILY CLOSE is refused.
+       Until 21 Sep 2026 this compared against the previous cached live price. On a
+       device opened a week apart that rejected AVAX's real +56% move and kept a stale
+       7.18 on screen marked live - a false SELL. The reference is now yesterday's
+       close, and only when that bar is itself fresh. */
+    var b=lastBar(sym),ref=null;
+    if(b&&b[0]&&(Date.now()-Date.parse(b[0]+'T00:00:00Z'))<4*864e5)ref=b[4];
+    if(ref!=null&&Math.abs(v/ref-1)>0.40){rej.push(sym);return false;}
+    LIVE.px[sym]=v;got[sym]=true;return true;};
   var u=KRAPI+'Ticker?pair='+Object.keys(KRQ).map(function(s){return KRQ[s];}).join(',');
   return fetch(u,{cache:'no-store'})
    .then(function(r){if(!r.ok)throw new Error('HTTP '+r.status);return r.json();})
@@ -1424,6 +1431,9 @@ function fetchLive(){
      var n=0,rej=[];
      Object.keys(j.result).forEach(function(k){var sym=KRK[k];var v=j.result[k]&&j.result[k].c&&+j.result[k].c[0];
        if(accept(sym,v,rej))n++;});
+     /* a coin Kraken did not price in THIS batch must not keep an old price marked live:
+        drop it, so price() falls back to the last close and the live gate says so */
+     if(n)SYMS().forEach(function(s){if(!got[s]&&LIVE.px)delete LIVE.px[s];});
      if(n){LIVE.ts=new Date().toISOString();LIVE.src='kraken spot ticker (fetched in page)';LIVE_AT=Date.now();cachePx();}
      DATA.liveOk=n;DATA.liveSrc='kraken';
      return {ok:n,rejected:rej};})
