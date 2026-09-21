@@ -10,7 +10,7 @@
      3. read kraken-journal.json           -> your open positions
      4. read watch/last.json                -> what it already told you
      5. evaluate the rule (rule.js, proven identical to the app)
-     6. notify via ntfy.sh on: SELL now · new BUY · regime flip · daily heartbeat
+     6. notify via ntfy.sh on: SELL now · STOP NEAR (75% / 90% of risk used) · new BUY · regime flip · daily heartbeat
      7. write watch/last.json               -> the app shows it, the next run diffs it
 
    Dry run without network:  node watch/watch.js --fixture
@@ -199,6 +199,30 @@ async function notify(title, body, priority, tags) {
     }
   }
 
+  /* STOP NEAR (21 Sep 2026) — the early warning. Kraken Funded holds no resting stop,
+     so the sell is a hand on the phone, and a hand needs time. When a real position has
+     used 75% of its risk (entry -> stop) you are told once; at 90% once more; the level
+     re-arms only if price recovers above 60%. Same thresholds as stopNear() in the app.
+     Virtual (unlogged) signals are left out: SELL already covers them once. */
+  const NEAR = [0.75, 0.90];
+  for (const s of ev.stops) {
+    if (s.live == null || s.hitStop || s.hitTp || String(s.id).charAt(0) === 'W') continue;
+    const dist = s.entry - s.stop; if (!(dist > 0)) continue;
+    const prog = (s.entry - s.live) / dist, key = 'near:' + s.sym;
+    let lvl = 0; for (const n of NEAR) if (prog >= n) lvl = n; if (prog < 0.60) lvl = 0;
+    s.near = +prog.toFixed(3);
+    if (!lvl) continue;
+    alerted[key] = lvl;
+    const prevLvl = prev.alerted && prev.alerted[key] ? +prev.alerted[key] : 0;
+    if (lvl > prevLvl) {
+      events.push({ k: 'near', sym: s.sym, prog: +prog.toFixed(2) });
+      await notify('STOP NEAR ' + s.sym,
+        s.sym + ' ' + R.px(s.sym, s.live) + ' · stop ' + R.px(s.sym, s.stop) + ' is ' + ((s.live / s.stop - 1) * 100).toFixed(1) + '% away · ' +
+        Math.round(prog * 100) + '% of the risk used' + (s.pnl != null ? ' · P&L ' + (s.pnl >= 0 ? '+' : '') + R.usd(s.pnl) : '') +
+        ' · no resting stop — be ready to sell by hand on Kraken', 'high', 'warning');
+    }
+  }
+
   /* BUY — once per signal. Re-alerts only if it stopped being buyable and then fired again. */
   const buyable = ev.coins.filter(c => c.buyable);
   for (const c of buyable) {
@@ -245,7 +269,7 @@ async function notify(title, body, priority, tags) {
     regime: { px: ev.regime.px, sma: ev.regime.sma, mom: ev.regime.mom, g1: ev.regime.g1, g2: ev.regime.g2 },
     equity: ev.equity, cushion: ev.cushion,
     coins: ev.coins.map(c => ({ sym: c.sym, live: live[c.sym], level: c.level, distPct: c.distPct, buyable: c.buyable, fail: c.firstFail })),
-    stops: ev.stops.map(s => ({ sym: s.sym, live: s.live, stop: s.stop, tp: s.tp, hitStop: s.hitStop, hitTp: s.hitTp, r: s.r })),
+    stops: ev.stops.map(s => ({ sym: s.sym, live: s.live, stop: s.stop, tp: s.tp, hitStop: s.hitStop, hitTp: s.hitTp, r: s.r, near: s.near })),
     events: events, alerted: alerted, heartbeatDay: prev.heartbeatDay,
     inboxSince: inbox.last, inboxMerged: merged, inboxNote: inboxNote || undefined,
     journalOpen: [...jOpenSyms],
