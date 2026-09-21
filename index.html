@@ -265,6 +265,15 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 .chbar .lbl{font-family:var(--mono);font-size:9px;letter-spacing:.8px;color:var(--faint);text-transform:uppercase;margin-right:2px}
 .chbar .pills span{padding:3px 8px}
 .chbar .pills span.on{color:var(--txt);background:var(--panel3)}
+/* LOG A TRADE form, desktop (.logf) and phone (.mlog) */
+.logf,.mlog{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:12px 14px;margin:6px 0 10px;border:1px solid var(--line3);border-radius:6px;background:var(--panel3)}
+.logf .lt,.mlog .lt{grid-column:1/-1;font-family:var(--mono);font-size:10px;letter-spacing:1px;color:var(--acc)}
+.logf select,.logf input,.mlog select,.mlog input{background:var(--bg);color:var(--txt);border:1px solid var(--line3);border-radius:4px;padding:9px 10px;font-family:var(--mono);font-size:13px;min-width:0}
+.mlog select,.mlog input{font-size:16px;padding:12px}
+.logf .lk,.mlog .lk{grid-column:1/-1;font-family:var(--mono);font-size:11px;color:var(--txt2);padding:2px 0}
+.logf .lb,.mlog .lb{grid-column:1/-1;display:flex;gap:8px}
+.mlog .lb .mbtn{flex:1}
+.mlogbtn{font-family:var(--mono);font-size:10px;letter-spacing:.8px;color:var(--acc);border:1px solid var(--line3);border-radius:14px;padding:4px 10px;margin-right:8px;cursor:pointer}
 .chbar .pills span i{font-style:normal;margin-left:5px;font-size:8.5px;color:#5d6b7c}
 .chbar .pills span i.near{color:#c084fc}
 .chbar .pills span i.at{color:var(--up);font-weight:700}
@@ -479,7 +488,8 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
   </div>
   <div id="buys"></div>
   <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Open</h3><div class="sp"></div>
-    <span class="meta" id="opmeta">—</span></div><div class="pb" id="open"></div></div>
+    <button class="btn" id="dlogbtn" title="Record a position you took from a phone alert, after the signal on screen has gone">+ LOG A TRADE</button>
+    <span class="meta" id="opmeta">—</span></div><div id="dlogf"></div><div class="pb" id="open"></div></div>
   <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Results</h3><div class="sp"></div>
     <span class="meta" id="jmeta">—</span>
     <button class="btn" id="expJ" title="Copy the journal as JSON for Claude">COPY JOURNAL</button>
@@ -525,7 +535,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.7 MG</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.8 SHARED JOURNAL</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -1469,12 +1479,93 @@ var REFRESHING=false;
    ntfy.sh. It writes watch/last.json after every run; this page reads it so you
    can see the software is alive without opening GitHub. Zero Claude, zero cost. */
 var WATCH={st:null,at:0,err:null};
+/* The repo is readable from anywhere: the hosted app reads its own folder, the
+   desktop file reads raw.githubusercontent.com (CORS-open, ~5 min behind). */
+var REPO_RAW='https://raw.githubusercontent.com/olamprou01-droid/kraken-desk/main/';
+function repoUrl(p){return (location.protocol==='file:'?REPO_RAW:'')+p+'?t='+Date.now();}
 function watchLoad(){
   if(typeof fetch!=='function')return Promise.resolve(false);
-  if(location.protocol==='file:'){WATCH.err='file';return Promise.resolve(false);}
-  return fetch('watch/last.json?t='+Date.now(),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
+  return fetch(repoUrl('watch/last.json'),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
    .then(function(j){WATCH.st=j;WATCH.at=Date.now();WATCH.err=null;return true;})
    .catch(function(e){WATCH.err=(e&&e.message)||'fetch';return false;});}
+
+/* ==== SHARED JOURNAL (21 Sep 2026) ============================================
+   A position you log on the phone was invisible on the desktop, and the other way
+   round: each browser keeps its own memory. Now every I BOUGHT / SOLD / LOG is also
+   posted to a private ntfy inbox; the watcher reads that inbox on its next run,
+   merges it into kraken-journal.json in the repo, and every copy of this app pulls
+   that file when it opens. One trade, one record, every screen. No login anywhere. */
+var SYNC={pushed:0,pulled:0,err:null,at:0};
+function syncTopic(){return ((WATCH.st&&WATCH.st.topic)||'ownbook-356ba5c8fc6a5b7454')+'-inbox';}
+function syncSlim(t){var o={};['id','origin','sym','day','t','entry','stop','tp','size','riskAmt','status','mode','reason','level',
+  'exit','exitDay','pnl','R','how','why','logged','regimeOff'].forEach(function(k){if(t[k]!=null)o[k]=t[k];});return o;}
+function syncPush(t){
+  if(typeof fetch!=='function'||!t||t.origin!=='me')return Promise.resolve(false);
+  return fetch('https://ntfy.sh/'+syncTopic(),{method:'POST',body:JSON.stringify(syncSlim(t)),
+      headers:{'Title':'journal '+t.sym+' '+t.status,'Priority':'min','Tags':'floppy_disk'}})
+    .then(function(r){if(!r.ok)throw new Error('http '+r.status);SYNC.pushed++;SYNC.err=null;return true;})
+    .catch(function(e){SYNC.err='push: '+((e&&e.message)||'failed');
+      try{toast('Saved here, but could not reach the shared journal — other devices will not see this trade yet.');}catch(x){}return false;});}
+function syncMergeTrade(e){          /* same rules as the load-time merge: by id, never drop, adopt a close */
+  if(!e||!e.id||e.origin!=='me')return false;
+  var same=JOURNAL.filter(function(x){return x.id===e.id||x.browserId===e.id;})[0];
+  if(same){var ch=false;
+    if(same.status==='OPEN'&&e.status&&e.status!=='OPEN'){['status','exitDay','pnl','R','how','exit','why'].forEach(function(k){if(e[k]!=null){same[k]=e[k];ch=true;}});}
+    ['stop','tp','size','riskAmt','entry','logged'].forEach(function(k){if(same[k]==null&&e[k]!=null){same[k]=e[k];ch=true;}});
+    return ch;}
+  e.syncedFrom='repo';JOURNAL.push(e);return true;}
+function syncPull(){
+  if(typeof fetch!=='function')return Promise.resolve(false);
+  return fetch(repoUrl('kraken-journal.json'),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
+   .then(function(j){var n=0;((j&&j.trades)||[]).forEach(function(e){if(syncMergeTrade(e))n++;});
+     SYNC.at=Date.now();SYNC.err=null;
+     if(n){SYNC.pulled+=n;try{JOURNAL.sort(function(a,b){return String(a.t||a.day).localeCompare(String(b.t||b.day));});}catch(e){}
+       save();try{toast(n+' trade'+(n===1?'':'s')+' arrived from the shared journal');}catch(e){}render();}
+     return n;})
+   .catch(function(e){SYNC.err='pull: '+((e&&e.message)||'failed');return false;});}
+
+/* LOG A TRADE — a position you took from a phone alert, after the signal on screen
+   has gone. Stop and target come from the watcher's own signal for that coin when
+   it has one (the ticket it sent you), else from the bars: 1.5 x ATR14, 6R. */
+function logTradeTicket(sym,entry){
+  var g=null;((WATCH.st&&WATCH.st.signals)||[]).forEach(function(s){if(s.sym===sym&&s.status==='OPEN')g=s;});
+  if(g&&g.stop&&g.tp)return{stop:g.stop,tp:g.tp,level:g.level||null,from:'watcher signal '+g.date};
+  var b=bars(sym);if(!b||b.length<RULES.lookback+2)return null;
+  var i=b.length-1,a=atr(sym,i),h=hiHigh(sym,i,RULES.lookback);if(a==null||!(a>0))return null;
+  var stop=entry-RULES.atrMult*a;return{stop:stop,tp:entry+RULES.rr*(entry-stop),level:h,from:'bars: 1.5×ATR14 '+px(sym,a)};}
+function logTradeSubmit(sym,entry,notional,when){
+  entry=+entry;notional=+notional;if(!(entry>0)||!(notional>0)){toast('Entry and amount must be numbers above zero');return false;}
+  if(opens().some(function(t){return t.sym===sym;})){toast('You already hold '+sym);return false;}
+  var k=logTradeTicket(sym,entry);if(!k){toast('No bars for '+sym+' — press ↻ first');return false;}
+  var T=when?new Date(when):new Date();if(isNaN(T.getTime()))T=new Date();
+  var dayBefore=new Date(T.getTime()-864e5).toISOString().slice(0,10);
+  var risk=notional*(entry-k.stop)/entry;
+  var t={id:'T'+T.getTime(),origin:'me',sym:sym,day:dayBefore,t:T.toISOString(),entry:entry,stop:k.stop,tp:k.tp,
+    size:Math.round(notional),riskAmt:risk,status:'OPEN',mode:isLive()?'live':'paper',
+    reason:'logged by hand · '+k.from,level:k.level,logged:true,regimeOff:!(scan().regime&&scan().regime.on),
+    cfg:{atrMult:RULES.atrMult,rr:RULES.rr,lookback:RULES.lookback,extLimit:RULES.extLimit,staleLimit:RULES.staleLimit}};
+  JOURNAL.push(t);save();syncPush(t);toast('Logged '+sym+' '+usd(Math.round(notional))+' · stop '+px(sym,k.stop));render();return true;}
+function logTradeForm(mob){
+  var now=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
+  return '<div class="'+(mob?'mlog':'logf')+'" id="logf"><div class="lt">LOG A TRADE I TOOK</div>'+
+    '<select id="lg_sym">'+SYMS().map(function(s){return '<option>'+s+'</option>';}).join('')+'</select>'+
+    '<input id="lg_px" type="number" step="any" inputmode="decimal" placeholder="entry price">'+
+    '<input id="lg_usd" type="number" step="1" inputmode="numeric" placeholder="amount $">'+
+    '<input id="lg_t" type="datetime-local" value="'+now+'">'+
+    '<div class="lk" id="lg_k">stop and target appear here</div>'+
+    '<div class="lb"><button class="'+(mob?'mbtn go':'btn')+'" id="lg_go">SAVE</button><button class="'+(mob?'mbtn':'btn')+'" id="lg_no">CANCEL</button></div></div>';}
+function logTradeBind(){
+  var f=$('logf');if(!f)return;
+  var upd=function(){var s=$('lg_sym').value,e=+$('lg_px').value,u=+$('lg_usd').value,K=$('lg_k');
+    if(!(e>0)){K.textContent='stop and target appear here';return;}
+    var k=logTradeTicket(s,e);if(!k){K.textContent='no bars for '+s;return;}
+    var risk=(u>0)?u*(e-k.stop)/e:null;
+    K.innerHTML='stop <b style="color:var(--dn)">'+px(s,k.stop)+'</b> · target <b style="color:var(--up)">'+px(s,k.tp)+'</b>'+
+      (risk!=null?(' · risk '+usd(risk,0)):'')+' <span style="opacity:.6">('+k.from+')</span>';};
+  ['lg_sym','lg_px','lg_usd'].forEach(function(id){var x=$(id);if(x){x.oninput=upd;x.onchange=upd;}});
+  var go=$('lg_go');if(go)go.onclick=function(){if(logTradeSubmit($('lg_sym').value,$('lg_px').value,$('lg_usd').value,$('lg_t').value)){LOGF.open=false;render();}};
+  var no=$('lg_no');if(no)no.onclick=function(){LOGF.open=false;render();};}
+var LOGF={open:false};
 function watchTxt(){
   var w=WATCH.st;
   if(!w||!w.ran)return WATCH.err==='file'?'WATCHER <span class="warnf">OPEN THE HOSTED APP</span>':(WATCH.err?'WATCHER <span class="warnf">NOT DEPLOYED</span>':'WATCHER …');
@@ -1489,7 +1580,7 @@ function refreshAll(reason){
   if(REFRESHING)return Promise.resolve(null);
   REFRESHING=true;
   var t0=Date.now(),rec={ts:new Date().toISOString(),reason:reason||'manual'};
-  try{watchLoad();}catch(e){}
+  try{watchLoad().then(function(){return syncPull();});}catch(e){}
   var btn=$('rf');if(btn){btn.disabled=true;btn.className='icb spin';}
   rpShow(4,'starting…','','REFRESHING');
   var fail=function(where,e){rec.err=where+': '+((e&&e.message)||e||'failed');};
@@ -2591,7 +2682,7 @@ function buy(s){
        extLimit:RULES.extLimit,staleLimit:RULES.staleLimit},
   whaleAtEntry:(c.whale&&c.whale.known)?+c.whale.longPct.toFixed(1):null,
   sig:sigCtx(s)});
- save();toast('Logged '+s+' '+usd(Math.round(c.size.notional)));render();}
+ save();syncPush(JOURNAL[JOURNAL.length-1]);toast('Logged '+s+' '+usd(Math.round(c.size.notional)));render();}
 /* ==== THE SELL GUARD (10 Sep 2026) ============================================
    UNI was sold by hand on 6 Sep at +1.66R "out of emotion" (his words). The rule
    ticket was 6R. Nothing stood between the impulse and the button. Now something
@@ -2657,7 +2748,7 @@ function sell(id,why){
     measured number later, and leave t.why unset so #whybar keeps asking. */
  var _eb=lastBar(t.sym);
  if(_eb&&_eb[0]===t.exitDay){t.exitBarHigh=_eb[2];t.exitBarLow=_eb[3];}
- save();toast(t.sym+' closed '+usd(t.pnl));render();}
+ save();syncPush(t);toast(t.sym+' closed '+usd(t.pnl));render();}
 
 /* ============================================================================
    CHART — see the market the rule sees.  (10 Sep 2026)
@@ -3108,6 +3199,9 @@ function render(){
  $('whmeta').textContent=whaleAge();
 
  var O=$('open');$('opmeta').textContent=op.length+' of '+RULES.maxConc;
+ var _df=$('dlogf');if(_df){_df.innerHTML=LOGF.open?logTradeForm(false):'';logTradeBind();}
+ var _db=$('dlogbtn');if(_db){_db.style.display=op.length<RULES.maxConc?'':'none';_db.textContent=LOGF.open?'✕ CLOSE':'+ LOG A TRADE';
+   _db.onclick=function(){LOGF.open=!LOGF.open;render();};}
  if(!op.length)O.innerHTML='<div class="empty">FLAT — BUFFER INTACT</div>';
  else{var ho='<div class="scroll"><table><thead><tr><th>Coin</th><th class="n">Entry</th>'+
    '<th class="n">Now</th><th class="n">P&L</th><th class="n">Stop</th><th class="n">Target</th>'+
@@ -3430,7 +3524,10 @@ function renderMobile(){
      '<div class="mstat"><div class="k">Next risk</div><div class="v">'+usd(RULES.cushionRisk*cu,0)+'</div></div>'+
      '<div class="mstat"><div class="k">Release</div><div class="v">'+st.n+' / '+GATE.minTrades+'</div></div></div>';
 
-  h+='<div class="msec"><h4>Open</h4><div class="sp"></div><span>'+op.length+' of '+RULES.maxConc+'</span></div>';
+  h+='<div class="msec"><h4>Open</h4><div class="sp"></div>'+
+     (op.length<RULES.maxConc?'<span class="mlogbtn" id="mlogbtn">'+(LOGF.open?'✕':'+ LOG A TRADE')+'</span>':'')+
+     '<span>'+op.length+' of '+RULES.maxConc+'</span></div>';
+  if(LOGF.open)h+=logTradeForm(true);
   if(!op.length)h+='<div class="mlist"><div class="mempty">No open positions</div></div>';
   else{h+='<div class="mlist">';
    op.forEach(function(t){var p=price(t.sym),f=p!=null?(p/t.entry-1)*t.size:null,rr=(f!=null&&t.riskAmt)?f/t.riskAmt:null;
@@ -3533,6 +3630,8 @@ function renderMobile(){
    x.onclick=function(){buy(x.getAttribute('data-mbuy'));};});
  Array.prototype.forEach.call(document.querySelectorAll('[data-msell]'),function(x){
    x.onclick=function(){sellRequest(x.getAttribute('data-msell'));};});
+ var _lb=$('mlogbtn');if(_lb)_lb.onclick=function(){LOGF.open=!LOGF.open;renderMobile();};
+ logTradeBind();
  Array.prototype.forEach.call(document.querySelectorAll('[data-mc]'),function(x){
    x.onclick=function(){CH.sym=x.getAttribute('data-mc');CH.off=0;CH.hover=null;renderMobile();chFetch('switch');};});
  Array.prototype.forEach.call(document.querySelectorAll('[data-mtf]'),function(x){
@@ -3887,9 +3986,10 @@ function autoRefresh(why){
   if(REFRESHING||liveFresh()||typeof fetch!=='function')return;
   refreshAll(why);}
 setTimeout(function(){autoRefresh('open');},500);
-document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){autoRefresh('return');watchLoad().then(function(){render();});}});
+document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'){autoRefresh('return');watchLoad().then(function(){render();return syncPull();});}});
 window.addEventListener('focus',function(){autoRefresh('return');});
-watchLoad().then(function(){render();});
+/* watcher state first (it carries the inbox topic and the open signals), then the shared journal */
+watchLoad().then(function(){render();return syncPull();});
 (function(){var w=$('fwatch');if(w)w.onclick=function(){var t=(WATCH.st&&WATCH.st.topic)||null;
   if(t)window.open('https://ntfy.sh/'+t,'_blank');else toast('Watcher not deployed yet — see DEPLOY.md');};w.style.cursor='pointer';})();
 (function(){var m=$('mrf');if(m)m.onclick=function(){refreshAll('manual');};
