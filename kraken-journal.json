@@ -1,6 +1,6 @@
 {
  "v": 3,
- "written": "2026-09-21T07:19:10.237Z",
+ "written": "2026-09-21T09:27:56.042Z",
  "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
@@ -86,6 +86,23 @@
    "whaleAtEntry": null,
    "reason": "broke 20d high 12.608",
    "note": "second paper trade, pasted from the browser journal 7 Sep 2026. Risk is $178 not $125 because UNI's unrealised profit had already widened the buffer to $713 - the cushion rule scaling up exactly as designed. Whale read unavailable at entry (WHALE block stale), which is info-only and never gates. Sell by hand at or under 12.37. Stopped 8 Sep at 12.31756 (0.4% under the 12.36703 stop, exactly the modelled manual-stop slippage)."
+  },
+  {
+   "id": "T1789900000000",
+   "origin": "me",
+   "sym": "SOL",
+   "day": "2026-09-19",
+   "t": "2026-09-20T06:00:00.000Z",
+   "entry": 111.62,
+   "stop": 104.29,
+   "tp": 155.57,
+   "size": 1980,
+   "riskAmt": 130.02,
+   "status": "OPEN",
+   "mode": "paper",
+   "level": 107.47,
+   "recon": true,
+   "reason": "reconstructed 21 Sep 2026 from the phone screen (pressed I BOUGHT on the phone 19/20 Sep before device sync existed); the phone copy replaces this when it syncs"
   },
   {
    "id": "T1789972865319",
