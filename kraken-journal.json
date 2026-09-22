@@ -1,6 +1,6 @@
 {
  "v": 3,
- "written": "2026-09-21T09:27:56.042Z",
+ "written": "2026-09-22T06:23:34.645Z",
  "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
@@ -91,18 +91,18 @@
    "id": "T1789900000000",
    "origin": "me",
    "sym": "SOL",
-   "day": "2026-09-19",
-   "t": "2026-09-20T06:00:00.000Z",
+   "day": "2026-09-18",
+   "t": "2026-09-19T09:39:55.586Z",
    "entry": 111.62,
-   "stop": 104.29,
-   "tp": 155.57,
-   "size": 1980,
-   "riskAmt": 130.02,
+   "stop": 104.29464285714286,
+   "tp": 155.57214285714286,
+   "size": 1981,
+   "riskAmt": 130.01644088677904,
    "status": "OPEN",
    "mode": "paper",
    "level": 107.47,
-   "recon": true,
-   "reason": "reconstructed 21 Sep 2026 from the phone screen (pressed I BOUGHT on the phone 19/20 Sep before device sync existed); the phone copy replaces this when it syncs"
+   "reason": "broke 20d high 107.47",
+   "browserId": "T1789810795586"
   },
   {
    "id": "T1789972865319",
