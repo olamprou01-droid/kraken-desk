@@ -1,6 +1,6 @@
 {
  "v": 3,
- "written": "2026-09-24T10:35:39.747Z",
+ "written": "2026-09-25T10:38:52.923Z",
  "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
@@ -125,6 +125,23 @@
    "R": -1.0434166461651313,
    "how": "stop",
    "exit": 10.171507714285713
+  },
+  {
+   "id": "T1790316410293",
+   "origin": "me",
+   "sym": "LTC",
+   "day": "2026-09-24",
+   "t": "2026-09-25T06:06:50.293Z",
+   "entry": 71.34,
+   "stop": 65.13739285714286,
+   "tp": 108.55564285714289,
+   "size": 1348,
+   "riskAmt": 117.1784654102612,
+   "status": "OPEN",
+   "mode": "paper",
+   "reason": "broke 20d high 64.624",
+   "level": 64.624,
+   "regimeOff": false
   }
  ],
  "adapted": []

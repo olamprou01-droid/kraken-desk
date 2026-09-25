@@ -1,6 +1,6 @@
 {
- "ran": "2026-09-25T05:40:11.476Z",
- "ms": 978,
+ "ran": "2026-09-25T10:38:52.929Z",
+ "ms": 986,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "barDate": "2026-09-24",
@@ -12,102 +12,102 @@
   "g1": true,
   "g2": true
  },
- "equity": 9971.730973269785,
- "cushion": 471.73097326978495,
+ "equity": 9997.233943116164,
+ "cushion": 497.2339431161636,
  "coins": [
   {
    "sym": "BTC",
-   "live": 84310.9,
+   "live": 84743,
    "level": 87397,
-   "distPct": 3.660380804854424,
+   "distPct": 3.131822097400372,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ETH",
-   "live": 2684.39,
+   "live": 2710.64,
    "level": 2807.1,
-   "distPct": 4.571243373727363,
+   "distPct": 3.55856919399109,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "XRP",
-   "live": 1.53462,
+   "live": 1.55445,
    "level": 1.6581,
-   "distPct": 8.046291590100463,
+   "distPct": 6.667953295377771,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ADA",
-   "live": 0.248168,
+   "live": 0.2526,
    "level": 0.26221,
-   "distPct": 5.6582637568099114,
+   "distPct": 3.8044338875692807,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "SOL",
-   "live": 116.59,
+   "live": 118.9,
    "level": 119.99,
-   "distPct": 2.91620207564971,
+   "distPct": 0.9167367535744209,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "DOGE",
-   "live": 0.0952403,
+   "live": 0.09676,
    "level": 0.10589,
-   "distPct": 11.181926138409892,
+   "distPct": 9.43571723852832,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "LINK",
-   "live": 13.40579,
+   "live": 13.8914,
    "level": 13.68,
-   "distPct": 2.0454594619190747,
+   "distPct": -1.5218048576817411,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "LTC",
-   "live": 71.18,
+   "live": 70.52,
    "level": 64.624,
-   "distPct": -9.210452374262445,
+   "distPct": -8.36074872376631,
    "buyable": false,
-   "fail": "signalled"
+   "fail": "slot"
   },
   {
    "sym": "AVAX",
-   "live": 10.216,
+   "live": 10.431,
    "level": 11.796,
-   "distPct": 15.465935787000795,
+   "distPct": 13.085993672706353,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "DOT",
-   "live": 1.1456,
+   "live": 1.1669,
    "level": 1.2838,
-   "distPct": 12.063547486033531,
+   "distPct": 10.017996400719852,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ATOM",
-   "live": 1.7846,
+   "live": 1.7936,
    "level": 2.0416,
-   "distPct": 14.400986215398405,
+   "distPct": 13.826940231935758,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "UNI",
-   "live": 9.1489,
+   "live": 9.3839,
    "level": 10.9321,
-   "distPct": 19.490867754593456,
+   "distPct": 16.49847078506803,
    "buyable": false,
    "fail": "breakout"
   }
@@ -115,43 +115,49 @@
  "stops": [
   {
    "sym": "SOL",
-   "live": 116.59,
+   "live": 118.9,
    "stop": 104.29464285714286,
    "tp": 155.57214285714286,
    "hitStop": false,
    "hitTp": false,
-   "r": 0.6784230152001278,
-   "near": -0.678
+   "r": 0.9937463884621602,
+   "near": -0.994
+  },
+  {
+   "sym": "LTC",
+   "live": 70.52,
+   "stop": 65.13739285714286,
+   "tp": 108.55564285714289,
+   "hitStop": false,
+   "hitTp": false,
+   "r": -0.13222781864667202,
+   "near": 0.132
   },
   {
    "sym": "AVAX",
-   "live": 10.216,
+   "live": 10.431,
    "stop": 7.725535714285715,
    "tp": 11.795785714285714,
    "hitStop": false,
    "hitTp": false,
-   "r": 3.2830907192432885
-  },
-  {
-   "sym": "LTC",
-   "live": 71.18,
-   "stop": 65.09739285714285,
-   "tp": 108.51564285714288,
-   "hitStop": false,
-   "hitTp": false,
-   "r": -0.01934670328720999
+   "r": 3.652846876727474
   }
  ],
- "events": [],
+ "events": [
+  {
+   "k": "heartbeat"
+  }
+ ],
  "alerted": {},
- "heartbeatDay": "2026-09-24",
- "inboxSince": 1790230795,
+ "heartbeatDay": "2026-09-25",
+ "inboxSince": 1790326079,
  "inboxMerged": {
-  "new": 0,
+  "new": 1,
   "updated": 0
  },
  "journalOpen": [
-  "SOL"
+  "SOL",
+  "LTC"
  ],
  "signals": [
   {
