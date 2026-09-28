@@ -1,10 +1,12 @@
 # OWN BOOK watcher — runs the rule on GitHub's servers and pushes to your phone.
-# Zero Claude usage. Free on a public repo. Every 30 minutes, and on demand from the Actions tab.
+# Zero Claude usage. Free on a public repo. Cron (free tier fires every 2-5 h), and on demand from the Actions tab.
 name: watch
 on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
+  push:
+    paths: ['index.html', 'watch/**']
 permissions:
   contents: write
 concurrency:
@@ -13,7 +15,7 @@ concurrency:
 jobs:
   watch:
     runs-on: ubuntu-latest
-    timeout-minutes: 5
+    timeout-minutes: 6
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -21,6 +23,14 @@ jobs:
           node-version: '20'
       - name: prove the rule still matches the app
         run: node watch/test.js
+      - name: prove the app still boots (every device auto-updates to it)
+        run: |
+          npm i --silent --no-audit --no-fund jsdom@24
+          node watch/smoke.js
+      - name: keep a known-good copy to roll back to
+        # index.prev.html is only refreshed after the smoke test passed on the current file,
+        # so it always holds the last version that booted.
+        run: cp index.html index.prev.html
       - name: run the rule and notify
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
@@ -29,7 +39,16 @@ jobs:
         run: |
           git config user.name  "own-book-watcher"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add watch/last.json kraken-journal.json
+          git add watch/last.json kraken-journal.json index.prev.html
           git diff --cached --quiet || git commit -m "watch: $(date -u +%Y-%m-%dT%H:%MZ)"
           git pull --rebase -q origin main || true
           git push
+      - name: tell the phone if anything above failed
+        if: failure()
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          T="${NTFY_TOPIC:-ownbook-356ba5c8fc6a5b7454}"
+          curl -s -o /dev/null -H "Title: WATCHER FAILED" -H "Priority: high" -H "Tags: rotating_light" \
+            -d "Run #${{ github.run_number }} failed (test, smoke, watcher or push) · github.com/${{ github.repository }}/actions · no alerts until this is green · index.prev.html is the last app that booted" \
+            "https://ntfy.sh/$T"
