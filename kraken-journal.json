@@ -1,6 +1,6 @@
 {
  "v": 3,
- "written": "2026-09-25T10:38:52.923Z",
+ "written": "2026-09-28T11:06:01.582Z",
  "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
@@ -124,7 +124,8 @@
    "pnl": -136.5409361293298,
    "R": -1.0434166461651313,
    "how": "stop",
-   "exit": 10.171507714285713
+   "exit": 10.171507714285713,
+   "offRule": "entry 34.2% over the 2026-09-19 signal at 8.307"
   },
   {
    "id": "T1790316410293",
