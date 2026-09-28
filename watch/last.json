@@ -1,6 +1,6 @@
 {
- "ran": "2026-09-28T05:36:42.134Z",
- "ms": 1107,
+ "ran": "2026-09-28T10:08:11.890Z",
+ "ms": 509,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "barDate": "2026-09-27",
@@ -12,102 +12,102 @@
   "g1": true,
   "g2": true
  },
- "equity": 9994.486963132262,
- "cushion": 494.48696313226174,
+ "equity": 9975.587050175152,
+ "cushion": 475.5870501751524,
  "coins": [
   {
    "sym": "BTC",
-   "live": 82900,
+   "live": 82709.2,
    "level": 87397,
-   "distPct": 5.424607961399275,
+   "distPct": 5.667809626982256,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ETH",
-   "live": 2640.07,
+   "live": 2645.97,
    "level": 2807.1,
-   "distPct": 6.326726185290532,
+   "distPct": 6.089638204514802,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "XRP",
-   "live": 1.47341,
+   "live": 1.48353,
    "level": 1.6581,
-   "distPct": 12.534868095099117,
+   "distPct": 11.76720389880892,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ADA",
-   "live": 0.24427,
+   "live": 0.243745,
    "level": 0.26523,
-   "distPct": 8.580668931919622,
+   "distPct": 8.814539785431519,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "SOL",
-   "live": 118.33,
+   "live": 117.84,
    "level": 122.94,
-   "distPct": 3.8958843911096164,
+   "distPct": 4.327902240325865,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "DOGE",
-   "live": 0.0927651,
+   "live": 0.0927808,
    "level": 0.10589,
-   "distPct": 14.14853215271692,
+   "distPct": 14.129216389597854,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "LINK",
-   "live": 13.71758,
+   "live": 13.61116,
    "level": 14.49,
-   "distPct": 5.630876583187416,
+   "distPct": 6.456760481839896,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "LTC",
-   "live": 70.91,
+   "live": 70.37,
    "level": 80.25,
-   "distPct": 13.171626004794824,
+   "distPct": 14.04007389512576,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "AVAX",
-   "live": 10.498,
+   "live": 10.415,
    "level": 11.796,
-   "distPct": 12.364259859020766,
+   "distPct": 13.259721555448877,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "DOT",
-   "live": 1.2097,
+   "live": 1.1906,
    "level": 1.3066,
-   "distPct": 8.010250475324465,
+   "distPct": 9.742986729380142,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ATOM",
-   "live": 1.8016,
+   "live": 1.7581,
    "level": 2.0416,
-   "distPct": 13.321492007104773,
+   "distPct": 16.125362607360216,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "UNI",
-   "live": 9.1343,
+   "live": 8.8694,
    "level": 10.9321,
-   "distPct": 19.68185848942996,
+   "distPct": 23.256364579340193,
    "buyable": false,
    "fail": "breakout"
   }
@@ -115,37 +115,32 @@
  "stops": [
   {
    "sym": "SOL",
-   "live": 118.33,
+   "live": 117.84,
    "stop": 104.29464285714286,
    "tp": 155.57214285714286,
    "hitStop": false,
    "hitTp": false,
-   "r": 0.9159393223325647,
-   "near": -0.916
+   "r": 0.8490525461860765,
+   "near": -0.849
   },
   {
    "sym": "LTC",
-   "live": 70.91,
+   "live": 70.37,
    "stop": 65.13739285714286,
    "tp": 108.55564285714289,
    "hitStop": false,
    "hitTp": false,
-   "r": -0.06933897807081615,
-   "near": 0.069
-  },
-  {
-   "sym": "AVAX",
-   "live": 10.498,
-   "stop": 7.725535714285715,
-   "tp": 11.795785714285714,
-   "hitStop": false,
-   "hitTp": false,
-   "r": 3.7680732141760345
+   "r": -0.1564158342527687,
+   "near": 0.156
   }
  ],
- "events": [],
+ "events": [
+  {
+   "k": "heartbeat"
+  }
+ ],
  "alerted": {},
- "heartbeatDay": "2026-09-27",
+ "heartbeatDay": "2026-09-28",
  "inboxSince": 1790326079,
  "inboxMerged": {
   "new": 0,
@@ -166,7 +161,9 @@
    "level": 107.47,
    "size": 2009.6988193899845,
    "risk": 130.01644088677904,
-   "status": "OPEN"
+   "status": "TAKEN",
+   "closed": "2026-09-19",
+   "tradeId": "T1789900000000"
   },
   {
    "sym": "AVAX",
@@ -178,7 +175,9 @@
    "level": 8.197,
    "size": 1857.4598663780646,
    "risk": 130.01644088677904,
-   "status": "OPEN"
+   "status": "TAKEN",
+   "closed": "2026-09-21",
+   "tradeId": "T1789972865319"
   },
   {
    "sym": "LTC",
@@ -190,7 +189,9 @@
    "level": 64.624,
    "size": 1397.4791377176691,
    "risk": 121.57102498739778,
-   "status": "OPEN"
+   "status": "TAKEN",
+   "closed": "2026-09-25",
+   "tradeId": "T1790316410293"
   }
  ]
 }
