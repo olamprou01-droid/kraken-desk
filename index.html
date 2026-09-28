@@ -500,6 +500,13 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
   <!-- Everything below is for the engine and for Claude. Hidden by default: the
        desk is signals, entries and results. Toggle with DETAILS in the top bar. -->
   <div id="details" class="details">
+  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Sync key</h3><div class="sp"></div>
+    <span class="meta" id="skmeta">—</span></div>
+    <div class="pb"><input id="skinput" type="password" placeholder="paste the sync key, then tap away" autocomplete="off"
+      style="width:100%;background:var(--panel2);border:1px solid var(--line2);color:var(--txt);padding:7px 9px;border-radius:4px;font:12px var(--mono)">
+    <div class="sub" style="margin-top:6px;color:var(--dim)">Signs every trade this device pushes to the shared journal, so a stranger who
+      finds the public inbox topic cannot post fake trades into it. Same key on every device and in the GitHub secret
+      <code>SYNC_KEY</code>. Stored only in this browser - never in the repo.</div></div></div>
   <div class="grid g2">
     <div class="pnl"><div class="ph"><h3>Watchlist · every coin, every factor</h3><div class="sp"></div>
       <div class="pills"><span class="on">1D</span></div></div>
@@ -537,7 +544,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.14 AUDIT</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.15 SIGNED</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -576,7 +583,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.14', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.15', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -616,7 +623,11 @@ if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.on
    move these values, or move them back, on evidence. The values written here are
    the file defaults; adapted values live in localStorage and the journal file. */
 var RULES={start:10000,floor:9500,target:11200,cushionRisk:0.25,slot2Risk:0.4,maxConc:2,maxAlloc:0.60,
-           slip:0.004,fee:0.0026,lookback:20,atrMult:1.5,rr:6,extLimit:0.12,staleLimit:0.02,
+           /* fee 0.04% (28 Sep 2026): Kraken Funded charges no commission - the cost is a 0.04%
+    spread each side, built into the price you see (support.kraken.com/articles/funded,
+    "How much does it cost?"). Was modelled at 0.26% (Kraken Pro retail taker), which
+    understated every backtest's real edge - the true cost is lower, not higher. */
+ slip:0.004,fee:0.0004,lookback:20,atrMult:1.5,rr:6,extLimit:0.12,staleLimit:0.02,
            momN:60,momThr:0.10};
 var RULES_FILE=JSON.parse(JSON.stringify(RULES));   /* the defaults, for revert + display */
 (function(){try{var o=JSON.parse(localStorage.getItem('kraken_desk_rules')||'null');
@@ -1518,13 +1529,31 @@ function watchLoad(){
    merges it into kraken-journal.json in the repo, and every copy of this app pulls
    that file when it opens. One trade, one record, every screen. No login anywhere. */
 var SYNC={pushed:0,pulled:0,err:null,at:0};
+/* SIGNING (28 Sep 2026). The inbox is a public ntfy topic: derivable from a public
+   file, readable and POSTable by anyone who finds it. A shared secret, never written
+   to the repo, HMAC-signs every trade this device pushes; the watcher (the only writer
+   of the durable repo journal) verifies it once SYNC_KEY exists as a GitHub secret and
+   drops anything unsigned or wrong. Back-compat: while no key is set anywhere, nothing
+   is verified - exactly today's behaviour - so rollout never breaks a working sync. */
+var SYNCKEY={get:function(){try{return localStorage.getItem('kraken_desk_synckey')||'';}catch(e){return '';}},
+  set:function(v){try{if(v)localStorage.setItem('kraken_desk_synckey',v);else localStorage.removeItem('kraken_desk_synckey');}catch(e){}}};
+function sigMsg(o){return [o.id,o.origin,o.sym,o.status,o.entry,o.stop,o.tp,o.size,o.exit||''].join('|');}
+function hmacHex(key,msg){
+  if(!key||typeof crypto==='undefined'||!crypto.subtle)return Promise.resolve(null);
+  return crypto.subtle.importKey('raw',new TextEncoder().encode(key),{name:'HMAC',hash:'SHA-256'},false,['sign'])
+    .then(function(k){return crypto.subtle.sign('HMAC',k,new TextEncoder().encode(msg));})
+    .then(function(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return b.toString(16).padStart(2,'0');}).join('');})
+    .catch(function(){return null;});}
 function syncTopic(){return ((WATCH.st&&WATCH.st.topic)||'ownbook-356ba5c8fc6a5b7454')+'-inbox';}
 function syncSlim(t){var o={};['id','origin','sym','day','t','entry','stop','tp','size','riskAmt','status','mode','reason','level',
   'exit','exitDay','pnl','R','how','why','logged','regimeOff'].forEach(function(k){if(t[k]!=null)o[k]=t[k];});return o;}
 function syncPush(t){
   if(typeof fetch!=='function'||!t||t.origin!=='me')return Promise.resolve(false);
-  return fetch('https://ntfy.sh/'+syncTopic(),{method:'POST',body:JSON.stringify(syncSlim(t)),
-      headers:{'Title':'journal '+t.sym+' '+t.status,'Priority':'min','Tags':'floppy_disk'}})
+  var slim=syncSlim(t),key=SYNCKEY.get();
+  return (key?hmacHex(key,sigMsg(slim)):Promise.resolve(null)).then(function(sig){
+    if(sig)slim.sig=sig;
+    return fetch('https://ntfy.sh/'+syncTopic(),{method:'POST',body:JSON.stringify(slim),
+      headers:{'Title':'journal '+t.sym+' '+t.status,'Priority':'min','Tags':'floppy_disk'}});})
     .then(function(r){if(!r.ok)throw new Error('http '+r.status);SYNC.pushed++;SYNC.err=null;return true;})
     .catch(function(e){SYNC.err='push: '+((e&&e.message)||'failed');
       try{toast('Saved here, but could not reach the shared journal — other devices will not see this trade yet.');}catch(x){}return false;});}
@@ -1561,7 +1590,10 @@ function syncInbox(){
    .then(function(r){if(!r.ok)throw new Error('inbox http '+r.status);return r.text();})
    .then(function(txt){var out=[];txt.split('\n').forEach(function(line){if(!line.trim())return;
        var m;try{m=JSON.parse(line);}catch(e){return;}if(!m||m.event!=='message'||!m.message)return;
-       var t;try{t=JSON.parse(m.message);}catch(e){return;}if(t&&t.id&&t.origin==='me'&&t.sym)out.push(t);});return out;});}
+       var t;try{t=JSON.parse(m.message);}catch(e){return;}if(t&&t.id&&t.origin==='me'&&t.sym)out.push(t);});
+     var key=SYNCKEY.get();if(!key)return out;
+     return Promise.all(out.map(function(t){return hmacHex(key,sigMsg(t)).then(function(ok){return t.sig&&t.sig===ok?t:null;});}))
+       .then(function(vs){return vs.filter(Boolean);});});}
 function syncPull(){
   if(typeof fetch!=='function')return Promise.resolve(false);
   if(SYNC.busy)return Promise.resolve(false);SYNC.busy=true;setTimeout(function(){SYNC.busy=false;},4000);
@@ -4159,6 +4191,10 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 (function(){var m=$('mrf');if(m)m.onclick=function(){refreshAll('manual');};
   var md=$('mdet');if(md)md.onclick=function(){var b=$('detbtn');if(b)b.click();
     var d=$('details');if(d&&d.className.indexOf('on')>=0)d.scrollIntoView({behavior:'smooth'});};})();
+(function(){var sk=$('skinput'),sm=$('skmeta');if(sk){sk.value=SYNCKEY.get();
+   sm.textContent=SYNCKEY.get()?'set on this device':'not set — pushes go unsigned';
+   sk.onchange=function(){SYNCKEY.set(sk.value.trim());sm.textContent=SYNCKEY.get()?'set on this device':'not set — pushes go unsigned';toast(SYNCKEY.get()?'Sync key saved on this device':'Sync key cleared');};}
+})();
 (function(){var b=$('detbtn'),d=$('details');if(!b||!d)return;
   var on=false;try{on=localStorage.getItem('kraken_desk_details')==='on';}catch(e){}
   var ap=function(){d.className='details'+(on?' on':'');b.textContent=on?'DETAILS ▾':'DETAILS ▸';};
