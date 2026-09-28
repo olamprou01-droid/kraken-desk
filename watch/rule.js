@@ -14,7 +14,7 @@
 
 const RULES = {
   start: 10000, floor: 9500, target: 11200,
-  cushionRisk: 0.25, maxConc: 2, maxAlloc: 0.60,
+  cushionRisk: 0.25, slot2Risk: 0.4, maxConc: 2, maxAlloc: 0.60,
   slip: 0.004, fee: 0.0026,
   lookback: 20, atrMult: 1.5, rr: 6,
   extLimit: 0.12, staleLimit: 0.02,
@@ -61,7 +61,9 @@ function cashFree(journal, live) { return Math.max(0, equity(journal, live) - op
 function sizeFor(entry, stop, journal, live) {
   const eq = equity(journal, live), cu = Math.max(0, eq - RULES.floor);
   if (entry <= stop) return null;
-  const risk = RULES.cushionRisk * cu, dist = (entry - stop) / entry;
+  /* second slot risks slot2Risk x (28 Sep 2026, lab: 102 starts) - same as sizeFor() in the app */
+  const nOpen = ((journal && journal.trades) || []).filter(t => t.origin === 'me' && t.status === 'OPEN').length;
+  const risk = RULES.cushionRisk * cu * (nOpen >= 1 ? (RULES.slot2Risk || 1) : 1), dist = (entry - stop) / entry;
   if (risk < 5 || dist <= 0) return null;
   const n = Math.min(risk / dist, RULES.maxAlloc * eq, cashFree(journal, live));
   if (n < 25) return null;

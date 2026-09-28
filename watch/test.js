@@ -53,6 +53,11 @@ const sz = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live);
 eq ('UNI ticket risk $',      sz.risk,     125);
 eq ('UNI ticket notional $',  sz.notional, 920.68, 0.5);
 
+/* second slot: with one position open the next ticket risks 0.4x (28 Sep 2026) */
+const j1 = { trades: [{ id:'T0', origin:'me', sym:'LINK', entry:13.34, stop:12.37, tp:19.2, size:100, riskAmt:7, status:'OPEN' }] };
+const sz2 = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, j1, live);
+eq ('slot-2 ticket risk is 0.4x', sz2.risk / R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live).risk, 0.4, 0.001);
+
 /* stop watch on a journal with an open trade */
 const j = { trades: [{ id:'T1', origin:'me', sym:'UNI', entry:5.879, stop:5.1665, tp:10.154, size:1031, riskAmt:125, status:'OPEN' }] };
 const ev2 = R.evaluate(bars, live, j);
@@ -68,5 +73,5 @@ const btc2 = bars.BTC.map(b => b.slice()); btc2[btc2.length-1][4] = 79000;
 const rg2 = R.regime(btc2);
 is ('synthetic: regime turns ON when close > sma', rg2.on, true);
 
-console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (24 - fails) + '/24)');
+console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (25 - fails) + '/25)');
 process.exit(fails ? 1 : 0);

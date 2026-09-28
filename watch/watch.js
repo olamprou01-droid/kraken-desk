@@ -98,7 +98,9 @@ function mergeTrade(journal, e) {
        screenshot) is one trade: same coin, open, entry within 1%. The copy that carries
        the actual button press replaces a reconstruction. */
     same = journal.trades.find(x => x.origin === 'me' && x.sym === e.sym && x.id !== e.id &&
-      (x.status === 'OPEN' || e.status === 'OPEN') && x.entry && e.entry && Math.abs(x.entry / e.entry - 1) < 0.01);
+      (x.status === 'OPEN' || e.status === 'OPEN') && x.entry && e.entry && Math.abs(x.entry / e.entry - 1) < 0.01 &&
+      /* and within 48h: a re-entry days later at a similar price is a new trade, not a twin */
+      Math.abs((Date.parse(x.t || x.day) || 0) - (Date.parse(e.t || e.day) || 0)) < 48 * 3600e3);
     if (same) {
       same.browserId = e.id;
       if (same.recon && !e.recon) { for (const k of ['entry','stop','tp','size','riskAmt','t','day','level','reason']) if (e[k] != null) same[k] = e[k]; delete same.recon; }
@@ -110,7 +112,7 @@ function mergeTrade(journal, e) {
   let ch = false;
   if (same.status === 'OPEN' && e.status && e.status !== 'OPEN')
     for (const k of ['status','exitDay','pnl','R','how','exit','why']) if (e[k] != null) { same[k] = e[k]; ch = true; }
-  for (const k of ['stop','tp','size','riskAmt','entry','logged','level'])
+  for (const k of ['stop','tp','size','riskAmt','entry','logged','level','offRule'])
     if (same[k] == null && e[k] != null) { same[k] = e[k]; ch = true; }
   return ch ? 'updated' : null;
 }
@@ -164,6 +166,14 @@ async function notify(title, body, priority, tags) {
      watcher sent that are not in the journal) only gets its stops watched, so an
      alert you did not act on can never block the next one. */
   const jOpenSyms = new Set((journal.trades || []).filter(t => t.origin === 'me' && t.status === 'OPEN').map(t => t.sym));
+  /* A signal he acted on is his trade now, not the watcher's: once the journal holds a
+     trade in that coin opened after the signal, the signal is TAKEN and stops being
+     watched. Without this, AVAX's 8.307 signal kept living after the real 11.152 trade
+     was stopped out, and would have sent TARGET for a position that no longer existed. */
+  for (const g of signals) if (g.status === 'OPEN') {
+    const real = (journal.trades || []).find(t => t.origin === 'me' && t.sym === g.sym && String(t.t || t.day) >= String(g.t || g.date).slice(0, 10));
+    if (real) { g.status = 'TAKEN'; g.closed = String(real.t || real.day).slice(0, 10); g.tradeId = real.id; }
+  }
   const virt  = { trades: (journal.trades || []).concat(
     signals.filter(g => g.status === 'OPEN' && !jOpenSyms.has(g.sym)).map(g => ({
       id: 'W' + g.date + g.sym, origin: 'me', sym: g.sym, status: 'OPEN', entry: g.entry, stop: g.stop, tp: g.tp,
@@ -223,8 +233,28 @@ async function notify(title, body, priority, tags) {
     }
   }
 
+  /* KILL RULE — same thresholds as killCheck() in the app (rolling-20 PF < 0.6 or 14
+     straight losses on his own on-rule trades). Paused = no BUY alerts, one notice. */
+  const paused = (function () {
+    const C = (journal.trades || []).filter(t => t.origin === 'me' && (t.status === 'WIN' || t.status === 'LOSS') && !t.offRule)
+      .sort((a, b) => String(a.exitDay || a.day) < String(b.exitDay || b.day) ? -1 : 1);
+    let streak = 0; for (const t of C) streak = (t.pnl <= 0) ? streak + 1 : 0;
+    const w = C.slice(-20); let gw = 0, gl = 0; for (const t of w) { if (t.pnl > 0) gw += t.pnl; else gl -= t.pnl; }
+    const pf = w.length >= 20 ? (gl > 0 ? gw / gl : 99) : null;
+    if (streak >= 14) return streak + ' losses in a row';
+    if (pf != null && pf < 0.6) return 'rolling-20 profit factor ' + pf.toFixed(2);
+    return null;
+  })();
+  if (paused) {
+    alerted['paused'] = true;
+    if (!prev.alerted || !prev.alerted['paused']) {
+      events.push({ k: 'paused', why: paused });
+      await notify('PAUSED — the rule has stopped working', paused + ' · no new entries · open trades run to stop or target · review before trading again', 'high', 'octagonal_sign');
+    }
+  }
+
   /* BUY — once per signal. Re-alerts only if it stopped being buyable and then fired again. */
-  const buyable = ev.coins.filter(c => c.buyable);
+  const buyable = paused ? [] : ev.coins.filter(c => c.buyable);
   for (const c of buyable) {
     alerted['buy:' + c.sym] = true;
     if (!prev.alerted['buy:' + c.sym]) {
