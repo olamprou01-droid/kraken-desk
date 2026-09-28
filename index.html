@@ -136,6 +136,9 @@ body{background:var(--bg);color:var(--txt);font:13px/1.45 var(--sans);
 .act.s{background:linear-gradient(90deg,rgba(255,85,104,.16),rgba(255,85,104,.03));border-color:var(--dnln)}
 .act.s .t{color:var(--dn)}
 .act .sp{flex:1}
+/* 23 Sep 2026: SOLD opened the guard above the chart, off-screen, and on a phone
+   inside the hidden desktop pane - the button looked dead. It is now an overlay. */
+#sellguard.act{position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);z-index:9000;width:min(620px,calc(100vw - 32px));max-height:88vh;overflow:auto;background-color:var(--panel,#0e1318);border:1px solid var(--dn,#ff5568);box-shadow:0 0 0 100vmax rgba(0,0,0,.62)}
 
 /* ---------- tables ---------- */
 table{width:100%;border-collapse:collapse}
@@ -472,7 +475,6 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
   <div class="kpis" id="stats"></div>
   <div id="act" class="act w"><div class="t">—</div></div>
   <div id="whybar"></div>
-  <div id="sellguard"></div>
   <div class="chwrap">
     <div class="chpnl">
       <div class="chhead" id="chhead"></div>
@@ -535,7 +537,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.12 STOP NEAR</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.14 AUDIT</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -568,12 +570,13 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
   <div class="rp-step" id="rp-step">starting…</div>
 </div>
 <div class="toast" id="toast"></div>
+<div id="sellguard"></div>
 <script>
 /* ==== ONE APP (21 Sep 2026) ====================================================
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.12', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.14', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -612,7 +615,7 @@ if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.on
    The app now re-runs this whole test ITSELF once a day (see WF below) and will
    move these values, or move them back, on evidence. The values written here are
    the file defaults; adapted values live in localStorage and the journal file. */
-var RULES={start:10000,floor:9500,target:11200,cushionRisk:0.25,maxConc:2,maxAlloc:0.60,
+var RULES={start:10000,floor:9500,target:11200,cushionRisk:0.25,slot2Risk:0.4,maxConc:2,maxAlloc:0.60,
            slip:0.004,fee:0.0026,lookback:20,atrMult:1.5,rr:6,extLimit:0.12,staleLimit:0.02,
            momN:60,momThr:0.10};
 var RULES_FILE=JSON.parse(JSON.stringify(RULES));   /* the defaults, for revert + display */
@@ -1532,7 +1535,9 @@ function syncMergeTrade(e){          /* same rules as the load-time merge: by id
     /* the same real position recorded twice - two devices, or a reconstruction
        written from a screenshot - is one trade: same coin, open, entry within 1% */
     same=JOURNAL.filter(function(x){return x.origin==='me'&&x.sym===e.sym&&x.id!==e.id&&
-      (x.status==='OPEN'||e.status==='OPEN')&&x.entry&&e.entry&&Math.abs(x.entry/e.entry-1)<0.01;})[0];
+      (x.status==='OPEN'||e.status==='OPEN')&&x.entry&&e.entry&&Math.abs(x.entry/e.entry-1)<0.01&&
+      /* and within 48h of each other: a re-entry days later at a similar price is a new trade, not a twin */
+      Math.abs((Date.parse(x.t||x.day)||0)-(Date.parse(e.t||e.day)||0))<48*3600e3;})[0];
     if(same){same.browserId=e.id;
       /* a reconstruction yields to the copy that carries the button press */
       if(same.recon&&!e.recon){['entry','stop','tp','size','riskAmt','t','day','level','reason'].forEach(function(k){if(e[k]!=null)same[k]=e[k];});delete same.recon;}
@@ -1541,7 +1546,7 @@ function syncMergeTrade(e){          /* same rules as the load-time merge: by id
       return chg;}}
   if(same){var ch=false;
     if(same.status==='OPEN'&&e.status&&e.status!=='OPEN'){['status','exitDay','pnl','R','how','exit','why'].forEach(function(k){if(e[k]!=null){same[k]=e[k];ch=true;}});}
-    ['stop','tp','size','riskAmt','entry','logged'].forEach(function(k){if(same[k]==null&&e[k]!=null){same[k]=e[k];ch=true;}});
+    ['stop','tp','size','riskAmt','entry','logged','offRule'].forEach(function(k){if(same[k]==null&&e[k]!=null){same[k]=e[k];ch=true;}});
     return ch;}
   e.syncedFrom='repo';JOURNAL.push(e);return true;}
 /* Two sources, one merge, then push back what only this device knows:
@@ -1590,12 +1595,12 @@ function logTradeSubmit(sym,entry,notional,when){
   var k=logTradeTicket(sym,entry);if(!k){toast('No bars for '+sym+' — press ↻ first');return false;}
   var T=when?new Date(when):new Date();if(isNaN(T.getTime()))T=new Date();
   var dayBefore=new Date(T.getTime()-864e5).toISOString().slice(0,10);
-  var risk=notional*(entry-k.stop)/entry;
+  var risk=notional*(entry-k.stop)/entry,off=offRuleWhy(sym,entry);
   var t={id:'T'+T.getTime(),origin:'me',sym:sym,day:dayBefore,t:T.toISOString(),entry:entry,stop:k.stop,tp:k.tp,
-    size:Math.round(notional),riskAmt:risk,status:'OPEN',mode:isLive()?'live':'paper',
+    size:Math.round(notional),riskAmt:risk,status:'OPEN',mode:isLive()?'live':'paper',offRule:off||undefined,
     reason:'logged by hand · '+k.from,level:k.level,logged:true,regimeOff:!(scan().regime&&scan().regime.on),
     cfg:{atrMult:RULES.atrMult,rr:RULES.rr,lookback:RULES.lookback,extLimit:RULES.extLimit,staleLimit:RULES.staleLimit}};
-  JOURNAL.push(t);save();syncPush(t);toast('Logged '+sym+' '+usd(Math.round(notional))+' · stop '+px(sym,k.stop));render();return true;}
+  JOURNAL.push(t);save();syncPush(t);toast('Logged '+sym+' '+usd(Math.round(notional))+' · stop '+px(sym,k.stop)+(off?' · OFF RULE: '+off:''));render();return true;}
 function logTradeForm(mob){
   var now=new Date(Date.now()-new Date().getTimezoneOffset()*60000).toISOString().slice(0,16);
   return '<div class="'+(mob?'mlog':'logf')+'" id="logf"><div class="lt">LOG A TRADE I TOOK</div>'+
@@ -1957,7 +1962,7 @@ function mine(){return JOURNAL.filter(function(t){return t.origin==='me';});}
    Mixing the two would let a backtest unlock a live account. It never can. */
 function backfilled(){return JOURNAL.filter(function(t){return t.origin==='backfill';});}
 function resolvedOf(a){return a.filter(function(t){return t.status==='WIN'||t.status==='LOSS';});}
-function learnPool(){return resolvedOf(mine()).concat(resolvedOf(backfilled()));}
+function learnPool(){return resolvedOf(mine()).filter(function(t){return !t.offRule;}).concat(resolvedOf(backfilled()));}
 /* SEED is the durable copy written into this FILE. localStorage is the live copy in
    THIS browser only. Anything present in the browser but absent from SEED is one
    cache-clear away from gone, and is invisible to Claude and to the 3x-daily
@@ -1969,6 +1974,38 @@ function unsavedTrades(){
  return mine().filter(function(t){return !seedIds[t.id];});}
 function opens(){return mine().filter(function(t){return t.status==='OPEN';});}
 function closes(){return mine().filter(function(t){return t.status==='WIN'||t.status==='LOSS';});}
+/* OFF-RULE (28 Sep 2026). A trade logged by hand that the rule did not signal, or
+   was logged more than staleLimit above the signal, is real money and counts in
+   equity and P&L - but it is not evidence about the rule. It is excluded from the
+   go-live count, the learning pool and Tier 2b. AVAX 11.152 against a signal at
+   8.307 was the case that made this necessary. */
+function onRule(t){return !t.offRule;}
+function evidence(){return closes().filter(onRule);}
+/* KILL RULE (28 Sep 2026), thresholds taken from the 102 challenge starts 2018-2026
+   run on 28 Sep (lab.html): no passing start ever had a worse rolling-20 profit
+   factor than 0.23 and only 1 of 25 went under 0.6, while every grinding start with
+   20+ trades did (worst 0.58); no passing start ever lost 14 in a row (max 13),
+   grinding starts reached 18. So: rolling-20 PF < 0.6, or 14 straight losses, means
+   the rule is not doing what it did in the past -> PAUSED, no new entries, review.
+   Open positions still run to their stop or target. Sizing already makes the floor
+   unreachable; this is about not spending months feeding a rule that has changed. */
+var KILL={pf20:0.6,streak:14};
+function killCheck(){
+  var C=evidence().slice().sort(function(a,b){return String(a.exitDay||a.day)<String(b.exitDay||b.day)?-1:1;});
+  var streak=0;C.forEach(function(t){streak=(t.pnl<=0)?streak+1:0;});
+  var w=C.slice(-20),gw=0,gl=0;w.forEach(function(t){if(t.pnl>0)gw+=t.pnl;else gl+=-t.pnl;});
+  var pf=(w.length>=20)?(gl>0?gw/gl:99):null;
+  var why=null;if(streak>=KILL.streak)why=streak+' losses in a row (limit '+KILL.streak+')';
+  else if(pf!=null&&pf<KILL.pf20)why='rolling-20 profit factor '+nf(pf,2)+' (limit '+KILL.pf20+')';
+  return{on:!!why,why:why,streak:streak,pf20:pf,n:C.length};}
+function offRuleWhy(sym,entry){
+  var g=null;((WATCH.st&&WATCH.st.signals)||[]).forEach(function(s){if(s.sym===sym&&s.status==='OPEN')g=s;});
+  if(g&&g.entry){var over=entry/g.entry-1;return over>RULES.staleLimit?('entry '+nf(over*100,1)+'% over the '+g.date+' signal at '+px(sym,g.entry)):null;}
+  var sc=scan(),o=null;sc.all.forEach(function(x){if(x.sym===sym)o=x;});
+  if(!sc.regime||!sc.regime.on)return 'regime off';
+  if(!o||!o.f||!o.f.breakout||!o.f.breakout.ok)return 'no breakout signal';
+  if(o.f.fresh&&!o.f.fresh.ok)return 'stale: '+o.f.fresh.v;
+  return null;}
 function realised(){return closes().reduce(function(a,t){return a+(t.pnl||0);},0);}
 function floatPnl(){return opens().reduce(function(a,t){var p=price(t.sym);
  return a+(p!=null?(p/t.entry-1)*t.size:0);},0);}
@@ -1990,7 +2027,12 @@ function cashFree(){return Math.max(0,equity()-opens().reduce(function(a,t){retu
 function sizeFor(entry,stop){
  var eq=equity(),cu=Math.max(0,eq-RULES.floor);
  if(entry<=stop)return null;
- var risk=RULES.cushionRisk*cu,dist=(entry-stop)/entry;
+ /* SECOND SLOT (28 Sep 2026). The 12 coins move together, so slot 2 is mostly the
+    same bet again. Lab, 102 challenge starts: slot 2 at 0.4x risk keeps every
+    pass (47/33 vs 42/33), lifts 2025-26 from 11 to 15 of 18, halves the worst
+    2022-24 drawdown (12.0% -> 6.4%), and 0.33-0.5 all agree - a plateau, not a
+    spike. Expectancy per trade is unchanged; only the size of the second bet is. */
+ var risk=RULES.cushionRisk*cu*(opens().length>=1?(RULES.slot2Risk||1):1),dist=(entry-stop)/entry;
  if(risk<5||dist<=0)return null;
  var n=Math.min(risk/dist,RULES.maxAlloc*eq,cashFree());
  if(n<25)return null;
@@ -2209,7 +2251,7 @@ function statsOf(C,seq){
  var pf=seq?(gl>0?gw/gl:(gw>0?99:0)):(glR>0?gwR/glR:(gwR>0?99:0));
  return{n:n,wins:w,losses:n-w,totR:tot,expR:tot/n,pf:pf,
         dd:seq?dd/RULES.start*100:null,seq:seq,ddOk:seq};}
-function stats(){return statsOf(closes(),true);}
+function stats(){return statsOf(evidence(),true);}
 /* the learning pool is only a true sequence when it is ALL your own trades */
 function learnStats(){return statsOf(learnPool(),backfilled().length===0);}
 function gate(){
@@ -2761,6 +2803,15 @@ function sellRequest(id){
  if(!t)return;var p=price(t.sym);if(p==null){toast('No live price for '+t.sym+' — press ↻ first.');return;}
  if(p<=t.stop){sell(id,'stop hit');return;}          /* rule says sell: no friction */
  if(t.tp!=null&&p>=t.tp){sell(id,'hit my own target');return;}
+ /* EXIT RULE (28 Sep 2026). Three exits exist: STOP, STOP NEAR, TARGET. STOP NEAR
+    (75%+ of the risk used) is the one place his hand is allowed to act early, because
+    the book has no resting stop and a stop 5 hours late costs more than a quarter of
+    the risk given back. It is not scored against the rule. Everything else goes
+    through the guard, and after 10 scored hand-closes with a negative record the
+    guard has no SELL ANYWAY at all - the hand is off. */
+ if(stopNear([t]).length){sell(id,'stop near');return;}
+ var _HT=handTable();if(_HT.scored>=10&&_HT.net<0){SELLG.id=id;SELLG.why=null;SELLG.left=0;SELLG.off=true;renderSellGuard();return;}
+ SELLG.off=false;
  SELLG.id=id;SELLG.why=null;SELLG.left=10;
  clearInterval(SELLG.timer);
  SELLG.timer=setInterval(function(){SELLG.left--;if(SELLG.left<=0){clearInterval(SELLG.timer);SELLG.timer=null;}renderSellGuard();},1000);
@@ -2777,6 +2828,12 @@ function renderSellGuard(){
    (HT.net>=0?'var(--up)':'var(--dn)')+'">'+(HT.net>=0?'+':'')+nf(HT.net,2)+'R</b> against the rule.'):' No scored hand-closes yet.';
  var ready=SELLG.why&&SELLG.left<=0;
  G.className='act s';
+ if(SELLG.off){
+  G.innerHTML='<div style="width:100%"><div class="t">THE HAND IS OFF · '+t.sym+' STAYS ON THE RULE</div>'+
+   '<div class="m">'+HT.scored+' scored hand-closes net <b style="color:var(--dn)">'+nf(HT.net,2)+'R</b> against the rule. '+
+   'Exits now are the stop '+px(t.sym,t.stop)+', STOP NEAR, or the target '+px(t.sym,t.tp)+'. Price '+px(t.sym,p)+' is none of them.</div>'+
+   '<div style="display:flex;gap:8px;margin-top:9px"><button class="btn" id="sgNo">OK</button></div></div>';
+  var _no=$('sgNo');if(_no)_no.onclick=function(){sellCancel();};return;}
  G.innerHTML='<div style="width:100%">'+
   '<div class="t">THE RULE SAYS HOLD '+t.sym+'</div>'+
   '<div class="m">Price '+px(t.sym,p)+' · stop '+px(t.sym,t.stop)+' ('+nf(toStop,1)+'% below) · target '+px(t.sym,t.tp)+
@@ -2801,7 +2858,7 @@ function sell(id,why){
  t.exit=p;t.exitDay=lastBar(t.sym)[0];t.pnl=(p/t.entry-1)*t.size;
  /* pressing SOLD at or under the stop is the RULE's exit done by hand, not a
     discretionary close — it must not be scored as one */
- t.status=t.pnl>0?'WIN':'LOSS';t.how=(why==='stop hit')?'stop (by hand)':'closed by you';t.R=t.riskAmt?t.pnl/t.riskAmt:null;
+ t.status=t.pnl>0?'WIN':'LOSS';t.how=(why==='stop hit')?'stop (by hand)':(why==='stop near')?'stop near (by hand)':'closed by you';t.R=t.riskAmt?t.pnl/t.riskAmt:null;
  /* The one decision the rule did not make is the one nothing was recording.
     Capture the bar he sold into so 'you sold X% under that day's high' is a
     measured number later, and leave t.why unset so #whybar keeps asking. */
@@ -3090,11 +3147,13 @@ function render(){
   ['To target',usd(toPass,0),'info',nf(12-gainPct,2)+'%'],
   ['Buffer',usd(cu,0),(cu<200?'neg':'pos'),'limit '+usd(RULES.floor,0)],
   ['Open',op.length+' / '+RULES.maxConc,(op.length?'info':''),''],
-  ['Next risk',usd(RULES.cushionRisk*cu,0),'warnk','25% of buffer'],
+  ['Next risk',usd(RULES.cushionRisk*cu*(op.length>=1?(RULES.slot2Risk||1):1),0),'warnk',op.length>=1?'slot 2 · '+Math.round(RULES.cushionRisk*RULES.slot2Risk*100)+'% of buffer':'25% of buffer'],
   ['Signals',String(sc.list.filter(function(c){return !c.skip;}).length),
    (sc.list.filter(function(c){return !c.skip;}).length?'pos':''),''],
   ['Closed',String(closes().length),'info',(closes().length?(nf(stats().expR,2)+'R avg'):'')],
-  ['Release',_g.s.n+' / '+GATE.minTrades,(_g.pass?'pos':'info'),_g.pass?'READY':'paper']
+  ['Release',_g.s.n+' / '+GATE.minTrades,(_g.pass?'pos':'info'),_g.pass?'READY':'paper'],
+  (function(){var H=handTable();return ['Hand vs rule',H.scored?((H.net>=0?'+':'')+nf(H.net,2)+'R'):'—',
+    H.scored?(H.net>=0?'pos':'neg'):'',H.scored?(H.scored+' scored'+(H.scored>=10&&H.net<0?' · HAND OFF':'')):'no hand-closes'];})()
  ].forEach(function(x){var d=el('div','kpi '+x[2]);
   d.innerHTML='<div class="k">'+x[0]+'</div><div class="v">'+x[1]+'</div><div class="s">'+x[3]+'</div>';
   K.appendChild(d);});
@@ -3147,6 +3206,8 @@ function render(){
    ' · no resting stop on this book — be ready to sell by hand</div></div>';}
  else if(op.length>=RULES.maxConc){A.className='act w';
   A.innerHTML='<div><div class="t">HOLD</div><div class="m">'+op.length+'/'+RULES.maxConc+' open — limit reached</div></div>';}
+ else if(killCheck().on){A.className='act s';
+  A.innerHTML='<div><div class="t">PAUSED — THE RULE HAS STOPPED WORKING</div><div class="m">'+killCheck().why+' · no new entries · open trades run to stop or target · review before trading again</div></div>';}
  else if(!sc.regime.on){A.className='act w';
   A.innerHTML='<div><div class="t">WAIT</div><div class="m">'+sc.regime.txt+'</div></div>';}
  else if(!liveFresh()){A.className='act w';
@@ -3282,7 +3343,8 @@ function render(){
    '<th class="n">Amount</th><th>Opened</th><th></th></tr></thead><tbody>';
   op.forEach(function(t){var p=price(t.sym),f=p!=null?(p/t.entry-1)*t.size:0,hit=p!=null&&p<=t.stop,nr=!hit&&stopNear([t])[0];
    ho+='<tr><td><span class="tick">'+t.sym+'</span> '+
-    (hit?'<span class="tag r">SELL</span>':(nr?'<span class="tag" style="color:var(--warn);border-color:var(--warn)">NEAR '+Math.round(nr.prog*100)+'%</span>':'<span class="tag g">OPEN</span>'))+'</td>'+
+    (hit?'<span class="tag r">SELL</span>':(nr?'<span class="tag" style="color:var(--warn);border-color:var(--warn)">NEAR '+Math.round(nr.prog*100)+'%</span>':'<span class="tag g">OPEN</span>'))+
+    (t.offRule?' <span class="tag" title="'+t.offRule+'" style="color:var(--dim);border-color:var(--line3)">OFF RULE</span>':'')+'</td>'+
     '<td class="n">'+px(t.sym,t.entry)+'</td><td class="n">'+px(t.sym,p)+'</td>'+
     '<td class="n" style="color:'+(f>=0?'var(--up)':'var(--dn)')+'">'+usd(f,2)+'</td>'+
     '<td class="n" style="color:var(--dn)">'+px(t.sym,t.stop)+'</td>'+
@@ -3579,6 +3641,8 @@ function renderMobile(){
       '<button class="mbtn" id="mrf2">REFRESH</button></div>';
   }else if(op.length>=RULES.maxConc){
    h+='<div class="mact wait"><div class="w">HOLD</div><div class="sub">'+op.length+' of '+RULES.maxConc+' slots used</div></div>';
+  }else if(killCheck().on){
+   h+='<div class="mact sell"><div class="w">PAUSED</div><div class="sub">'+killCheck().why+' · no new entries until reviewed</div></div>';
   }else if(!sc.regime.on){
    var R=sc.regime;
    h+='<div class="mact wait"><div class="w">WAIT</div>'+
@@ -3614,7 +3678,7 @@ function renderMobile(){
   else{h+='<div class="mlist">';
    op.forEach(function(t){var p=price(t.sym),f=p!=null?(p/t.entry-1)*t.size:null,rr=(f!=null&&t.riskAmt)?f/t.riskAmt:null;
     var _nr=stopNear([t]).length?' style="border-left:3px solid var(--warn)"':'';
-    h+='<div class="mrow"'+_nr+'><div class="av">'+t.sym+'</div><div class="nm"><b>'+t.sym+'</b>'+
+    h+='<div class="mrow"'+_nr+'><div class="av">'+t.sym+'</div><div class="nm"><b>'+t.sym+(t.offRule?' <span style="color:var(--dim);font-size:9px;letter-spacing:1px">OFF RULE</span>':'')+'</b>'+
        '<span>in '+px(t.sym,t.entry)+' · sl '+px(t.sym,t.stop)+' · tp '+px(t.sym,t.tp)+'</span></div>'+
        '<div class="rt"><b class="'+mCls(f)+'">'+usd(f,2)+'</b><span class="'+mCls(f)+'">'+
        (rr!=null?((rr>=0?'+':'')+nf(rr,2)+'R'):'')+'</span></div></div>';});
@@ -3924,8 +3988,10 @@ function renderPF(){
  var nq=0;
  Object.keys(plats).forEach(function(pl){var P=plats[pl];
   P.rows.forEach(function(o){var r=o.r,u=o.u;if(!u.q)nq++;
-   var tag=u.q?('<span class="tag '+(u.q.live?'g':'')+'" title="'+u.q.src+'">'+
-     (u.q.live?'LIVE':u.q.asof)+'</span>'):'<span class="tag y" title="no reliable public quote">NO QUOTE</span>';
+   /* a statement price older than 7 days is a photograph, and says so in red */
+   var _old=!u.q||u.q.live?false:((Date.now()-Date.parse(u.q.asof+'T00:00:00Z'))/864e5>7);
+   var tag=u.q?('<span class="tag '+(u.q.live?'g':(_old?'r':''))+'" title="'+u.q.src+(_old?' · stale, '+Math.round((Date.now()-Date.parse(u.q.asof+'T00:00:00Z'))/864e5)+' days old':'')+'">'+
+     (u.q.live?'LIVE':u.q.asof+(_old?' ·stale':''))+'</span>'):'<span class="tag y" title="no reliable public quote">NO QUOTE</span>';
    h+='<tr><td><span class="tick">'+r.sym+'</span> <span class="sub">'+r.name+'</span></td>'+
     '<td><span class="tag b">'+pl+'</span></td><td class="n sub">'+nf(r.qty,r.qty<1?6:4)+'</td>'+
     '<td class="n">'+nf(r.buy)+'</td><td class="n">'+nf(u.cur)+' '+tag+'</td>'+
