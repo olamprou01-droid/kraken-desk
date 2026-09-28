@@ -34,6 +34,7 @@ jobs:
       - name: run the rule and notify
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+          SYNC_KEY: ${{ secrets.SYNC_KEY }}
         run: node watch/watch.js
       - name: save state and the shared journal for the app and the next run
         run: |
