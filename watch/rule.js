@@ -15,7 +15,9 @@
 const RULES = {
   start: 10000, floor: 9500, target: 11200,
   cushionRisk: 0.25, slot2Risk: 0.4, maxConc: 2, maxAlloc: 0.60,
-  slip: 0.004, fee: 0.0026,
+  /* fee 0.04% each side (28 Sep 2026): Kraken Funded charges no commission - cost is a
+     0.04% spread built into the price (support.kraken.com/articles/funded). Was 0.26%. */
+  slip: 0.004, fee: 0.0004,
   lookback: 20, atrMult: 1.5, rr: 6,
   extLimit: 0.12, staleLimit: 0.02,
   momN: 60, momThr: 0.10

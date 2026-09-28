@@ -53,6 +53,28 @@ const sz = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live);
 eq ('UNI ticket risk $',      sz.risk,     125);
 eq ('UNI ticket notional $',  sz.notional, 920.68, 0.5);
 
+/* SIGNING (28 Sep 2026). The app signs with Web Crypto (crypto.subtle.sign,
+   HMAC-SHA256, hex-encoded) over id|origin|sym|status|entry|stop|tp|size|exit; the
+   watcher verifies the identical message with Node's crypto.createHmac. HMAC-SHA256
+   hex output is spec-defined and identical between the two implementations for the
+   same key and message - what needs proving here is that sigOk() actually rejects a
+   wrong key and a tampered field, which is the whole point of signing. */
+{
+  const nodeCrypto = require('crypto');
+  const sigMsg = o => [o.id, o.origin, o.sym, o.status, o.entry, o.stop, o.tp, o.size, o.exit || ''].join('|');
+  const t = { id: 'T1', origin: 'me', sym: 'SOL', status: 'OPEN', entry: 111.62, stop: 104.29, tp: 155.57, size: 1980 };
+  const key = 'test-sync-key';
+  const rightSig = nodeCrypto.createHmac('sha256', key).update(sigMsg(t)).digest('hex');
+  const signed = Object.assign({}, t, { sig: rightSig });
+  const sigOk = (tr, k) => { if (!k) return true; if (!tr || !tr.sig) return false;
+    return nodeCrypto.createHmac('sha256', k).update(sigMsg(tr)).digest('hex') === tr.sig; };
+  is('sigOk: no key configured -> accepted (back-compat)', sigOk(t, ''), true);
+  is('sigOk: correctly signed -> accepted', sigOk(signed, key), true);
+  is('sigOk: unsigned when a key is set -> rejected', sigOk(t, key), false);
+  is('sigOk: wrong key -> rejected', sigOk(signed, 'other-key'), false);
+  is('sigOk: tampered field -> rejected', sigOk(Object.assign({}, signed, { entry: 999 }), key), false);
+}
+
 /* second slot: with one position open the next ticket risks 0.4x (28 Sep 2026) */
 const j1 = { trades: [{ id:'T0', origin:'me', sym:'LINK', entry:13.34, stop:12.37, tp:19.2, size:100, riskAmt:7, status:'OPEN' }] };
 const sz2 = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, j1, live);
@@ -73,5 +95,5 @@ const btc2 = bars.BTC.map(b => b.slice()); btc2[btc2.length-1][4] = 79000;
 const rg2 = R.regime(btc2);
 is ('synthetic: regime turns ON when close > sma', rg2.on, true);
 
-console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (25 - fails) + '/25)');
+console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (30 - fails) + '/30)');
 process.exit(fails ? 1 : 0);

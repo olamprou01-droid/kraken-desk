@@ -25,6 +25,19 @@ const JOURNAL   = path.join(ROOT, 'kraken-journal.json');
 const STATE     = path.join(__dirname, 'last.json');
 const TOPIC     = process.env.NTFY_TOPIC || 'ownbook-356ba5c8fc6a5b7454';
 const NTFY      = 'https://ntfy.sh/' + TOPIC;
+const SYNC_KEY  = process.env.SYNC_KEY || '';
+/* SIGNING (28 Sep 2026). Same scheme as the app's SYNCKEY/hmacHex: HMAC-SHA256 over
+   id|origin|sym|status|entry|stop|tp|size|exit. This is the one place it is actually
+   enforced - the watcher is the only writer of the durable repo journal, so an entry
+   from the public inbox that fails the check never reaches it. Back-compat: while
+   SYNC_KEY is not set as a GitHub secret, nothing is rejected (today's behaviour). */
+function sigMsg(o) { return [o.id, o.origin, o.sym, o.status, o.entry, o.stop, o.tp, o.size, o.exit || ''].join('|'); }
+function sigOk(t) {
+  if (!SYNC_KEY) return true;
+  if (!t || !t.sig) return false;
+  const h = require('crypto').createHmac('sha256', SYNC_KEY).update(sigMsg(t)).digest('hex');
+  return h === t.sig;
+}
 const DRY       = process.argv.includes('--fixture');
 const HEARTBEAT_UTC_HOUR = 6;                         // 09:00 Cyprus in summer, 08:00 in winter
 
@@ -86,7 +99,7 @@ async function pollInbox(since) {
     let m; try { m = JSON.parse(line); } catch (e) { continue; }
     if (m.event !== 'message' || !m.message) continue;
     let t; try { t = JSON.parse(m.message); } catch (e) { continue; }
-    if (t && t.id && t.origin === 'me' && t.sym) { out.push(t); last = m.time; }
+    if (t && t.id && t.origin === 'me' && t.sym && sigOk(t)) { out.push(t); last = m.time; }
   }
   return { trades: out, last: last };
 }
