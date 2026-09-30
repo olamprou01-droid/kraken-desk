@@ -551,7 +551,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.20 ONE BOOK</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.21 KEY LINK</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -590,7 +590,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.20', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.21', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -1671,6 +1671,13 @@ var SYNC={pushed:0,pulled:0,err:null,at:0};
    is verified - exactly today's behaviour - so rollout never breaks a working sync. */
 var SYNCKEY={get:function(){try{return localStorage.getItem('kraken_desk_synckey')||'';}catch(e){return '';}},
   set:function(v){try{if(v)localStorage.setItem('kraken_desk_synckey',v);else localStorage.removeItem('kraken_desk_synckey');}catch(e){}}};
+/* KEY BY LINK (30 Sep 2026). Typing a 32-character secret on a phone is where sync died.
+   Opening the app once as  …/index.html#synckey=<key>  stores the key on that device and
+   removes it from the address bar at once (replaceState), so the key is never in the URL
+   that stays on screen. Same secret as the GitHub SYNC_KEY. */
+(function(){try{var m=(location.hash||'').match(/synckey=([A-Za-z0-9_\-]+)/);
+  if(m){SYNCKEY.set(m[1]);history.replaceState(null,'',location.pathname+location.search);
+    setTimeout(function(){try{toast('Sync key saved on this device — syncing');}catch(e){}},800);}}catch(e){}})();
 function sigMsg(o){return [o.id,o.origin,o.sym,o.status,o.entry,o.stop,o.tp,o.size,o.exit||''].join('|');}
 function hmacHex(key,msg){
   if(!key||typeof crypto==='undefined'||!crypto.subtle)return Promise.resolve(null);
