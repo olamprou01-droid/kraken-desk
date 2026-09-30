@@ -43,9 +43,12 @@ Notifications arrive with the phone locked or asleep. You can also open
 | when | message | priority |
 |---|---|---|
 | a coin passes every gate | **BUY UNI** — in, stop, target, size · open the app and press ↻ before you buy | high |
+| an open position has used 75% of its risk (entry → stop), and again at 90% | **STOP NEAR UNI** — price, stop, % away, % of risk used · be ready to sell by hand | high |
 | a signal or open position is at or under its stop | **SELL UNI NOW** | urgent, breaks through silent mode |
 | a position reaches target | **TARGET UNI** | high |
 | BTC crosses its 20-day average | **REGIME ON** / **REGIME OFF** | normal |
+| the rule stops working on your own trades (rolling-20 profit factor < 0.6, or 14 losses in a row) | **PAUSED** — no new entries until reviewed | high |
+| a run fails (test, smoke test, watcher or push) | **WATCHER FAILED** — no alerts until it is green again | high |
 | 09:00 Cyprus, every day | **Own Book · date** — regime, nearest coin, open count, equity | quiet |
 
 Nothing else. If you get no daily message, something is off — open the repo's Actions tab.
