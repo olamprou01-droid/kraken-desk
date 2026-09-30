@@ -1,6 +1,6 @@
 {
  "v": 3,
- "written": "2026-09-30T09:52:13.152Z",
+ "written": "2026-09-30T19:51:06.237Z",
  "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
@@ -139,11 +139,17 @@
    "tp": 108.55564285714289,
    "size": 1348,
    "riskAmt": 117.1784654102612,
-   "status": "OPEN",
+   "status": "LOSS",
    "mode": "paper",
    "reason": "broke 20d high 64.624",
    "level": 64.624,
-   "regimeOff": false
+   "regimeOff": false,
+   "exitDay": "2026-09-29",
+   "pnl": -94.85506027474094,
+   "R": -0.8094922556174265,
+   "how": "stop near (by hand)",
+   "exit": 66.32,
+   "why": "stop near"
   }
  ],
  "adapted": []
