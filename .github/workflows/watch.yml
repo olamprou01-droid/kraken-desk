@@ -50,10 +50,9 @@ jobs:
         run: node watch/watch.js --loop 340
       - name: save whatever the last pass left
         run: |
+          git fetch -q origin main && git reset -q origin/main
           git add watch/last.json kraken-journal.json index.prev.html
-          git diff --cached --quiet || git commit -m "watch: $(date -u +%Y-%m-%dT%H:%MZ)"
-          git pull --rebase -q origin main || true
-          git push
+          git diff --cached --quiet || (git commit -m "watch: $(date -u +%Y-%m-%dT%H:%MZ)" && git push -q origin HEAD:main)
       - name: tell the phone if anything above failed
         if: failure()
         env:
