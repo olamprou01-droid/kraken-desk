@@ -535,6 +535,11 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
     <span class="meta" id="pfnmeta">—</span></div>
     <div class="pb scroll"><table id="pfo"></table></div>
     <div class="note" id="pfn"></div></div>
+  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Coming up — earnings · central banks · Forex Factory</h3><div class="sp"></div>
+    <span class="meta" id="pfevmeta">—</span></div>
+    <div class="pb scroll"><table id="pfevt"></table></div></div>
+  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Holdings — results · dividends · investor relations</h3></div>
+    <div class="pb scroll"><table id="pfevh"></table></div></div>
   <div class="grid g2">
     <div class="pnl"><div class="ph"><h3>Performance by position</h3></div><div class="pb" id="pfh"></div></div>
     <div class="pnl"><div class="ph"><h3>Closed positions</h3></div>
@@ -544,7 +549,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.16 SIGNED</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.18 SYNC</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -583,7 +588,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.16', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.18', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -630,12 +635,13 @@ var RULES={start:10000,floor:9500,target:11200,cushionRisk:0.25,slot2Risk:0.4,ma
  slip:0.004,fee:0.0004,lookback:20,atrMult:1.5,rr:6,extLimit:0.12,staleLimit:0.02,
            momN:60,momThr:0.10};
 var RULES_FILE=JSON.parse(JSON.stringify(RULES));   /* the defaults, for revert + display */
-(function(){try{var o=JSON.parse(localStorage.getItem('kraken_desk_rules')||'null');
-  if(o&&typeof o==='object')Object.keys(o).forEach(function(k){
-    if(k in RULES&&typeof o[k]==='number'&&isFinite(o[k]))RULES[k]=o[k];});}catch(e){}})();
-function rulesSave(){try{var o={};['rr','atrMult','lookback','extLimit','maxConc','momN','momThr']
-  .forEach(function(k){if(RULES[k]!==RULES_FILE[k])o[k]=RULES[k];});
-  localStorage.setItem('kraken_desk_rules',JSON.stringify(o));}catch(e){}}
+/* ONE RULE SET (30 Sep 2026). A setting adapted on one device used to live only in that
+   browser, so the phone, the desktop and the watcher could each run a different rule.
+   Now every device runs the file's RULES - the same numbers as watch/rule.js - and the
+   daily self-test only PROPOSES a change; a proposal takes effect when it is written
+   into the file, which reaches every device and the watcher at once. */
+try{localStorage.removeItem('kraken_desk_rules');}catch(e){}
+function rulesSave(){}
 /* Go-live gate. Paper until ALL of these are true. Chosen before seeing any
    result so it cannot be bent to fit: 20 trades is the minimum where a win rate
    starts to mean anything, and drawdown must stay well inside the $500 buffer. */
@@ -1273,6 +1279,85 @@ var PFPX={
  RMS:{p:1366.50,asof:'2026-09-30',src:'Euronext Paris RMS, EUR (Yahoo)'}
 };
 
+/* ==== PFEV — earnings, dividends, Forex Factory and IR for every holding (30 Sep 2026, v4.17)
+   Every line below was read from a named source on 30 Sep 2026; nothing is estimated
+   unless it says "est." with where the estimate came from. Dates are UTC; the page
+   shows them in Cyprus time and counts days from the moment it renders (no timers).
+   FF red folders = the Desk Book's Forex Factory calendar (asOf 28 Sep). ECB = ECB
+   decision 29 Oct 14:15 CET; BoE = official 2026 MPC dates. ETH "typical move" = median
+   absolute day-close move of ETH on the Desk Book's measured prints (2024-2026). */
+var PFEV={asof:'2026-09-30',
+ ev:[
+  {d:'2026-09-30T12:30:00Z',k:'FF',t:'Core PCE · Final GDP',on:'USD',src:'Forex Factory'},
+  {d:'2026-09-30T20:30:00Z',k:'EARN',sym:'MU',t:'Micron fiscal Q4 results',x:'guided revenue $50.0bn ±1.0 · EPS $31 ±1',src:'Micron IR, 26 Aug'},
+  {d:'2026-10-02T12:30:00Z',k:'FF',t:'Non-Farm Payrolls',on:'USD',src:'Forex Factory'},
+  {d:'2026-10-07T18:00:00Z',k:'FF',t:'FOMC Minutes',on:'USD',src:'Forex Factory'},
+  {d:'2026-10-14T12:30:00Z',k:'FF',t:'CPI',on:'USD',src:'Forex Factory'},
+  {d:'2026-10-15T12:30:00Z',k:'FF',t:'PPI · Retail Sales',on:'USD',src:'Forex Factory'},
+  {d:'2026-10-22T06:00:00Z',k:'EARN',sym:'RMS',t:'Hermès Q3 revenue',x:'Q2 missed by €30m and the stock fell 7.9%',src:'Hermès finance calendar'},
+  {d:'2026-10-28T18:00:00Z',k:'FF',t:'FOMC rate decision + press conference',on:'USD',src:'Forex Factory'},
+  {d:'2026-10-29T12:30:00Z',k:'FF',t:'Advance GDP · Core PCE',on:'USD',src:'Forex Factory'},
+  {d:'2026-10-29T13:15:00Z',k:'CB',t:'ECB rate decision',on:'EUR',x:'deposit 2.50% · ~60% priced for a hike (24 Sep)',src:'ECB calendar via Admiral Markets'},
+  {d:'2026-11-05T12:00:00Z',k:'CB',t:'Bank of England rate decision',on:'GBP',src:'Bank of England 2026 MPC dates'}
+ ],
+ /* which holdings each currency's news moves */
+ on:{USD:['ETH','PLTR','MU','LMT','XOM','OKLO','EGLN','SSLN'],EUR:['EGLN','ISOD','RMS'],GBP:['SSLN','NUCG']},
+ h:{
+  MU:{next:'Q4 results TONIGHT 23:30 Cyprus',last:'Q3 (24 Jun): revenue $41.46bn, EPS $25.11 — stock +15%',div:{ps:0.15,f:4,when:'last paid 21 Jul'},ir:'https://investors.micron.com/'},
+  PLTR:{next:'Q3 date not announced yet',last:'Q2 (3 Aug): revenue $1.94bn vs $1.80bn est, EPS $0.41 vs $0.35; FY guide raised to $8.15bn; Q3 guide ~$2.16bn',div:null,ir:'https://investors.palantir.com/'},
+  LMT:{next:'Q3 date not announced yet (Q2 was 23 Jul)',last:'Q2: sales $20.1bn +11%, EPS $7.94, record $230bn backlog, FY EPS guide $29.95–30.65 — stock +5%',div:{ps:3.45,f:4,when:'last paid 25 Sep'},ir:'https://investors.lockheedmartin.com/'},
+  XOM:{next:'Q3 not confirmed — est. 30 Oct–3 Nov (MarketChameleon, from past dates)',last:'Q2 (31 Jul): adjusted EPS $3.52; $5.1bn buybacks in the quarter',div:{ps:1.03,f:4,when:'last paid 10 Sep'},ir:'https://investor.exxonmobil.com/'},
+  OKLO:{next:'Q3 date not announced yet (Q2 was 7 Aug)',last:'Q2: loss $0.28/share vs $0.16 est; ~$3bn cash; Groves reactor first criticality 6 Aug — stock +7.6%',div:null,ir:'https://investor.oklo.com/overview/default.aspx'},
+  RMS:{next:'Q3 revenue 22 Oct, 09:00 Cyprus',last:'Q2 (29 Jul): revenue €4.05bn vs €4.08bn est, +7% at constant currency — shares −7.9%',div:{ps:null,when:'annual, next amount not announced'},ir:'https://finance.hermes.com/en/'},
+  EGLN:{next:'no company events — moves with gold (USD news) and EUR/USD',last:'',div:{none:'physical gold ETC — pays nothing'},ir:'https://www.ishares.com/'},
+  SSLN:{next:'no company events — moves with silver (USD news) and GBP/USD',last:'',div:{none:'physical silver ETC — pays nothing'},ir:'https://www.ishares.com/'},
+  ISOD:{next:'no company events — moves with oil & gas producers',last:'',div:{none:'accumulating — income reinvested in the price'},ir:'https://www.ishares.com/'},
+  NUCG:{next:'no company events — moves with uranium & nuclear names (OKLO is in the theme)',last:'',div:{none:'accumulating — income reinvested in the price'},ir:'https://www.vaneck.com/'},
+  ETH:{next:'no earnings — the USD red folders are what move it',last:'',div:{none:'no dividend (spot, not staked)'},ir:'https://ethereum.org/'}
+ },
+ /* ETH, measured: median |day-close move| on Desk Book prints, n = prints */
+ ethRx:{'Non-Farm Payrolls':[2.04,32],'FOMC rate decision + press conference':[1.70,22],'CPI':[1.56,32],'PPI · Retail Sales':[1.48,32],
+        'Core PCE · Final GDP':[1.21,54],'Advance GDP · Core PCE':[1.21,54],'FOMC Minutes':[0.79,22]}
+};
+function pfevCy(iso){try{return new Date(iso).toLocaleString('en-GB',{timeZone:'Asia/Nicosia',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return iso.slice(0,16).replace('T',' ');}}
+function pfevIn(iso){var h=(Date.parse(iso)-Date.now())/36e5;
+ if(h<0)return 'done';if(h<24)return (h<1?'<1h':Math.round(h)+'h');return Math.round(h/24)+'d';}
+function pfevUpcoming(n){var now=Date.now()-3*36e5;   /* keep a print 3h after it lands */
+ return PFEV.ev.filter(function(e){return Date.parse(e.d)>now;}).slice(0,n||99);}
+function pfevTouch(e){return e.sym?[e.sym]:(PFEV.on[e.on]||[]);}
+function pfevQty(sym){return OPEN.filter(function(r){return r.sym===sym;}).reduce(function(a,r){return a+r.qty;},0);}
+function pfevDiv(sym){var d=(PFEV.h[sym]||{}).div;if(!d)return{t:'none',v:null};if(d.none)return{t:d.none,v:null};
+ if(d.ps==null)return{t:d.when,v:null};var q=pfevQty(sym),per=q*d.ps;
+ return{t:'$'+nf(d.ps)+'/share · '+d.when,v:per,yr:per*(d.f||1)};}
+function renderPFEV(){
+ var E=$('pfevt');if(!E)return;
+ var up=pfevUpcoming(12);
+ var h='<thead><tr><th>When (Cyprus)</th><th class="n">In</th><th>What</th><th>Moves</th><th>Note</th></tr></thead><tbody>';
+ up.forEach(function(e){var hrs=(Date.parse(e.d)-Date.now())/36e5;
+  var col=e.k==='EARN'?(hrs<168?'y':'b'):(e.k==='CB'?'b':'');
+  var lab=e.k==='EARN'?'EARNINGS':(e.k==='CB'?'CENTRAL BANK':'FF RED');
+  var rx=PFEV.ethRx[e.t];
+  h+='<tr><td class="mono">'+pfevCy(e.d)+'</td>'+
+   '<td class="n" style="color:'+(hrs<24?'var(--warn)':'var(--txt2)')+'"><b>'+pfevIn(e.d)+'</b></td>'+
+   '<td><span class="tag '+col+'">'+lab+'</span> <b>'+e.t+'</b></td>'+
+   '<td class="sub">'+pfevTouch(e).join(' ')+'</td>'+
+   '<td class="sub" style="white-space:normal">'+(e.x||'')+(rx?((e.x?' · ':'')+'ETH typically ±'+nf(rx[0])+'% on the day ('+rx[1]+' prints)'):'')+'</td></tr>';});
+ h+='</tbody>';
+ $('pfevt').innerHTML=h;
+ var syms=[];OPEN.forEach(function(r){if(syms.indexOf(r.sym)<0)syms.push(r.sym);});
+ var g='<thead><tr><th>Instrument</th><th>Next</th><th>Last result</th><th>Dividend</th><th class="n">Yours / qtr</th><th>IR</th></tr></thead><tbody>';
+ syms.forEach(function(s){var H=PFEV.h[s];if(!H)return;var dv=pfevDiv(s);
+  g+='<tr><td><span class="tick">'+s+'</span></td>'+
+   '<td style="white-space:normal;max-width:220px'+(/TONIGHT/.test(H.next)?';color:var(--warn);font-weight:700':'')+'">'+H.next+'</td>'+
+   '<td class="sub" style="white-space:normal;max-width:360px">'+(H.last||'—')+'</td>'+
+   '<td class="sub" style="white-space:normal;max-width:200px">'+dv.t+'</td>'+
+   '<td class="n" style="color:'+(dv.v?'var(--up)':'var(--dim)')+'">'+(dv.v?('$'+nf(dv.v,dv.v<0.1?3:2)):'—')+'</td>'+
+   '<td><a class="tag b" href="'+H.ir+'" target="_blank" rel="noopener">IR ↗</a></td></tr>';});
+ g+='</tbody>';
+ $('pfevh').innerHTML=g;
+ $('pfevmeta').textContent='checked '+PFEV.asof;
+}
+
 /* ==== helpers ==== */
 function $(i){return document.getElementById(i);}
 function el(t,c){var e=document.createElement(t);if(c)e.className=c;return e;}
@@ -1550,7 +1635,7 @@ function hmacHex(key,msg){
     .catch(function(){return null;});}
 function syncTopic(){return ((WATCH.st&&WATCH.st.topic)||'ownbook-356ba5c8fc6a5b7454')+'-inbox';}
 function syncSlim(t){var o={};['id','origin','sym','day','t','entry','stop','tp','size','riskAmt','status','mode','reason','level',
-  'exit','exitDay','pnl','R','how','why','logged','regimeOff'].forEach(function(k){if(t[k]!=null)o[k]=t[k];});return o;}
+  'exit','exitDay','pnl','R','how','why','logged','regimeOff','offRule','whyNote','note','closedBar','ext'].forEach(function(k){if(t[k]!=null)o[k]=t[k];});return o;}
 function syncPush(t){
   if(typeof fetch!=='function'||!t||t.origin!=='me')return Promise.resolve(false);
   var slim=syncSlim(t),key=SYNCKEY.get();
@@ -1579,7 +1664,7 @@ function syncMergeTrade(e){          /* same rules as the load-time merge: by id
       return chg;}}
   if(same){var ch=false;
     if(same.status==='OPEN'&&e.status&&e.status!=='OPEN'){['status','exitDay','pnl','R','how','exit','why'].forEach(function(k){if(e[k]!=null){same[k]=e[k];ch=true;}});}
-    ['stop','tp','size','riskAmt','entry','logged','offRule'].forEach(function(k){if(same[k]==null&&e[k]!=null){same[k]=e[k];ch=true;}});
+    ['stop','tp','size','riskAmt','entry','logged','offRule','level','whyNote','note','closedBar','ext','how','why'].forEach(function(k){if(same[k]==null&&e[k]!=null){same[k]=e[k];ch=true;}});
     return ch;}
   e.syncedFrom='repo';JOURNAL.push(e);return true;}
 /* Two sources, one merge, then push back what only this device knows:
@@ -1601,15 +1686,20 @@ function syncInbox(){
 function syncPull(){
   if(typeof fetch!=='function')return Promise.resolve(false);
   if(SYNC.busy)return Promise.resolve(false);SYNC.busy=true;setTimeout(function(){SYNC.busy=false;},4000);
-  var seen={},n=0,pushed=0;
+  var seen={},rem={},n=0,pushed=0;
   var repo=fetch(repoUrl('kraken-journal.json'),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
      .then(function(j){return (j&&j.trades)||[];}).catch(function(e){SYNC.err='repo: '+((e&&e.message)||'failed');return [];});
   var inbox=syncInbox().catch(function(e){SYNC.err='inbox: '+((e&&e.message)||'failed');return [];});
   return Promise.all([repo,inbox]).then(function(rs){
-     rs[0].concat(rs[1]).forEach(function(e){if(!e||!e.id)return;seen[e.id]=e.status||'OPEN';if(syncMergeTrade(e))n++;});
+     rs[0].concat(rs[1]).forEach(function(e){if(!e||!e.id)return;seen[e.id]=e.status||'OPEN';
+       var r0=rem[e.id]||{};Object.keys(e).forEach(function(k){if(e[k]!=null)r0[k]=e[k];});rem[e.id]=r0;
+       if(syncMergeTrade(e))n++;});
      /* what only this device knows: a trade the others have never seen, or a close they still show as open */
      mine().forEach(function(t){var s=seen[t.id]||seen[t.browserId];
-       if(s==null||(s==='OPEN'&&t.status!=='OPEN')){syncPush(t);pushed++;}});
+       var r=rem[t.id]||rem[t.browserId]||{};
+       /* ...or a detail the others are missing (an OFF RULE tag, the reason for a hand-close) */
+       var gap=['offRule','why','whyNote','how','exit','pnl'].some(function(k){return t[k]!=null&&r[k]==null;});
+       if(s==null||(s==='OPEN'&&t.status!=='OPEN')||gap){syncPush(t);pushed++;}});
      SYNC.at=Date.now();if(n||pushed)SYNC.err=null;
      if(n){SYNC.pulled+=n;try{JOURNAL.sort(function(a,b){return String(a.t||a.day).localeCompare(String(b.t||b.day));});}catch(e){}
        save();try{toast(n+' trade'+(n===1?'':'s')+' arrived from your other device');}catch(e){}render();}
@@ -2782,12 +2872,11 @@ function wfAdapt(force){
         changed={kind:'revert',ts:new Date().toISOString(),param:lastChange.param,from:lastChange.to,to:lastChange.from,
           why:'the previous value now tests better out of sample ('+nf(fromRow.expR,2)+'R vs '+nf(E.curRow.expR,2)+'R)'};}}}
   if(!changed&&best){
-    RULES[best.param]=best.to;rulesSave();
-    changed={kind:'change',ts:new Date().toISOString(),param:best.param,from:best.from,to:best.to,
+    changed={kind:'proposal',ts:new Date().toISOString(),param:best.param,from:best.from,to:best.to,
       why:'OOS '+nf(best.row.expR-best.gain,2)+'R -> '+nf(best.row.expR,2)+'R on '+best.row.n+' trades; both neighbours agree; '+
           'book runs '+best.cohCur.pass+'/'+best.cohCur.fail+' -> '+best.coh.pass+'/'+best.coh.fail+' pass/fail',
       oos:[W.oos0,W.oos1],cohort:[W.coh0,W.coh1]};}
-  if(changed){WF.log.unshift(changed);try{toast('Rule adapted: '+changed.param+' '+changed.from+' → '+changed.to);}catch(e){}}
+  if(changed){WF.log.unshift(changed);try{toast('Rule proposal: '+changed.param+' '+changed.from+' → '+changed.to+' (not applied — goes into the file so every device changes together)');}catch(e){}}
   else WF.log.unshift({kind:'hold',ts:new Date().toISOString(),why:'no candidate passed all three tests'});
   WF.report={ts:new Date().toISOString(),windows:W,bars:ctx.dates.length,
     evals:evals.map(function(e){return{param:e.param,cur:e.cur,cohCur:e.cohCur,
@@ -3672,9 +3761,6 @@ function renderMobile(){
       '<div class="c"><div class="k">Risk used</div><div class="v r">'+Math.round(n0.prog*100)+'%</div></div></div>'+
       '<div class="sub">'+nf((n0.p/n0.t.stop-1)*100,1)+'% above the stop · no resting stop · be ready to sell by hand</div>'+
       '<button class="mbtn red" data-msell="'+n0.t.id+'">SELL NOW</button></div>';
-  }else if(!liveFresh()){
-   h+='<div class="mact wait"><div class="w">TAP ↻</div><div class="sub">prices '+liveAgeTxt()+'</div>'+
-      '<button class="mbtn" id="mrf2">REFRESH</button></div>';
   }else if(op.length>=RULES.maxConc){
    h+='<div class="mact wait"><div class="w">HOLD</div><div class="sub">'+op.length+' of '+RULES.maxConc+' slots used</div></div>';
   }else if(killCheck().on){
@@ -3685,6 +3771,9 @@ function renderMobile(){
       '<div class="mgrid"><div class="c"><div class="k">BTC</div><div class="v">'+px('BTC',R.px)+'</div></div>'+
       '<div class="c"><div class="k">20d avg</div><div class="v '+(R.g1?'g':'r')+'">'+px('BTC',R.sma)+'</div></div>'+
       '<div class="c"><div class="k">60d</div><div class="v '+(R.g2?'g':'r')+'">'+pc(R.mom*100,1)+'</div></div></div></div>';
+  }else if(!liveFresh()){
+   h+='<div class="mact wait"><div class="w">TAP ↻</div><div class="sub">prices '+liveAgeTxt()+'</div>'+
+      '<button class="mbtn" id="mrf2">REFRESH</button></div>';
   }else if(!live.length){
    h+='<div class="mact wait"><div class="w">NO SIGNAL</div><div class="sub">'+SYMS().length+' coins · live '+liveAgeTxt()+'</div></div>';
   }else{
@@ -3700,11 +3789,17 @@ function renderMobile(){
       '<button class="mbtn go" data-mbuy="'+b.sym+'">I BOUGHT '+b.sym+'</button></div>';
   }
 
+  var _H=handTable(),_nC=closes().length,_sig=sc.list.filter(function(c){return !c.skip;}).length;
   h+='<div class="mstats">'+
      '<div class="mstat"><div class="k">To target</div><div class="v">'+usd(toPass,0)+'</div></div>'+
-     '<div class="mstat"><div class="k">Risk budget</div><div class="v '+(cu<200?'r':'g')+'">'+usd(cu,0)+'</div></div>'+
-     '<div class="mstat"><div class="k">Next risk</div><div class="v">'+usd(RULES.cushionRisk*cu,0)+'</div></div>'+
-     '<div class="mstat"><div class="k">Release</div><div class="v">'+st.n+' / '+GATE.minTrades+'</div></div></div>';
+     '<div class="mstat"><div class="k">Buffer · limit '+usd(RULES.floor,0)+'</div><div class="v '+(cu<200?'r':'g')+'">'+usd(cu,0)+'</div></div>'+
+     '<div class="mstat"><div class="k">Next risk'+(op.length>=1?' · slot 2':'')+'</div><div class="v">'+usd(RULES.cushionRisk*cu*(op.length>=1?(RULES.slot2Risk||1):1),0)+'</div></div>'+
+     '<div class="mstat"><div class="k">Release</div><div class="v">'+st.n+' / '+GATE.minTrades+'</div></div>'+
+     '<div class="mstat"><div class="k">Closed</div><div class="v">'+_nC+(_nC?' · '+nf(st.expR,2)+'R':'')+'</div></div>'+
+     '<div class="mstat"><div class="k">Hand vs rule</div><div class="v '+(_H.scored?(_H.net>=0?'g':'r'):'')+'">'+(_H.scored?((_H.net>=0?'+':'')+nf(_H.net,2)+'R'):'—')+'</div></div>'+
+     '<div class="mstat"><div class="k">Signals</div><div class="v">'+_sig+'</div></div>'+
+     '<div class="mstat"><div class="k">Synced</div><div class="v">'+(SYNC.at?ageTxt(new Date(SYNC.at).toISOString()):'not yet')+'</div></div></div>'+
+     (SYNC.err?'<div class="mnote" style="color:var(--warn)">sync: '+SYNC.err+'</div>':'');
 
   h+='<div class="msec"><h4>Open</h4><div class="sp"></div>'+
      (op.length<RULES.maxConc?'<span class="mlogbtn" id="mlogbtn">'+(LOGF.open?'✕':'+ LOG A TRADE')+'</span>':'')+
@@ -3760,6 +3855,23 @@ function renderMobile(){
       (u.q?'':' · no quote')+'</span></div>'+
       '<div class="rt"><b>'+usd(r.inv+u.upnl,2)+'</b><span class="'+mCls(u.upnl)+'">'+pc(u.upct)+'</span></div></div>';});
   h+='</div>';
+  var _up=pfevUpcoming(6);
+  if(_up.length){
+   h+='<div class="msec"><h4>Coming up</h4><div class="sp"></div><span>earnings · FF · central banks</span></div><div class="mlist">';
+   _up.forEach(function(e){var hrs=(Date.parse(e.d)-Date.now())/36e5;var rx=PFEV.ethRx[e.t];
+    h+='<div class="mrow"><div class="av">'+(e.sym||e.on)+'</div>'+
+       '<div class="nm"><b>'+e.t+'</b><span>'+pfevCy(e.d)+' · '+pfevTouch(e).join(' ')+
+       (rx?(' · ETH ±'+nf(rx[0])+'%'):'')+'</span></div>'+
+       '<div class="rt"><b style="color:'+(hrs<24?'var(--warn)':'var(--txt)')+'">'+pfevIn(e.d)+'</b><span class="d">'+
+       (e.k==='EARN'?'earnings':(e.k==='CB'?'rates':'FF red'))+'</span></div></div>';});
+   h+='</div>';}
+  var _dv=[];OPEN.forEach(function(r){if(_dv.indexOf(r.sym)<0){var d=pfevDiv(r.sym);if(d.v)_dv.push(r.sym);}});
+  if(_dv.length){
+   h+='<div class="msec"><h4>Dividends</h4><div class="sp"></div><span>your qty</span></div><div class="mlist">';
+   _dv.forEach(function(s){var d=pfevDiv(s);
+    h+='<div class="mrow"><div class="av">'+s.slice(0,4)+'</div><div class="nm"><b>'+s+'</b><span>'+d.t+'</span></div>'+
+       '<div class="rt"><b class="g">$'+nf(d.v,d.v<0.1?3:2)+'</b><span class="d">per quarter</span></div></div>';});
+   h+='</div>';}
   if(CLOSED.length){
    h+='<div class="msec"><h4>Closed</h4><div class="sp"></div><span>'+usd(rz,2)+'</span></div><div class="mlist">';
    CLOSED.forEach(function(c){
@@ -3786,7 +3898,7 @@ function renderMobile(){
     var f=isOpen&&p!=null?(p/t.entry-1)*t.size:t.pnl;
     h+='<div class="mrow"><div class="av">'+t.sym+'</div>'+
        '<div class="nm"><b>'+t.sym+' <span style="font-size:11px;font-weight:700;color:'+
-       (isOpen?'var(--acc)':(t.status==='WIN'?'var(--up)':'var(--dn)'))+'">'+t.status+'</span></b>'+
+       (isOpen?'var(--acc)':(t.status==='WIN'?'var(--up)':'var(--dn)'))+'">'+t.status+'</span>'+(t.offRule?' <span style="color:var(--dim);font-size:9px;letter-spacing:1px">OFF RULE</span>':'')+'</b>'+
        '<span>'+t.day+(t.exitDay?(' → '+t.exitDay):'')+' · '+px(t.sym,t.entry)+
        (t.exit!=null?(' → '+px(t.sym,t.exit)):'')+'</span></div>'+
        '<div class="rt"><b class="'+mCls(f)+'">'+usd(f,2)+'</b><span class="'+mCls(f)+'">'+
@@ -3964,7 +4076,7 @@ function renderLearn(){
   if(Rp.changed){
    var c=Rp.changed;
    h+='<div style="margin-top:7px;background:var(--panel2);border:1px solid var(--upln);border-radius:3px;padding:8px 10px;font-size:11.5px">'+
-      '<b>'+(c.kind==='revert'?'REVERTED':'CHANGED')+' '+c.param+': '+c.from+' → '+c.to+'</b><div class="sub" style="margin-top:3px">'+c.why+'</div></div>';
+      '<b>'+(c.kind==='revert'?'REVERTED':c.kind==='proposal'?'PROPOSED (not applied)':'CHANGED')+' '+c.param+': '+c.from+' → '+c.to+'</b><div class="sub" style="margin-top:3px">'+c.why+'</div></div>';
   }else{
    h+='<div style="margin-top:7px;font-size:11.5px"><span class="tag g">HELD</span> <span class="sub">no candidate passed all three tests — current settings stand.</span></div>';}
   /* evidence table: for each param, the grid with the current value marked */
@@ -3982,7 +4094,7 @@ function renderLearn(){
   h+='</tbody></table></div>';}
  if(WF.log.length){
   h+='<div class="sub" style="margin-top:9px"><b>Adaptation log:</b> '+
-     WF.log.slice(0,12).map(function(a){return '<span class="tag '+(a.kind==='change'?'g':a.kind==='revert'?'y':'b')+'">'+String(a.ts).slice(5,10)+' '+
+     WF.log.slice(0,12).map(function(a){return '<span class="tag '+(a.kind==='change'?'g':a.kind==='revert'||a.kind==='proposal'?'y':'b')+'">'+String(a.ts).slice(5,10)+' '+
        (a.kind==='hold'?'held':(a.param+' '+a.from+'→'+a.to))+'</span>';}).join(' ')+'</div>';}
  h+='</div>';
  L.innerHTML=h;
@@ -4076,6 +4188,7 @@ function renderPF(){
   '<b>REALIZED TOTAL</b></td><td class="n" style="color:'+(rz>=0?'var(--up)':'var(--dn)')+'"><b>'+
   usd(rz,2)+'</b></td></tr></tbody>';
  $('pfc').innerHTML=hc;
+ try{renderPFEV();}catch(e){}
 }
 
 /* ==== wiring ==== */
