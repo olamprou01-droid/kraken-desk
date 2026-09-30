@@ -1,12 +1,19 @@
 # OWN BOOK watcher — runs the rule on GitHub's servers and pushes to your phone.
-# Zero Claude usage. Free on a public repo. Cron (free tier fires every 2-5 h), and on demand from the Actions tab.
+# Zero Claude usage. Free on a public repo (Actions minutes are unlimited there).
+#
+# 30 Sep 2026: GitHub fires a cron job every 2-7 h, not every 30 min (measured 4.4 h).
+# So each job now LOOPS: it runs the rule every 5 minutes for up to 5h40m, committing
+# state as it goes. The cron keeps the next job queued behind it (concurrency group),
+# so when one ends the next starts - alerts arrive within 5 minutes, around the clock.
+# A push to the app, the watcher or this file ends the running loop early and the
+# pushed code takes over, so a deploy never waits and never runs stale.
 name: watch
 on:
   schedule:
     - cron: '*/30 * * * *'
   workflow_dispatch:
   push:
-    paths: ['index.html', 'watch/**']
+    paths: ['index.html', 'watch/**', '.github/workflows/watch.yml']
 permissions:
   contents: write
 concurrency:
@@ -14,13 +21,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   watch:
-    runs-on: ubuntu-latest
-    timeout-minutes: 6
+    runs-on: ubuntu-24.04
+    timeout-minutes: 358
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
       - name: prove the rule still matches the app
         run: node watch/test.js
       - name: prove the app still boots (every device auto-updates to it)
@@ -30,16 +37,19 @@ jobs:
       - name: keep a known-good copy to roll back to
         # index.prev.html is only refreshed after the smoke test passed on the current file,
         # so it always holds the last version that booted.
-        run: cp index.html index.prev.html
-      - name: run the rule and notify
+        run: |
+          cp index.html index.prev.html
+          git config user.name  "own-book-watcher"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add index.prev.html
+          git diff --cached --quiet || git commit -m "watch: rollback copy $(date -u +%Y-%m-%dT%H:%MZ)"
+      - name: run the rule every 5 minutes for the life of this job, notify, save as it goes
         env:
           NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
           SYNC_KEY: ${{ secrets.SYNC_KEY }}
-        run: node watch/watch.js
-      - name: save state and the shared journal for the app and the next run
+        run: node watch/watch.js --loop 340
+      - name: save whatever the last pass left
         run: |
-          git config user.name  "own-book-watcher"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add watch/last.json kraken-journal.json index.prev.html
           git diff --cached --quiet || git commit -m "watch: $(date -u +%Y-%m-%dT%H:%MZ)"
           git pull --rebase -q origin main || true
@@ -51,5 +61,5 @@ jobs:
         run: |
           T="${NTFY_TOPIC:-ownbook-356ba5c8fc6a5b7454}"
           curl -s -o /dev/null -H "Title: WATCHER FAILED" -H "Priority: high" -H "Tags: rotating_light" \
-            -d "Run #${{ github.run_number }} failed (test, smoke, watcher or push) · github.com/${{ github.repository }}/actions · no alerts until this is green · index.prev.html is the last app that booted" \
+            -d "Run #${{ github.run_number }} failed (test, smoke, watcher or push) · github.com/${{ github.repository }}/actions · the next cron job restarts it · index.prev.html is the last app that booted" \
             "https://ntfy.sh/$T"

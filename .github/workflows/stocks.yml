@@ -1,9 +1,10 @@
-# OWN BOOK — stocks reaction. Once a week: closes + dividends from Yahoo, reported dates from Nasdaq,
-# measured moves written to watch/stocks.json for the app. Zero Claude usage.
+# OWN BOOK — stocks. Every weekday 05:00 UTC (and on demand): last close per holding (the
+# portfolio's prices), dividends, reported + upcoming earnings dates, measured moves — all
+# written to watch/stocks.json for the app. Zero Claude usage.
 name: stocks
 on:
   schedule:
-    - cron: '0 5 * * 1'
+    - cron: '0 5 * * 1-5'
   workflow_dispatch:
   push:
     paths: ['watch/stocks.js', 'watch/stocks-events.json']
@@ -14,13 +15,13 @@ concurrency:
   cancel-in-progress: false
 jobs:
   stocks:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     timeout-minutes: 6
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
         with:
-          node-version: '20'
+          node-version: '22'
       - name: prove the measurement still works on the fixtures
         run: |
           cp watch/stocks-history.json /tmp/hist.bak
