@@ -1,6 +1,6 @@
 {
  "v": 3,
- "written": "2026-09-28T11:06:01.582Z",
+ "written": "2026-09-30T09:52:13.152Z",
  "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
@@ -102,7 +102,8 @@
    "mode": "paper",
    "level": 107.47,
    "reason": "broke 20d high 107.47",
-   "browserId": "T1789810795586"
+   "browserId": "T1789810795586",
+   "ext": 0.04866474364939055
   },
   {
    "id": "T1789972865319",
