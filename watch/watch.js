@@ -32,11 +32,19 @@ const SYNC_KEY  = process.env.SYNC_KEY || '';
    from the public inbox that fails the check never reaches it. Back-compat: while
    SYNC_KEY is not set as a GitHub secret, nothing is rejected (today's behaviour). */
 function sigMsg(o) { return [o.id, o.origin, o.sym, o.status, o.entry, o.stop, o.tp, o.size, o.exit || ''].join('|'); }
+/* NO KEY NEEDED (30 Sep 2026, 4.22). Requiring a per-device key broke sync on the phone:
+   an iPhone home-screen app has its own storage, separate from Safari, so a key set in one
+   never reaches the other. Now: a SIGNED post must verify (a forged signature is refused);
+   an UNSIGNED post is accepted when it is a plausible trade of ours - known coin, stop below
+   entry below target, size within the book. That keeps junk out without any setup. */
+function plausible(t) {
+  return !!(t && t.id && t.origin === 'me' && R.SYMS.includes(t.sym) && t.entry > 0 && t.stop > 0 && t.stop < t.entry &&
+    (t.tp == null || t.tp > t.entry) && t.size > 0 && t.size <= 20000);
+}
 function sigOk(t) {
-  if (!SYNC_KEY) return true;
-  if (!t || !t.sig) return false;
-  const h = require('crypto').createHmac('sha256', SYNC_KEY).update(sigMsg(t)).digest('hex');
-  return h === t.sig;
+  if (!t) return false;
+  if (t.sig && SYNC_KEY) return require('crypto').createHmac('sha256', SYNC_KEY).update(sigMsg(t)).digest('hex') === t.sig;
+  return plausible(t);
 }
 const DRY       = process.argv.includes('--fixture');
 const HEARTBEAT_UTC_HOUR = 6;                         // 09:00 Cyprus in summer, 08:00 in winter
@@ -307,7 +315,7 @@ async function notify(title, body, priority, tags) {
 
   /* 7. state for the app and for the next run */
   const state = {
-    ran: nowIso, ms: Date.now() - t0, liveSrc: liveSrc, topic: TOPIC, signed: !!SYNC_KEY,
+    ran: nowIso, ms: Date.now() - t0, liveSrc: liveSrc, topic: TOPIC, sigRequired: false,
     barDate: bars.BTC ? bars.BTC[bars.BTC.length - 1][0] : null,
     regimeOn: ev.regime.on,
     regime: { px: ev.regime.px, sma: ev.regime.sma, mom: ev.regime.mom, g1: ev.regime.g1, g2: ev.regime.g2 },

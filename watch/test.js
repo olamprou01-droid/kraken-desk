@@ -66,11 +66,14 @@ eq ('UNI ticket notional $',  sz.notional, 920.68, 0.5);
   const key = 'test-sync-key';
   const rightSig = nodeCrypto.createHmac('sha256', key).update(sigMsg(t)).digest('hex');
   const signed = Object.assign({}, t, { sig: rightSig });
-  const sigOk = (tr, k) => { if (!k) return true; if (!tr || !tr.sig) return false;
+  const SY = ['BTC','ETH','XRP','ADA','SOL','DOGE','LINK','LTC','AVAX','DOT','ATOM','UNI'];
+  const plausible = tr => !!(tr && tr.id && tr.origin === 'me' && SY.includes(tr.sym) && tr.entry > 0 && tr.stop > 0 && tr.stop < tr.entry && (tr.tp == null || tr.tp > tr.entry) && tr.size > 0 && tr.size <= 20000);
+  const sigOk = (tr, k) => { if (!tr) return false; if (!(tr.sig && k)) return plausible(tr);
     return nodeCrypto.createHmac('sha256', k).update(sigMsg(tr)).digest('hex') === tr.sig; };
   is('sigOk: no key configured -> accepted (back-compat)', sigOk(t, ''), true);
   is('sigOk: correctly signed -> accepted', sigOk(signed, key), true);
-  is('sigOk: unsigned when a key is set -> rejected', sigOk(t, key), false);
+  is('sigOk: unsigned plausible trade -> accepted (no key needed)', sigOk(t, key), true);
+  is('sigOk: unsigned junk -> rejected', sigOk(Object.assign({}, t, { sym: 'XYZ', stop: 999 }), key), false);
   is('sigOk: wrong key -> rejected', sigOk(signed, 'other-key'), false);
   is('sigOk: tampered field -> rejected', sigOk(Object.assign({}, signed, { entry: 999 }), key), false);
 }
@@ -95,5 +98,5 @@ const btc2 = bars.BTC.map(b => b.slice()); btc2[btc2.length-1][4] = 79000;
 const rg2 = R.regime(btc2);
 is ('synthetic: regime turns ON when close > sma', rg2.on, true);
 
-console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (30 - fails) + '/30)');
+console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (31 - fails) + '/31)');
 process.exit(fails ? 1 : 0);
