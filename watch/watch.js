@@ -169,10 +169,14 @@ function saveState(events) {
     if (!dirty) return;
     const journalChanged = /kraken-journal/.test(dirty);
     if (!(journalChanged || (events && events.length) || Date.now() - lastPush > 30 * 60e3)) return;
+    /* the previous job pushed state after this one was checked out, so a rebase would
+       conflict on last.json every time. Our working copy IS the newest state: sit it on
+       top of whatever origin/main is now and push a single commit. */
+    sh('git fetch -q origin main');
+    sh('git reset -q origin/main');
     sh('git add watch/last.json kraken-journal.json index.prev.html');
     sh('git commit -qm "watch: ' + new Date().toISOString().slice(0, 16) + 'Z"');
-    try { sh('git pull --rebase -q origin main'); } catch (e) {}
-    sh('git push -q');
+    sh('git push -q origin HEAD:main');
     lastPush = Date.now();
   } catch (e) { console.error('  save: ' + (e.stderr ? e.stderr.toString().trim() : e.message)); }
 }
