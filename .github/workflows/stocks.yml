@@ -1,0 +1,48 @@
+# OWN BOOK — stocks reaction. Once a week: closes + dividends from Yahoo, reported dates from Nasdaq,
+# measured moves written to watch/stocks.json for the app. Zero Claude usage.
+name: stocks
+on:
+  schedule:
+    - cron: '0 5 * * 1'
+  workflow_dispatch:
+  push:
+    paths: ['watch/stocks.js', 'watch/stocks-events.json']
+permissions:
+  contents: write
+concurrency:
+  group: stocks
+  cancel-in-progress: false
+jobs:
+  stocks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      - name: prove the measurement still works on the fixtures
+        run: |
+          cp watch/stocks-history.json /tmp/hist.bak
+          node watch/stocks.js --fixture
+          cp /tmp/hist.bak watch/stocks-history.json
+          git checkout -- watch/stocks.json
+      - name: fetch and measure (live)
+        run: node watch/stocks.js
+      - name: save for the app
+        run: |
+          git config user.name  "own-book-stocks"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add watch/stocks.json watch/stocks-history.json
+          git diff --cached --quiet || git commit -m "stocks: $(date -u +%Y-%m-%dT%H:%MZ)"
+          git pull --rebase -q origin main || true
+          git push
+      - name: tell the phone if it failed
+        if: failure()
+        env:
+          NTFY_TOPIC: ${{ secrets.NTFY_TOPIC }}
+        run: |
+          T="${NTFY_TOPIC:-ownbook-356ba5c8fc6a5b7454}"
+          curl -s -o /dev/null -H "Title: STOCKS JOB FAILED" -H "Priority: default" -H "Tags: warning" \
+            -d "Run #${{ github.run_number }}: stocks reaction not refreshed · github.com/${{ github.repository }}/actions · app keeps last week's file" \
+            "https://ntfy.sh/$T"
