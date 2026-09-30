@@ -1,6 +1,6 @@
 {
- "ran": "2026-09-30T20:11:14.902Z",
- "ms": 1176,
+ "ran": "2026-09-30T20:11:32.332Z",
+ "ms": 626,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -13,30 +13,30 @@
   "g1": true,
   "g2": true
  },
- "equity": 9893.026334066535,
- "cushion": 393.0263340665351,
+ "equity": 9894.091196994326,
+ "cushion": 394.0911969943263,
  "coins": [
   {
    "sym": "BTC",
-   "live": 83606.6,
+   "live": 83603.4,
    "level": 87397,
-   "distPct": 4.533613375020629,
+   "distPct": 4.537614498931863,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ETH",
-   "live": 2672.35,
+   "live": 2672.13,
    "level": 2807.1,
-   "distPct": 5.042378430968997,
+   "distPct": 5.05102670902986,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "XRP",
-   "live": 1.48989,
+   "live": 1.49001,
    "level": 1.6581,
-   "distPct": 11.290095241930608,
+   "distPct": 11.281132341393674,
    "buyable": false,
    "fail": "breakout"
   },
@@ -50,17 +50,17 @@
   },
   {
    "sym": "SOL",
-   "live": 117.5,
+   "live": 117.56,
    "level": 124.93,
-   "distPct": 6.323404255319165,
+   "distPct": 6.269139162980619,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "DOGE",
-   "live": 0.0941634,
+   "live": 0.0941932,
    "level": 0.10589,
-   "distPct": 12.453458562456321,
+   "distPct": 12.417881545589271,
    "buyable": false,
    "fail": "breakout"
   },
@@ -106,9 +106,9 @@
   },
   {
    "sym": "UNI",
-   "live": 8.8493,
+   "live": 8.8566,
    "level": 10.9321,
-   "distPct": 23.536324907054794,
+   "distPct": 23.434500824244076,
    "buyable": false,
    "fail": "breakout"
   }
@@ -116,13 +116,13 @@
  "stops": [
   {
    "sym": "SOL",
-   "live": 117.5,
+   "live": 117.56,
    "stop": 104.29464285714286,
    "tp": 155.57214285714286,
    "hitStop": false,
    "hitTp": false,
-   "r": 0.8026413137578983,
-   "near": -0.803
+   "r": 0.8108315312452229,
+   "near": -0.811
   }
  ],
  "events": [],
@@ -131,7 +131,7 @@
  "inboxSince": 1790797720,
  "inboxMerged": {
   "new": 0,
-  "updated": 0
+  "updated": 1
  },
  "journalOpen": [
   "SOL"
