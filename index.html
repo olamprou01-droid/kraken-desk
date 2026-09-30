@@ -551,7 +551,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.22 NO KEY</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.23 LOOP</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -590,7 +590,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.22', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.23', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -1324,8 +1324,20 @@ var PFEV={asof:'2026-09-30',
 function pfevCy(iso){try{return new Date(iso).toLocaleString('en-GB',{timeZone:'Asia/Nicosia',day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'});}catch(e){return iso.slice(0,16).replace('T',' ');}}
 function pfevIn(iso){var h=(Date.parse(iso)-Date.now())/36e5;
  if(h<0)return 'done';if(h<24)return (h<1?'<1h':Math.round(h)+'h');return Math.round(h/24)+'d';}
+/* AUTOMATIC (30 Sep 2026, v4.23): the stocks job (weekdays 05:00 UTC) writes each holding's
+   next earnings date - the company's own confirmed date while it is ahead, else Nasdaq/Zacks
+   (marked "estimated" when their algorithm guessed it) - and the last close. The app prefers
+   those to the hand-kept PFEV / PFPX lines whenever they are newer. */
+function pfevAuto(){var out=[];if(!(STX&&STX.syms))return out;
+ Object.keys(STX.syms).forEach(function(s){var o=STX.syms[s];if(!o||!o.next||!o.next.d)return;
+  var nm=(OPEN.filter(function(r){return r.sym===s;})[0]||{}).name||s;
+  var x=(o.next.eps!=null?'consensus EPS $'+nf(o.next.eps,2):'')+(o.sum&&o.sum.n?((o.next.eps!=null?' · ':'')+'typically ±'+nf(o.sum.medAbs,1)+'% on the day ('+o.sum.n+' prints)'):'');
+  out.push({d:o.next.d+(o.rep==='BMO'?'T11:00:00Z':'T20:30:00Z'),k:'EARN',sym:s,t:nm+' results'+(o.next.est?' (date estimated)':''),x:x,src:o.next.src||'stocks job',auto:1});});
+ return out;}
 function pfevUpcoming(n){var now=Date.now()-3*36e5;   /* keep a print 3h after it lands */
- return PFEV.ev.filter(function(e){return Date.parse(e.d)>now;}).slice(0,n||99);}
+ var auto=pfevAuto();
+ var hand=PFEV.ev.filter(function(e){return !(e.k==='EARN'&&e.sym&&auto.some(function(a){return a.sym===e.sym;}));});
+ return hand.concat(auto).sort(function(a,b){return a.d<b.d?-1:1;}).filter(function(e){return Date.parse(e.d)>now;}).slice(0,n||99);}
 function pfevTouch(e){return e.sym?[e.sym]:(PFEV.on[e.on]||[]);}
 function pfevQty(sym){return OPEN.filter(function(r){return r.sym===sym;}).reduce(function(a,r){return a+r.qty;},0);}
 function pfevDiv(sym){var d=(PFEV.h[sym]||{}).div;if(!d)return{t:'none',v:null};if(d.none)return{t:d.none,v:null};
@@ -1360,7 +1372,7 @@ var STX=null,STX_REQ=0;
 function loadSTX(){
  STX_REQ=1;
  fetch('watch/stocks.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
-  .then(function(j){STX=j;renderSTX();try{renderMobile();}catch(e){}})
+  .then(function(j){STX=j;renderSTX();try{renderPF();renderPFEV();}catch(e){}try{renderMobile();}catch(e){}})
   .catch(function(){STX={err:1};renderSTX();try{renderMobile();}catch(e){}});
 }
 function stxPct(v,b){if(v==null)return '<span class="dim">—</span>';return '<span style="color:'+(v>0?'var(--up)':v<0?'var(--dn)':'var(--dim)')+(b?';font-weight:700':'')+'">'+(v>0?'+':'')+nf(v,1)+'%</span>';}
@@ -3021,7 +3033,12 @@ function sellRequest(id){
     through the guard, and after 10 scored hand-closes with a negative record the
     guard has no SELL ANYWAY at all - the hand is off. */
  if(stopNear([t]).length){sell(id,'stop near');return;}
- var _HT=handTable();if(_HT.scored>=10&&_HT.net<0){SELLG.id=id;SELLG.why=null;SELLG.left=0;SELLG.off=true;renderSellGuard();return;}
+ /* HAND OFF NOW (30 Sep 2026, his call: "solve it, I don't care how"). One scored
+    hand-close, -4.34R: the UNI exit at +1.66R gave up a 6R target - more than every bug
+    fixed this month put together. From here the desk offers no early exit at all: STOP,
+    STOP NEAR and TARGET are the only sells. The Kraken app still lets a hand sell; this
+    screen will not help it. */
+ var _HT=handTable();if(true||(_HT.scored>=10&&_HT.net<0)){SELLG.id=id;SELLG.why=null;SELLG.left=0;SELLG.off=true;renderSellGuard();return;}
  SELLG.off=false;
  SELLG.id=id;SELLG.why=null;SELLG.left=10;
  clearInterval(SELLG.timer);
@@ -4198,6 +4215,8 @@ function pfPrice(r){
  if(r.sym==='ETH'&&price('ETH')!=null)
    return{p:price('ETH'),asof:(LIVE.ts||'').slice(0,10),src:'live crypto feed',live:true};
  var q=PFPX[r.sym];
+ var sx=(STX&&STX.syms&&STX.syms[r.sym]&&STX.syms[r.sym].last)||null;   /* daily close from the stocks job, same listing as the statement */
+ if(sx&&sx.p>0&&(!q||sx.d>q.asof))return{p:sx.p,asof:sx.d,src:'daily close · stocks job ('+STX.syms[r.sym].y+')',live:false};
  if(q)return{p:q.p,asof:q.asof,src:q.src,live:false};
  return null;}
 function pfRow(r){var q=pfPrice(r),cur=q?q.p:r.cur;
