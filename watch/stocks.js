@@ -47,6 +47,18 @@ async function chart(y) {
     div: Object.values((r.events || {}).dividends || {}).map(d => [new Date(d.date * 1000).toISOString().slice(0, 10), d.amount])
   };
 }
+/* upcoming date: Nasdaq/Zacks. 'est' when their algorithm guessed it from past dates. */
+async function nasdaqNext(t) {
+  if (FIX) return null;
+  try {
+    const j = await getJSON('https://api.nasdaq.com/api/analyst/' + t + '/earnings-date');
+    const d = j.data || {}, m = (d.announcement || '').match(/:\s*([A-Z][a-z]{2}) (\d{1,2}), (\d{4})/);
+    if (!m) return null;
+    const mon = { Jan: '01', Feb: '02', Mar: '03', Apr: '04', May: '05', Jun: '06', Jul: '07', Aug: '08', Sep: '09', Oct: '10', Nov: '11', Dec: '12' }[m[1]];
+    const eps = ((d.reportText || '').match(/consensus EPS forecast for the quarter is \$([\d.]+)/) || [])[1];
+    return { d: m[3] + '-' + mon + '-' + m[2].padStart(2, '0'), est: /derived from an algorithm/.test(d.reportText || ''), eps: eps ? +eps : null, src: 'Nasdaq / Zacks' };
+  } catch (e) { return null; }
+}
 async function nasdaq(t) {
   if (FIX) return JSON.parse(fs.readFileSync(path.join(W, 'fixtures', 'stocks-nasdaq.json'), 'utf8'))[t] || [];
   const j = await getJSON('https://api.nasdaq.com/api/company/' + t + '/earnings-surprise');
@@ -80,6 +92,9 @@ function react(px, d, rep) {
       const C = await chart(S.y);
       const px = C.px, last = px[px.length - 1];
       const o = { y: S.y, ccy: S.ccy, rep: S.rep, ir: S.ir, kind: S.kind || null, last: { d: last[0], p: last[1] }, next: S.next || null, earn: [], div: [] };
+      /* next date: hand-kept confirmed date wins while it is still ahead; else Nasdaq/Zacks (US names) */
+      if (S.rep && S.ccy === 'USD') { const nx = await nasdaqNext(sym); if (nx && !(o.next && o.next.d >= out.asOf)) o.next = nx; }
+      if (o.next && o.next.d < out.asOf) o.next = null;
 
       /* dividends: amount + ex-date drop */
       for (const [d, amt] of (C.div || [])) {

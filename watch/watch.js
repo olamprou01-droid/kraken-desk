@@ -151,7 +151,43 @@ async function notify(title, body, priority, tags) {
   } catch (e) { console.log('  notify FAILED ' + e.message); return false; }
 }
 
-(async function main() {
+/* LOOP (30 Sep 2026). GitHub fires a cron job every 2-7 h, not every 30 min - the
+   watcher measured 4.4 h between runs. So one job now stays alive for up to 5h40m and
+   runs the rule every 5 minutes, committing state as it goes; the cron keeps a next job
+   queued behind it (concurrency group "watch"), so coverage is continuous. The loop ends
+   early the moment a newer watch/, index.html or workflow commit lands on origin/main,
+   so a deploy never waits behind it and never runs on stale code. Public repo: Actions
+   minutes are unlimited, so this costs nothing. */
+const LOOP_MIN = (() => { const i = process.argv.indexOf('--loop'); return i > 0 ? (+process.argv[i + 1] || 340) : 0; })();
+const EVERY_MS = 5 * 60e3;
+function sh(cmd) { return require('child_process').execSync(cmd, { cwd: ROOT, stdio: ['ignore', 'pipe', 'pipe'] }).toString().trim(); }
+let START_SHA = null, lastPush = 0;
+/* push when it matters - a journal change, an alert, or 30 minutes - not 12 commits an hour */
+function saveState(events) {
+  try {
+    const dirty = sh('git status --porcelain -- watch/last.json kraken-journal.json index.prev.html');
+    if (!dirty) return;
+    const journalChanged = /kraken-journal/.test(dirty);
+    if (!(journalChanged || (events && events.length) || Date.now() - lastPush > 30 * 60e3)) return;
+    sh('git add watch/last.json kraken-journal.json index.prev.html');
+    sh('git commit -qm "watch: ' + new Date().toISOString().slice(0, 16) + 'Z"');
+    try { sh('git pull --rebase -q origin main'); } catch (e) {}
+    sh('git push -q');
+    lastPush = Date.now();
+  } catch (e) { console.error('  save: ' + (e.stderr ? e.stderr.toString().trim() : e.message)); }
+}
+/* has anyone pushed code (not state) since this job's checkout? then hand over. */
+function newerCode() {
+  try {
+    if (!START_SHA) START_SHA = sh('git rev-parse HEAD');
+    sh('git fetch -q origin main');
+    const out = sh('git diff --name-only ' + START_SHA + ' origin/main -- watch/ index.html .github/workflows/');
+    return out.split('\n').some(l => l && !/watch\/last\.json|stocks|kraken-journal/.test(l));
+  } catch (e) { return false; }
+}
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+async function runOnce() {
   const t0 = Date.now();
   let bars, inprog, live, liveSrc;
   if (DRY) {
@@ -181,7 +217,7 @@ async function notify(title, body, priority, tags) {
     journal.written = new Date().toISOString();
     journal.note = 'merged by the watcher from the shared inbox; every copy of the app pulls this file';
     try { journal.trades.sort((a, b) => String(a.t || a.day).localeCompare(String(b.t || b.day))); } catch (e) {}
-    fs.writeFileSync(JOURNAL, JSON.stringify(journal, null, 1));
+    if (!DRY) fs.writeFileSync(JOURNAL, JSON.stringify(journal, null, 1));
   }
 
   /* Real positions decide slots and equity. The virtual book (BUY signals the
@@ -211,9 +247,13 @@ async function notify(title, body, priority, tags) {
   const alerted = {};
   const events  = [];
 
-  /* SELL — the one alert that repeats every run while true. A stop is a human action. */
+  /* SELL — repeats while true (a stop is a human action), but at most every 30 minutes
+     now that the loop runs every 5 - the phone must not buzz twelve times an hour. */
   for (const s of ev.stops) {
     if (s.hitStop) {
+      const key = 'sell:' + s.sym, last = prev.alerted && +prev.alerted[key] || 0;
+      alerted[key] = (Date.now() - last < 30 * 60e3) ? last : Date.now();
+      if (alerted[key] === last) continue;
       events.push({ k: 'sell', sym: s.sym });
       const isV = String(s.id).charAt(0) === 'W';
       await notify('SELL ' + s.sym + ' NOW', s.sym + ' ' + R.px(s.sym, s.live) + ' is at or under the stop ' + R.px(s.sym, s.stop) +
@@ -327,11 +367,28 @@ async function notify(title, body, priority, tags) {
     journalOpen: [...jOpenSyms],
     signals: signals.filter(g => g.status === 'OPEN' || (g.closed && (Date.now() - Date.parse(g.closed)) < 30 * 864e5))
   };
-  fs.writeFileSync(STATE, JSON.stringify(state, null, 1));
+  if (!DRY) fs.writeFileSync(STATE, JSON.stringify(state, null, 1));   /* a fixture run must never overwrite real state */
+  return events;
 
   console.log('ran ' + nowIso + ' in ' + state.ms + 'ms · live ' + liveSrc + ' · bar ' + state.barDate +
     ' · regime ' + (ev.regime.on ? 'ON' : 'OFF') + ' · buyable ' + buyable.map(c => c.sym).join(',') +
     ' · open ' + ev.stops.length + ' (journal ' + jOpenSyms.size + ') · inbox +' + merged.new + '/~' + merged.updated +
     (inboxNote ? ' (' + inboxNote + ')' : '') + ' · events ' + events.length +
     (nearest ? ' · nearest ' + nearest.sym + ' ' + nearest.distPct.toFixed(2) + '%' : ''));
+}
+
+(async function main() {
+  if (!LOOP_MIN || DRY) { await runOnce(); return; }
+  const until = Date.now() + LOOP_MIN * 60e3;
+  try { START_SHA = sh('git rev-parse HEAD'); } catch (e) {}
+  let n = 0;
+  while (true) {
+    n++;
+    let ev = [];
+    try { ev = await runOnce() || []; } catch (e) { console.error('  pass ' + n + ' failed: ' + (e && e.message || e)); }
+    saveState(ev);
+    if (Date.now() + EVERY_MS > until) { console.log('loop: ' + n + ' passes, time budget used - handing over to the next job'); break; }
+    if (newerCode()) { console.log('loop: newer code on origin/main after ' + n + ' passes - handing over'); break; }
+    await sleep(EVERY_MS);
+  }
 })().catch(e => { console.error('watch failed: ' + (e && e.stack || e)); process.exit(1); });
