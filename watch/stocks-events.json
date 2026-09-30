@@ -1,0 +1,16 @@
+{
+  "_": "Hand-kept facts about each holding: where it trades on Yahoo, when the company reports (BMO = before the open, AMC = after the close), the IR page, dates that the automatic sources do not cover (non-US names, confirmed upcoming dates). Everything measured is computed by stocks.js from Yahoo daily closes; nothing here is a price.",
+  "syms": {
+    "MU":   {"y":"MU",      "ccy":"USD","rep":"AMC","ir":"https://investors.micron.com/",            "next":{"d":"2026-09-30","src":"Micron IR, 26 Aug 2026"}},
+    "PLTR": {"y":"PLTR",    "ccy":"USD","rep":"AMC","ir":"https://investors.palantir.com/",          "next":null},
+    "LMT":  {"y":"LMT",     "ccy":"USD","rep":"BMO","ir":"https://investors.lockheedmartin.com/",    "next":null},
+    "XOM":  {"y":"XOM",     "ccy":"USD","rep":"BMO","ir":"https://investor.exxonmobil.com/",         "next":null},
+    "OKLO": {"y":"OKLO",    "ccy":"USD","rep":"BMO","ir":"https://investor.oklo.com/overview/default.aspx","next":null},
+    "RMS":  {"y":"RMS.PA",  "ccy":"EUR","rep":"BMO","ir":"https://finance.hermes.com/en/",           "next":{"d":"2026-10-22","src":"Hermès finance calendar"},
+             "manual":[{"d":"2026-07-29","what":"H1 2026 results","src":"Hermès PR 29 Jul 2026"},{"d":"2026-02-12","what":"FY 2025 results","src":"Hermès PR 12 Feb 2026"}]},
+    "EGLN": {"y":"PPFB.DE", "ccy":"EUR","rep":null,"ir":"https://www.ishares.com/", "kind":"physical gold ETC — no earnings, pays nothing"},
+    "SSLN": {"y":"SSLN.L",  "ccy":"GBX","rep":null,"ir":"https://www.ishares.com/", "kind":"physical silver ETC — no earnings, pays nothing"},
+    "ISOD": {"y":"IS0D.DE", "ccy":"EUR","rep":null,"ir":"https://www.ishares.com/", "kind":"accumulating ETF — income reinvested"},
+    "NUCG": {"y":"NUCG.L",  "ccy":"GBP","rep":null,"ir":"https://www.vaneck.com/",  "kind":"accumulating ETF — income reinvested"}
+  }
+}

@@ -105,7 +105,7 @@ async function pollInbox(since) {
 }
 function mergeTrade(journal, e) {
   journal.trades = journal.trades || [];
-  let same = journal.trades.find(x => x.id === e.id || x.browserId === e.id);
+  let same = journal.trades.find(x => x.id === e.id || x.browserId === e.id || (e.browserId && (x.id === e.browserId || x.browserId === e.browserId)));
   if (!same) {
     /* the same real position recorded twice (two devices, or a reconstruction from a
        screenshot) is one trade: same coin, open, entry within 1%. The copy that carries
@@ -307,7 +307,7 @@ async function notify(title, body, priority, tags) {
 
   /* 7. state for the app and for the next run */
   const state = {
-    ran: nowIso, ms: Date.now() - t0, liveSrc: liveSrc, topic: TOPIC,
+    ran: nowIso, ms: Date.now() - t0, liveSrc: liveSrc, topic: TOPIC, signed: !!SYNC_KEY,
     barDate: bars.BTC ? bars.BTC[bars.BTC.length - 1][0] : null,
     regimeOn: ev.regime.on,
     regime: { px: ev.regime.px, sma: ev.regime.sma, mom: ev.regime.mom, g1: ev.regime.g1, g2: ev.regime.g2 },
