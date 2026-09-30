@@ -544,7 +544,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.15 SIGNED</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.16 SIGNED</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -583,7 +583,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.15', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.16', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -1256,17 +1256,21 @@ var CLOSED=[
    ISOD and NUCG are no longer unpriceable: Trading 212 quotes them directly, and
    the statement also settles their currencies (ISOD and EGLN are EUR, not GBP;
    NUCG is GBP, not EUR), which is why no public page ever matched them. */
+/* 30 Sep 2026 refresh: Yahoo Finance quotes for the SAME listings the Trading 212
+   statement priced - proven by matching Yahoo's 11 Sep closes to the statement
+   (PPFB.DE 73.075 = EGLN 73.08, IS0D.DE 31.505, SSLN.L 4538, NUCG.L 38.99, RMS.PA
+   1399.5, US lines within 0.1%). US = 29 Sep close; Europe = 30 Sep ~07:15 UTC. */
 var PFPX={
- PLTR:{p:167.39,asof:'2026-09-13',src:'Trading 212 statement'},
- OKLO:{p:36.30,asof:'2026-09-13',src:'Trading 212 statement (eToro implies 36.26)'},
- LMT:{p:524.74,asof:'2026-09-13',src:'Trading 212 statement'},
- MU:{p:975.45,asof:'2026-09-13',src:'Trading 212 statement'},
- XOM:{p:166.17,asof:'2026-09-13',src:'Trading 212 statement'},
- EGLN:{p:73.08,asof:'2026-09-13',src:'Trading 212 statement, EUR'},
- ISOD:{p:31.505,asof:'2026-09-13',src:'Trading 212 statement, EUR'},
- NUCG:{p:38.99,asof:'2026-09-13',src:'Trading 212 statement, GBP'},
- SSLN:{p:4538.00,asof:'2026-09-13',src:'Trading 212 statement, GBX'},
- RMS:{p:1399.50,asof:'2026-09-13',src:'Trading 212 statement, EUR'}
+ PLTR:{p:186.97,asof:'2026-09-29',src:'NASDAQ close (Yahoo, cross-checked stockanalysis)'},
+ OKLO:{p:37.11,asof:'2026-09-29',src:'NYSE close (Yahoo, cross-checked stockanalysis)'},
+ LMT:{p:512.21,asof:'2026-09-29',src:'NYSE close (Yahoo, cross-checked stockanalysis)'},
+ MU:{p:1065.08,asof:'2026-09-29',src:'NASDAQ close (Yahoo, cross-checked stockanalysis)'},
+ XOM:{p:161.35,asof:'2026-09-29',src:'NYSE close (Yahoo, cross-checked stockanalysis)'},
+ EGLN:{p:71.665,asof:'2026-09-30',src:'Xetra PPFB, EUR (Yahoo)'},
+ ISOD:{p:29.80,asof:'2026-09-30',src:'Xetra IS0D, EUR (Yahoo)'},
+ NUCG:{p:37.33,asof:'2026-09-30',src:'LSE NUCG, GBP (Yahoo)'},
+ SSLN:{p:4397.60,asof:'2026-09-30',src:'LSE SSLN, GBX (Yahoo)'},
+ RMS:{p:1366.50,asof:'2026-09-30',src:'Euronext Paris RMS, EUR (Yahoo)'}
 };
 
 /* ==== helpers ==== */
