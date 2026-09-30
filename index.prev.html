@@ -551,7 +551,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.21 KEY LINK</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.22 NO KEY</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -590,7 +590,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.21', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.22', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -1687,7 +1687,7 @@ function hmacHex(key,msg){
     .catch(function(){return null;});}
 /* the watcher writes signed:true to last.json once SYNC_KEY exists; a device without the
    key then pushes into a void and must say so instead of showing "synced" */
-function unsignedHere(){return !!(WATCH.st&&WATCH.st.signed)&&!SYNCKEY.get();}
+function unsignedHere(){return !!(WATCH.st&&WATCH.st.sigRequired)&&!SYNCKEY.get();}
 function syncTopic(){return ((WATCH.st&&WATCH.st.topic)||'ownbook-356ba5c8fc6a5b7454')+'-inbox';}
 function syncSlim(t){var o={};['id','origin','sym','day','t','entry','stop','tp','size','riskAmt','status','mode','reason','level',
   'exit','exitDay','pnl','R','how','why','logged','regimeOff','offRule','whyNote','note','closedBar','ext'].forEach(function(k){if(t[k]!=null)o[k]=t[k];});return o;}
@@ -1735,8 +1735,13 @@ function syncInbox(){
    .then(function(txt){var out=[];txt.split('\n').forEach(function(line){if(!line.trim())return;
        var m;try{m=JSON.parse(line);}catch(e){return;}if(!m||m.event!=='message'||!m.message)return;
        var t;try{t=JSON.parse(m.message);}catch(e){return;}if(t&&t.id&&t.origin==='me'&&t.sym)out.push(t);});
-     var key=SYNCKEY.get();if(!key)return out;
-     return Promise.all(out.map(function(t){return hmacHex(key,sigMsg(t)).then(function(ok){return t.sig&&t.sig===ok?t:null;});}))
+     /* no key needed (4.22): a signed post must verify; an unsigned one is taken when it is
+        a plausible trade of ours - the same test the watcher applies */
+     var key=SYNCKEY.get();
+     var plaus=function(t){return !!(t&&t.id&&t.origin==='me'&&SYMS().indexOf(t.sym)>=0&&t.entry>0&&t.stop>0&&t.stop<t.entry&&(t.tp==null||t.tp>t.entry)&&t.size>0&&t.size<=20000);};
+     return Promise.all(out.map(function(t){
+       if(t.sig&&key)return hmacHex(key,sigMsg(t)).then(function(ok){return t.sig===ok?t:null;});
+       return Promise.resolve(plaus(t)?t:null);}))
        .then(function(vs){return vs.filter(Boolean);});});}
 function syncPull(){
   if(typeof fetch!=='function')return Promise.resolve(false);
@@ -4395,7 +4400,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
     var d=$('details');if(d&&d.className.indexOf('on')>=0)d.scrollIntoView({behavior:'smooth'});};})();
 (function(){var sk=$('skinput'),sm=$('skmeta');if(sk){sk.value=SYNCKEY.get();
    sm.textContent=SYNCKEY.get()?'set on this device':'not set — pushes go unsigned';
-   sk.onchange=function(){SYNCKEY.set(sk.value.trim());sm.textContent=SYNCKEY.get()?'set on this device':'not set — pushes go unsigned';toast(SYNCKEY.get()?'Sync key saved on this device':'Sync key cleared');};}
+   sk.onchange=function(){SYNCKEY.set(sk.value.trim());sm.textContent=SYNCKEY.get()?'set on this device':'not set — pushes go unsigned';toast(SYNCKEY.get()?'Sync key saved on this device':'Sync key cleared');try{render();syncPull();}catch(e){}};}
 })();
 (function(){var b=$('detbtn'),d=$('details');if(!b||!d)return;
   var on=false;try{on=localStorage.getItem('kraken_desk_details')==='on';}catch(e){}
