@@ -125,7 +125,8 @@ function mergeTrade(journal, e) {
   let ch = false;
   if (same.status === 'OPEN' && e.status && e.status !== 'OPEN')
     for (const k of ['status','exitDay','pnl','R','how','exit','why']) if (e[k] != null) { same[k] = e[k]; ch = true; }
-  for (const k of ['stop','tp','size','riskAmt','entry','logged','level','offRule'])
+  /* every detail a device knows reaches the shared journal (30 Sep 2026: same list as the app) */
+  for (const k of ['stop','tp','size','riskAmt','entry','logged','level','offRule','whyNote','note','closedBar','ext','how','why'])
     if (same[k] == null && e[k] != null) { same[k] = e[k]; ch = true; }
   return ch ? 'updated' : null;
 }
