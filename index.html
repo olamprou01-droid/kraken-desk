@@ -535,11 +535,13 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
     <span class="meta" id="pfnmeta">—</span></div>
     <div class="pb scroll"><table id="pfo"></table></div>
     <div class="note" id="pfn"></div></div>
-  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Coming up — earnings · central banks · Forex Factory</h3><div class="sp"></div>
+  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Stocks reaction</h3><div class="sp"></div>
+    <span class="meta" id="stxmeta">—</span></div>
+    <div class="pb scroll"><table id="stx"></table></div>
+    <div class="note" id="stxn"></div></div>
+  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Coming up — earnings</h3><div class="sp"></div>
     <span class="meta" id="pfevmeta">—</span></div>
     <div class="pb scroll"><table id="pfevt"></table></div></div>
-  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Holdings — results · dividends · investor relations</h3></div>
-    <div class="pb scroll"><table id="pfevh"></table></div></div>
   <div class="grid g2">
     <div class="pnl"><div class="ph"><h3>Performance by position</h3></div><div class="pb" id="pfh"></div></div>
     <div class="pnl"><div class="ph"><h3>Closed positions</h3></div>
@@ -549,7 +551,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.18 SYNC</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.20 ONE BOOK</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -588,7 +590,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.18', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.20', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -1331,7 +1333,7 @@ function pfevDiv(sym){var d=(PFEV.h[sym]||{}).div;if(!d)return{t:'none',v:null};
  return{t:'$'+nf(d.ps)+'/share · '+d.when,v:per,yr:per*(d.f||1)};}
 function renderPFEV(){
  var E=$('pfevt');if(!E)return;
- var up=pfevUpcoming(12);
+ var up=pfevUpcoming(12).filter(function(e){return e.k==='EARN';});   /* news (FF, central banks) is the Desk Book's job */
  var h='<thead><tr><th>When (Cyprus)</th><th class="n">In</th><th>What</th><th>Moves</th><th>Note</th></tr></thead><tbody>';
  up.forEach(function(e){var hrs=(Date.parse(e.d)-Date.now())/36e5;
   var col=e.k==='EARN'?(hrs<168?'y':'b'):(e.k==='CB'?'b':'');
@@ -1344,19 +1346,62 @@ function renderPFEV(){
    '<td class="sub" style="white-space:normal">'+(e.x||'')+(rx?((e.x?' · ':'')+'ETH typically ±'+nf(rx[0])+'% on the day ('+rx[1]+' prints)'):'')+'</td></tr>';});
  h+='</tbody>';
  $('pfevt').innerHTML=h;
- var syms=[];OPEN.forEach(function(r){if(syms.indexOf(r.sym)<0)syms.push(r.sym);});
- var g='<thead><tr><th>Instrument</th><th>Next</th><th>Last result</th><th>Dividend</th><th class="n">Yours / qtr</th><th>IR</th></tr></thead><tbody>';
- syms.forEach(function(s){var H=PFEV.h[s];if(!H)return;var dv=pfevDiv(s);
-  g+='<tr><td><span class="tick">'+s+'</span></td>'+
-   '<td style="white-space:normal;max-width:220px'+(/TONIGHT/.test(H.next)?';color:var(--warn);font-weight:700':'')+'">'+H.next+'</td>'+
-   '<td class="sub" style="white-space:normal;max-width:360px">'+(H.last||'—')+'</td>'+
-   '<td class="sub" style="white-space:normal;max-width:200px">'+dv.t+'</td>'+
-   '<td class="n" style="color:'+(dv.v?'var(--up)':'var(--dim)')+'">'+(dv.v?('$'+nf(dv.v,dv.v<0.1?3:2)):'—')+'</td>'+
-   '<td><a class="tag b" href="'+H.ir+'" target="_blank" rel="noopener">IR ↗</a></td></tr>';});
- g+='</tbody>';
- $('pfevh').innerHTML=g;
  $('pfevmeta').textContent='checked '+PFEV.asof;
+ if(!STX_REQ)loadSTX();else renderSTX();
 }
+/* ==== STOCKS REACTION (30 Sep 2026, v4.19) ====
+   watch/stocks.json is written by watch/stocks.js on GitHub Actions once a week:
+   Yahoo daily closes + dividends, Nasdaq reported dates + EPS surprise, and the
+   hand-kept facts in watch/stocks-events.json. Every move shown is close-to-close
+   around the release (AMC: report-day close → next session; BMO: prior close →
+   same day) and five sessions later. Fetched once when the page opens; no timers.
+   If the file is not reachable (opened from disk) the panel says so. */
+var STX=null,STX_REQ=0;
+function loadSTX(){
+ STX_REQ=1;
+ fetch('watch/stocks.json',{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();})
+  .then(function(j){STX=j;renderSTX();try{renderMobile();}catch(e){}})
+  .catch(function(){STX={err:1};renderSTX();try{renderMobile();}catch(e){}});
+}
+function stxPct(v,b){if(v==null)return '<span class="dim">—</span>';return '<span style="color:'+(v>0?'var(--up)':v<0?'var(--dn)':'var(--dim)')+(b?';font-weight:700':'')+'">'+(v>0?'+':'')+nf(v,1)+'%</span>';}
+function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+function stxD(d){try{return new Date(d+'T12:00:00Z').toLocaleDateString('en-GB',{day:'2-digit',month:'short'});}catch(e){return d;}}
+function stxSyms(){var a=[];OPEN.forEach(function(r){if(a.indexOf(r.sym)<0)a.push(r.sym);});return a;}
+function renderSTX(){
+ var T=$('stx'),M=$('stxmeta'),N=$('stxn');if(!T)return;
+ if(!STX){M.textContent='loading…';return;}
+ if(STX.err){M.textContent='no data';T.innerHTML='';
+  N.innerHTML='<b>watch/stocks.json not reachable</b> — the hosted page loads it; a copy opened from disk cannot. It is written on GitHub every Monday 05:00 UTC by the stocks job.';return;}
+ M.textContent='measured '+STX.asOf+' · refreshes Mondays';
+ var h='<thead><tr><th>Instrument</th><th>Next report</th><th>Last reports — surprise → day move · 5 sessions</th>'+
+  '<th class="n">Typical</th><th class="n">Beat → up</th><th>Dividend</th><th class="n">Yours / yr</th><th>IR</th></tr></thead><tbody>';
+ var pend=[];
+ stxSyms().slice().sort(function(a,b){var A=STX.syms[a],B=STX.syms[b];return ((A&&A.rep)?0:1)-((B&&B.rep)?0:1);}).forEach(function(sym){var o=STX.syms[sym];if(!o)return;
+  var nx=o.next?stxD(o.next.d)+(o.rep?' · '+(o.rep==='AMC'?'after close':'before open'):''):(o.rep?'<span class="dim">not announced</span>':'<span class="dim">'+esc(o.kind||'—')+'</span>');
+  var hot=o.next&&(Date.parse(o.next.d+'T23:59:59Z')-Date.now())<7*864e5&&(Date.parse(o.next.d+'T23:59:59Z')-Date.now())>-864e5;
+  var rep='';
+  (o.earn||[]).slice(0,4).forEach(function(e){
+   if(e.pending){pend.push(sym+' '+e.d);rep+='<span class="tag y" title="reported, first close after it not in the data yet">'+e.d.slice(5)+' pending</span> ';return;}
+   var sur=e.sur!=null?('<span class="dim">'+(e.sur>0?'beat +':'miss ')+nf(e.sur,0)+'%</span> → '):(e.what?'<span class="dim">'+esc(e.what)+'</span> → ':'');
+   rep+='<span class="tag" style="margin:1px 4px 1px 0;font-size:10px" title="reference close '+e.refD+' '+nf(e.ref)+' → '+e.d1D+'">'+e.d.slice(2,10)+' '+sur+stxPct(e.d1,true)+' · '+stxPct(e.d5)+'</span>';});
+  var sm=o.sum;
+  var q=pfevQty(sym),dv=(o.div||[])[0],perYr=null,dvt='<span class="dim">'+esc(o.kind||(o.rep?'none':'—'))+'</span>';
+  if(dv){var yr=(o.div||[]).filter(function(x){return (Date.now()-Date.parse(x.d))<366*864e5;}).reduce(function(a,x){return a+x.amt;},0);
+   perYr=q*yr;dvt=nf(dv.amt,2)+' '+esc(o.ccy)+' <span class="dim">ex '+dv.d.slice(5)+' · '+(dv.drop!=null?('stock '+(dv.drop>0?'+':'')+nf(dv.drop,1)+'% that day'):'')+'</span>';}
+  h+='<tr><td><span class="tick">'+sym+'</span></td>'+
+   '<td'+(hot?' style="color:var(--warn);font-weight:700"':'')+'>'+nx+'</td>'+
+   '<td style="white-space:normal;min-width:340px">'+(rep||'<span class="dim">no results — moves with the metal / sector</span>')+'</td>'+
+   '<td class="n">'+(sm?('±'+nf(sm.medAbs,1)+'% <span class="dim">max '+nf(sm.maxAbs,1)+'</span>'):'—')+'</td>'+
+   '<td class="n">'+(sm&&sm.beats?(sm.beatUp+'/'+sm.beats):'<span class="dim">—</span>')+'</td>'+
+   '<td>'+dvt+'</td>'+
+   '<td class="n" style="color:'+(perYr?'var(--up)':'var(--dim)')+'">'+(perYr?(nf(perYr,perYr<1?3:2)+' '+esc(o.ccy==='GBX'?'GBp':o.ccy)):'—')+'</td>'+
+   '<td><a class="tag b" href="'+esc(o.ir)+'" target="_blank" rel="noopener">IR ↗</a></td></tr>';});
+ h+='</tbody>';T.innerHTML=h;
+ N.innerHTML='Move = first close after the release vs the last close before it, then five sessions later. "Typical" is the median of those day moves; "Beat → up" counts reports that beat the EPS estimate and closed higher. '+
+  'Yahoo closes · Nasdaq reported dates · company calendars.'+(pend.length?' <b>Pending:</b> '+pend.join(', ')+' — measured on the next Monday run.':'')+
+  (STX.failed&&STX.failed.length?' <span style="color:var(--warn)">Last run could not fetch: '+esc(STX.failed.join('; '))+'</span>':'');
+}
+
 
 /* ==== helpers ==== */
 function $(i){return document.getElementById(i);}
@@ -1633,6 +1678,9 @@ function hmacHex(key,msg){
     .then(function(k){return crypto.subtle.sign('HMAC',k,new TextEncoder().encode(msg));})
     .then(function(buf){return Array.prototype.map.call(new Uint8Array(buf),function(b){return b.toString(16).padStart(2,'0');}).join('');})
     .catch(function(){return null;});}
+/* the watcher writes signed:true to last.json once SYNC_KEY exists; a device without the
+   key then pushes into a void and must say so instead of showing "synced" */
+function unsignedHere(){return !!(WATCH.st&&WATCH.st.signed)&&!SYNCKEY.get();}
 function syncTopic(){return ((WATCH.st&&WATCH.st.topic)||'ownbook-356ba5c8fc6a5b7454')+'-inbox';}
 function syncSlim(t){var o={};['id','origin','sym','day','t','entry','stop','tp','size','riskAmt','status','mode','reason','level',
   'exit','exitDay','pnl','R','how','why','logged','regimeOff','offRule','whyNote','note','closedBar','ext'].forEach(function(k){if(t[k]!=null)o[k]=t[k];});return o;}
@@ -1648,7 +1696,7 @@ function syncPush(t){
       try{toast('Saved here, but could not reach the shared journal — other devices will not see this trade yet.');}catch(x){}return false;});}
 function syncMergeTrade(e){          /* same rules as the load-time merge: by id, never drop, adopt a close */
   if(!e||!e.id||e.origin!=='me')return false;
-  var same=JOURNAL.filter(function(x){return x.id===e.id||x.browserId===e.id;})[0];
+  var same=JOURNAL.filter(function(x){return x.id===e.id||x.browserId===e.id||(e.browserId&&(x.id===e.browserId||x.browserId===e.browserId));})[0];
   if(!same){
     /* the same real position recorded twice - two devices, or a reconstruction
        written from a screenshot - is one trade: same coin, open, entry within 1% */
@@ -1691,9 +1739,10 @@ function syncPull(){
      .then(function(j){return (j&&j.trades)||[];}).catch(function(e){SYNC.err='repo: '+((e&&e.message)||'failed');return [];});
   var inbox=syncInbox().catch(function(e){SYNC.err='inbox: '+((e&&e.message)||'failed');return [];});
   return Promise.all([repo,inbox]).then(function(rs){
-     rs[0].concat(rs[1]).forEach(function(e){if(!e||!e.id)return;seen[e.id]=e.status||'OPEN';
+     rs[0].concat(rs[1]).forEach(function(e){if(!e||!e.id)return;seen[e.id]=e.status||'OPEN';if(e.browserId)seen[e.browserId]=e.status||'OPEN';
        var r0=rem[e.id]||{};Object.keys(e).forEach(function(k){if(e[k]!=null)r0[k]=e[k];});rem[e.id]=r0;
        if(syncMergeTrade(e))n++;});
+     if(journalDedupe())n++;
      /* what only this device knows: a trade the others have never seen, or a close they still show as open */
      mine().forEach(function(t){var s=seen[t.id]||seen[t.browserId];
        var r=rem[t.id]||rem[t.browserId]||{};
@@ -1989,6 +2038,31 @@ var JOURNAL=(function(){var J=SEED.slice();
   }catch(e){}});
  try{J.sort(function(a,b){return String(a.t||a.day).localeCompare(String(b.t||b.day));});}catch(e){}
  return J;})();
+/* ONE RECORD PER POSITION (30 Sep 2026). The phone held SOL twice: its own button press
+   (T…795586) and the shared journal's copy (T…000000, which carries the press id as
+   browserId). The merge matched only local.browserId === remote.id, never the other way
+   round, so the two never met: 3 open on the phone, 2 on the desktop, equity $123 apart.
+   This pass runs at load and after every pull: two records that point at each other, or
+   that are twins (same coin, same entry ±1%, one still open, within 48h), become one. The
+   copy the shared journal knows is kept; every field the other had is carried over. */
+function journalDedupe(){
+ var changed=false,me=JOURNAL.filter(function(t){return t&&t.origin==='me';});
+ for(var i=0;i<me.length;i++){var a=me[i];if(a._drop)continue;
+  for(var j=i+1;j<me.length;j++){var b=me[j];if(b._drop)continue;
+   var linked=(a.browserId&&(a.browserId===b.id||a.browserId===b.browserId))||(b.browserId&&b.browserId===a.id);
+   var twin=!linked&&a.sym===b.sym&&a.entry&&b.entry&&Math.abs(a.entry/b.entry-1)<0.01&&(a.status==='OPEN'||b.status==='OPEN')&&
+     Math.abs((Date.parse(a.t||a.day)||0)-(Date.parse(b.t||b.day)||0))<48*3600e3;
+   if(!linked&&!twin)continue;
+   var keep=a,drop=b;
+   if((b.syncedFrom==='repo')&&a.syncedFrom!=='repo'){keep=b;drop=a;}
+   else if(a.recon&&!b.recon){keep=b;drop=a;}
+   Object.keys(drop).forEach(function(k){if(k!=='id'&&k!=='browserId'&&k!=='_drop'&&keep[k]==null&&drop[k]!=null)keep[k]=drop[k];});
+   if(keep.status==='OPEN'&&drop.status&&drop.status!=='OPEN')['status','exitDay','pnl','R','how','exit','why'].forEach(function(k){if(drop[k]!=null)keep[k]=drop[k];});
+   if(!keep.browserId||keep.browserId===keep.id)keep.browserId=drop.id;
+   drop._drop=true;changed=true;}}
+ if(changed)JOURNAL=JOURNAL.filter(function(t){return !(t&&t._drop);});
+ return changed;}
+if(journalDedupe()){try{save();}catch(e){}}
 function save(){
  var payload=JSON.stringify(JOURNAL.slice(-300));
  var wrote=false;
@@ -3268,6 +3342,8 @@ function render(){
 
  var K=$('stats');K.innerHTML='';
  var _g=gate();
+ var _ub=$('unsignedbar');if(!_ub){_ub=el('div');_ub.id='unsignedbar';K.parentNode.insertBefore(_ub,K);}
+ _ub.innerHTML=unsignedHere()?'<div class="act s" style="margin-bottom:8px"><div><div class="t">NOT SYNCING — THIS DEVICE HAS NO SYNC KEY</div><div class="m">the watcher accepts signed trades only · DETAILS → Sync key</div></div></div>':'';
  [['Equity',usd(eq,2),(eq>=RULES.start?'pos':'neg'),pc(gainPct,2)],
   ['To target',usd(toPass,0),'info',nf(12-gainPct,2)+'%'],
   ['Buffer',usd(cu,0),(cu<200?'neg':'pos'),'limit '+usd(RULES.floor,0)],
@@ -3798,7 +3874,8 @@ function renderMobile(){
      '<div class="mstat"><div class="k">Closed</div><div class="v">'+_nC+(_nC?' · '+nf(st.expR,2)+'R':'')+'</div></div>'+
      '<div class="mstat"><div class="k">Hand vs rule</div><div class="v '+(_H.scored?(_H.net>=0?'g':'r'):'')+'">'+(_H.scored?((_H.net>=0?'+':'')+nf(_H.net,2)+'R'):'—')+'</div></div>'+
      '<div class="mstat"><div class="k">Signals</div><div class="v">'+_sig+'</div></div>'+
-     '<div class="mstat"><div class="k">Synced</div><div class="v">'+(SYNC.at?ageTxt(new Date(SYNC.at).toISOString()):'not yet')+'</div></div></div>'+
+     '<div class="mstat"><div class="k">Synced</div><div class="v'+(unsignedHere()?' r':'')+'">'+(unsignedHere()?'NO KEY':(SYNC.at?ageTxt(new Date(SYNC.at).toISOString()):'not yet'))+'</div></div></div>'+
+     (unsignedHere()?'<div class="mact sell"><div class="w">NOT SYNCING</div><div class="sub">the watcher only accepts signed trades and this phone has no sync key — tap DETAILS and paste the key, or nothing you log here reaches the desktop</div></div>':'')+
      (SYNC.err?'<div class="mnote" style="color:var(--warn)">sync: '+SYNC.err+'</div>':'');
 
   h+='<div class="msec"><h4>Open</h4><div class="sp"></div>'+
@@ -3855,9 +3932,9 @@ function renderMobile(){
       (u.q?'':' · no quote')+'</span></div>'+
       '<div class="rt"><b>'+usd(r.inv+u.upnl,2)+'</b><span class="'+mCls(u.upnl)+'">'+pc(u.upct)+'</span></div></div>';});
   h+='</div>';
-  var _up=pfevUpcoming(6);
+  var _up=pfevUpcoming(12).filter(function(e){return e.k==='EARN';}).slice(0,6);
   if(_up.length){
-   h+='<div class="msec"><h4>Coming up</h4><div class="sp"></div><span>earnings · FF · central banks</span></div><div class="mlist">';
+   h+='<div class="msec"><h4>Coming up</h4><div class="sp"></div><span>earnings</span></div><div class="mlist">';
    _up.forEach(function(e){var hrs=(Date.parse(e.d)-Date.now())/36e5;var rx=PFEV.ethRx[e.t];
     h+='<div class="mrow"><div class="av">'+(e.sym||e.on)+'</div>'+
        '<div class="nm"><b>'+e.t+'</b><span>'+pfevCy(e.d)+' · '+pfevTouch(e).join(' ')+
@@ -3865,13 +3942,14 @@ function renderMobile(){
        '<div class="rt"><b style="color:'+(hrs<24?'var(--warn)':'var(--txt)')+'">'+pfevIn(e.d)+'</b><span class="d">'+
        (e.k==='EARN'?'earnings':(e.k==='CB'?'rates':'FF red'))+'</span></div></div>';});
    h+='</div>';}
-  var _dv=[];OPEN.forEach(function(r){if(_dv.indexOf(r.sym)<0){var d=pfevDiv(r.sym);if(d.v)_dv.push(r.sym);}});
-  if(_dv.length){
-   h+='<div class="msec"><h4>Dividends</h4><div class="sp"></div><span>your qty</span></div><div class="mlist">';
-   _dv.forEach(function(s){var d=pfevDiv(s);
-    h+='<div class="mrow"><div class="av">'+s.slice(0,4)+'</div><div class="nm"><b>'+s+'</b><span>'+d.t+'</span></div>'+
-       '<div class="rt"><b class="g">$'+nf(d.v,d.v<0.1?3:2)+'</b><span class="d">per quarter</span></div></div>';});
-   h+='</div>';}
+  h+='<div class="msec"><h4>Stocks reaction</h4><div class="sp"></div><span>'+(STX&&!STX.err?('measured '+STX.asOf):(STX?'no data':'loading…'))+'</span></div><div class="mlist">';
+  if(STX&&!STX.err){stxSyms().forEach(function(s){var o=STX.syms[s];if(!o||!o.rep)return;var sm=o.sum,e=(o.earn||[])[0];
+    h+='<div class="mrow"><div class="av">'+s.slice(0,4)+'</div>'+
+       '<div class="nm"><b>'+s+(o.next?' <span style="font-size:11px;font-weight:700;color:var(--warn)">'+o.next.d.slice(5)+'</span>':'')+'</b>'+
+       '<span>'+(sm?('typical ±'+nf(sm.medAbs,1)+'% on results'+(sm.beats?(' · beat→up '+sm.beatUp+'/'+sm.beats):'')):'no results measured')+'</span></div>'+
+       '<div class="rt"><b class="'+(e&&!e.pending?mCls(e.d1):'d')+'">'+(e&&!e.pending?((e.d1>0?'+':'')+nf(e.d1,1)+'%'):(e?'pending':'—'))+'</b><span class="d">'+(e?('last · '+e.d.slice(5)):'')+'</span></div></div>';});}
+  else h+='<div class="mempty">'+(STX?'watch/stocks.json not reachable — open the hosted page':'…')+'</div>';
+  h+='</div>';
   if(CLOSED.length){
    h+='<div class="msec"><h4>Closed</h4><div class="sp"></div><span>'+usd(rz,2)+'</span></div><div class="mlist">';
    CLOSED.forEach(function(c){
