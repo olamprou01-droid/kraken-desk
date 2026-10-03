@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-03T05:54:22.390Z",
- "ms": 456,
+ "ran": "2026-10-03T05:54:41.193Z",
+ "ms": 745,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -13,22 +13,22 @@
   "g1": true,
   "g2": true
  },
- "equity": 9928.699242147524,
- "cushion": 428.6992421475243,
+ "equity": 9928.521764992893,
+ "cushion": 428.5217649928927,
  "coins": [
   {
    "sym": "BTC",
-   "live": 84609,
+   "live": 84608.8,
    "level": 87397,
-   "distPct": 3.2951577255374787,
+   "distPct": 3.2954018967294108,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ETH",
-   "live": 2676.11,
+   "live": 2676.17,
    "level": 2807.1,
-   "distPct": 4.894791320237202,
+   "distPct": 4.892439568487794,
    "buyable": false,
    "fail": "breakout"
   },
@@ -50,17 +50,17 @@
   },
   {
    "sym": "SOL",
-   "live": 119.51,
+   "live": 119.5,
    "level": 124.93,
-   "distPct": 4.535185340138903,
+   "distPct": 4.543933054393312,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "DOGE",
-   "live": 0.0929636,
+   "live": 0.0929702,
    "level": 0.10589,
-   "distPct": 13.904797146409997,
+   "distPct": 13.896710989112627,
    "buyable": false,
    "fail": "breakout"
   },
@@ -116,13 +116,13 @@
  "stops": [
   {
    "sym": "SOL",
-   "live": 119.51,
+   "live": 119.5,
    "stop": 104.29464285714286,
    "tp": 155.57214285714286,
    "hitStop": false,
    "hitTp": false,
-   "r": 1.0770135995833008,
-   "near": -1.077
+   "r": 1.075648563335413,
+   "near": -1.076
   }
  ],
  "events": [],
