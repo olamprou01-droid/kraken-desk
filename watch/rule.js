@@ -13,8 +13,10 @@
 'use strict';
 
 const RULES = {
-  start: 10000, floor: 9500, target: 11200,
-  cushionRisk: 0.25, slot2Risk: 0.4, maxConc: 2, maxAlloc: 0.60,
+  /* 5 Oct 2026: his plan screen reads "Fail at (-3%) $9,700". One position at 35% of the
+     buffer is the lab's plateau on that floor (91/0/11 of 102 starts) - same as the app. */
+  start: 10000, floor: 9700, target: 11200,
+  cushionRisk: 0.35, slot2Risk: 0.4, maxConc: 1, maxAlloc: 0.60,
   /* fee 0.04% each side (28 Sep 2026): Kraken Funded charges no commission - cost is a
      0.04% spread built into the price (support.kraken.com/articles/funded). Was 0.26%. */
   slip: 0.004, fee: 0.0004,
@@ -51,10 +53,13 @@ function regimeAt(btc, i) {
 function regime(btc) { return regimeAt(btc, btc ? btc.length - 1 : -1); }
 
 /* ---- book state from the journal (origin 'me' only, as the app) ---- */
+/* challenge start (5 Oct 2026, same as inBook() in the app): once journal.challenge.start is set,
+   the book is only the trades logged at or after it; earlier ones are paper history. */
+function inBook(journal, t) { const c = journal && journal.challenge; return !(c && c.start) || String(t.t || t.day) >= c.start; }
 function mine(journal)   { return (journal && journal.trades ? journal.trades : []).filter(t => t.origin === 'me'); }
-function opens(journal)  { return mine(journal).filter(t => t.status === 'OPEN'); }
+function opens(journal)  { return mine(journal).filter(t => t.status === 'OPEN' && inBook(journal, t)); }
 function closes(journal) { return mine(journal).filter(t => t.status === 'WIN' || t.status === 'LOSS'); }
-function realised(journal) { return closes(journal).reduce((a, t) => a + (t.pnl || 0), 0); }
+function realised(journal) { return closes(journal).filter(t => inBook(journal, t)).reduce((a, t) => a + (t.pnl || 0), 0); }
 function floatPnl(journal, live) { return opens(journal).reduce((a, t) => { const p = live[t.sym]; return a + (p != null ? (p / t.entry - 1) * t.size : 0); }, 0); }
 function equity(journal, live) { return RULES.start + realised(journal) + floatPnl(journal, live); }
 function cashFree(journal, live) { return Math.max(0, equity(journal, live) - opens(journal).reduce((a, t) => a + t.size, 0)); }
@@ -64,7 +69,7 @@ function sizeFor(entry, stop, journal, live) {
   const eq = equity(journal, live), cu = Math.max(0, eq - RULES.floor);
   if (entry <= stop) return null;
   /* second slot risks slot2Risk x (28 Sep 2026, lab: 102 starts) - same as sizeFor() in the app */
-  const nOpen = ((journal && journal.trades) || []).filter(t => t.origin === 'me' && t.status === 'OPEN').length;
+  const nOpen = opens(journal).length;
   const risk = RULES.cushionRisk * cu * (nOpen >= 1 ? (RULES.slot2Risk || 1) : 1), dist = (entry - stop) / entry;
   if (risk < 5 || dist <= 0) return null;
   const n = Math.min(risk / dist, RULES.maxAlloc * eq, cashFree(journal, live));
@@ -123,4 +128,4 @@ function px(s, v) { if (v == null) return '—'; const d = DEC[s] != null ? DEC[
 function usd(v) { return '$' + Math.round(v).toLocaleString('en-US'); }
 
 module.exports = { RULES, SYMS, CBP, KRQ, KRK, DEC, sma, atr, hiHigh, regimeAt, regime,
-                   mine, opens, closes, realised, equity, sizeFor, evalSym, evaluate, px, usd };
+                   inBook, mine, opens, closes, realised, equity, sizeFor, evalSym, evaluate, px, usd };

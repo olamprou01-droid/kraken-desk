@@ -101,15 +101,18 @@ async function pollInbox(since) {
   const r = await fetch(url, { headers: { 'User-Agent': 'ownbook-watch/1.0' } });
   if (!r.ok) throw new Error('inbox HTTP ' + r.status);
   const text = await r.text();
-  const out = []; let last = since || null;
+  const out = []; let last = since || null, chal = null;
   for (const line of text.split('\n')) {
     if (!line.trim()) continue;
     let m; try { m = JSON.parse(line); } catch (e) { continue; }
     if (m.event !== 'message' || !m.message) continue;
     let t; try { t = JSON.parse(m.message); } catch (e) { continue; }
+    if (t && t.kind === 'challenge' && t.origin === 'me' && t.challenge && t.challenge.start) {   /* the app's "I PAID" button */
+      if (!chal || String(t.challenge.set || '') > String(chal.set || '')) chal = t.challenge; last = m.time; continue;
+    }
     if (t && t.id && t.origin === 'me' && t.sym && sigOk(t)) { out.push(t); last = m.time; }
   }
-  return { trades: out, last: last };
+  return { trades: out, last: last, challenge: chal };
 }
 function mergeTrade(journal, e) {
   journal.trades = journal.trades || [];
@@ -217,6 +220,12 @@ async function runOnce() {
   }
   const merged = { new: 0, updated: 0 };
   for (const t of inbox.trades) { const r = mergeTrade(journal, t); if (r) merged[r]++; }
+  /* challenge start from the app: newest "set" wins; written into the shared journal */
+  if (inbox.challenge && (!journal.challenge || String(inbox.challenge.set || '') > String(journal.challenge.set || ''))) {
+    journal.challenge = inbox.challenge; merged.updated++;
+    await notify('CHALLENGE STARTED', 'book starts ' + journal.challenge.start.slice(0, 16).replace('T', ' ') + ' UTC · $10,000 · fail $' +
+      (journal.challenge.floor || R.RULES.floor) + ' · pass $' + (journal.challenge.target || R.RULES.target) + ' · one position at a time', 'default', 'checkered_flag');
+  }
   if (merged.new || merged.updated) {
     journal.written = new Date().toISOString();
     journal.note = 'merged by the watcher from the shared inbox; every copy of the app pulls this file';
@@ -227,7 +236,7 @@ async function runOnce() {
   /* Real positions decide slots and equity. The virtual book (BUY signals the
      watcher sent that are not in the journal) only gets its stops watched, so an
      alert you did not act on can never block the next one. */
-  const jOpenSyms = new Set((journal.trades || []).filter(t => t.origin === 'me' && t.status === 'OPEN').map(t => t.sym));
+  const jOpenSyms = new Set(R.opens(journal).map(t => t.sym));
   /* A signal he acted on is his trade now, not the watcher's: once the journal holds a
      trade in that coin opened after the signal, the signal is TAKEN and stops being
      watched. Without this, AVAX's 8.307 signal kept living after the real 11.152 trade
@@ -238,8 +247,8 @@ async function runOnce() {
   }
   const virt  = { trades: (journal.trades || []).concat(
     signals.filter(g => g.status === 'OPEN' && !jOpenSyms.has(g.sym)).map(g => ({
-      id: 'W' + g.date + g.sym, origin: 'me', sym: g.sym, status: 'OPEN', entry: g.entry, stop: g.stop, tp: g.tp,
-      size: g.size || 0, riskAmt: g.risk || 0, virtual: true }))) };
+      id: 'W' + g.date + g.sym, origin: 'me', sym: g.sym, status: 'OPEN', entry: g.entry, stop: g.stop, tp: g.tp, t: g.t || g.date,
+      size: g.size || 0, riskAmt: g.risk || 0, virtual: true }))), challenge: journal.challenge };
   const ev      = R.evaluate(bars, live, journal);          // coins, regime, slots, equity: real book
   ev.stops      = R.evaluate(bars, live, virt).stops;       // stops: real + virtual
   /* A coin the watcher has already signalled, and whose signal is still open, is

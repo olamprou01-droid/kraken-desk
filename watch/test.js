@@ -5,15 +5,15 @@
 const R = require('./rule.js');
 const fx = require('./fixture.json');
 
-let fails = 0;
+let fails = 0, total = 0;
 function eq(name, got, want, tol) {
   tol = tol == null ? 0.005 : tol;
-  const ok = Math.abs(got - want) <= tol;
+  const ok = Math.abs(got - want) <= tol; total++;
   console.log((ok ? 'PASS ' : 'FAIL ') + name.padEnd(46) + String(got).padStart(14) + '  want ' + want);
   if (!ok) fails++;
 }
 function is(name, got, want) {
-  const ok = got === want;
+  const ok = got === want; total++;
   console.log((ok ? 'PASS ' : 'FAIL ') + name.padEnd(46) + String(got).padStart(14) + '  want ' + want);
   if (!ok) fails++;
 }
@@ -46,12 +46,14 @@ eq ('AVAX ATR14',       by.AVAX.atr,   0.3715, 0.0001);
 is ('nothing buyable while regime OFF', ev.coins.some(c => c.buyable), false);
 is ('UNI first failing gate is regime',       by.UNI.firstFail, 'regime');
 
-/* sizing at a fresh $10,000 book: cushion 500, risk 125 */
+/* sizing at a fresh $10,000 book on the $9,700 floor (5 Oct 2026): cushion 300, risk 35% = 105.
+   notional = risk / stop distance = 105 / (1.5 * 0.677321 / 7.4831) = 773.24 (by hand) */
 eq ('equity, empty journal',  ev.equity,  10000);
-eq ('cushion',                ev.cushion, 500);
+eq ('cushion (floor 9,700)',  ev.cushion, 300);
 const sz = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live);
-eq ('UNI ticket risk $',      sz.risk,     125);
-eq ('UNI ticket notional $',  sz.notional, 920.68, 0.5);
+eq ('UNI ticket risk $ (35% of 300)', sz.risk, 105);
+eq ('UNI ticket notional $',  sz.notional, 105 / (1.5 * 0.677321 / 7.4831), 0.5);
+eq ('one position at a time', R.RULES.maxConc, 1);
 
 /* SIGNING (28 Sep 2026). The app signs with Web Crypto (crypto.subtle.sign,
    HMAC-SHA256, hex-encoded) over id|origin|sym|status|entry|stop|tp|size|exit; the
@@ -93,10 +95,25 @@ const ev3 = R.evaluate(bars, Object.assign({}, live, {UNI: 5.10}), j);
 is ('UNI 5.10 HAS hit stop',               ev3.stops[0].hitStop, true);
 is ('slot gate blocks a second UNI',       R.evalSym('UNI', bars, live, rg, j).f.slot, false);
 
+/* CHALLENGE START: trades before journal.challenge.start are paper history - out of the book */
+{
+  const paper = { id:'P1', origin:'me', sym:'SOL', entry:111.62, stop:104.29, tp:155.57, size:1981, riskAmt:130, status:'OPEN', t:'2026-09-19T09:39:55Z' };
+  const paperLoss = { id:'P2', origin:'me', sym:'LTC', entry:71.34, stop:65.14, tp:108.56, size:1348, riskAmt:117, status:'LOSS', pnl:-94.86, t:'2026-09-25T06:06:50Z' };
+  const live1 = { id:'L1', origin:'me', sym:'UNI', entry:7.0, stop:6.5, tp:10.0, size:500, riskAmt:36, status:'OPEN', t:'2026-10-06T08:00:00Z' };
+  const before = { trades: [paper, paperLoss] };
+  const after  = { trades: [paper, paperLoss], challenge: { start: '2026-10-05T13:00:00Z' } };
+  const both   = { trades: [paper, paperLoss, live1], challenge: { start: '2026-10-05T13:00:00Z' } };
+  is ('no challenge: paper SOL is open',            R.opens(before).length, 1);
+  is ('challenge started: paper SOL out of the book', R.opens(after).length, 0);
+  eq ('challenge started: paper loss not in equity', R.equity(after, live), 10000);
+  is ('challenge started: slot free for a new trade', R.evalSym('UNI', bars, live, R.regime(bars.BTC), after).f.slot, true);
+  is ('trade after the start is in the book',       R.opens(both).map(t => t.id).join(), 'L1');
+}
+
 /* a synthetic regime-ON case: lift the last BTC close above the SMA */
 const btc2 = bars.BTC.map(b => b.slice()); btc2[btc2.length-1][4] = 79000;
 const rg2 = R.regime(btc2);
 is ('synthetic: regime turns ON when close > sma', rg2.on, true);
 
-console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (31 - fails) + '/31)');
+console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (total - fails) + '/' + total + ')');
 process.exit(fails ? 1 : 0);
