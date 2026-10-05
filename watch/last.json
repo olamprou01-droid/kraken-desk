@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-05T23:54:11.826Z",
- "ms": 1064,
+ "ran": "2026-10-05T23:54:32.584Z",
+ "ms": 917,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,25 +18,25 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 85799.3,
+   "live": 85800.4,
    "level": 87397,
-   "distPct": 1.8621364043762467,
+   "distPct": 1.8608304856387647,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ETH",
-   "live": 2710.86,
+   "live": 2710.46,
    "level": 2807.1,
-   "distPct": 3.550164892321983,
+   "distPct": 3.5654464555831877,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "XRP",
-   "live": 1.50659,
+   "live": 1.50693,
    "level": 1.6581,
-   "distPct": 10.05648517513058,
+   "distPct": 10.031653759630487,
    "buyable": false,
    "fail": "breakout"
   },
@@ -98,17 +98,17 @@
   },
   {
    "sym": "ATOM",
-   "live": 1.8074,
+   "live": 1.8081,
    "level": 1.9262,
-   "distPct": 6.572977758105569,
+   "distPct": 6.531718378408269,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "UNI",
-   "live": 9.0668,
+   "live": 9.0671,
    "level": 10.9321,
-   "distPct": 20.57285922265848,
+   "distPct": 20.56886987019002,
    "buyable": false,
    "fail": "breakout"
   }
