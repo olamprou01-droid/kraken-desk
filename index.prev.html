@@ -500,6 +500,14 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
   <!-- Everything below is for the engine and for Claude. Hidden by default: the
        desk is signals, entries and results. Toggle with DETAILS in the top bar. -->
   <div id="details" class="details">
+  <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Challenge</h3><div class="sp"></div>
+    <span class="meta" id="chmeta">—</span></div>
+    <div class="pb"><div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+      <input id="chwhen" type="datetime-local" style="background:var(--panel2);border:1px solid var(--line2);color:var(--txt);padding:6px 8px;border-radius:4px;font:12px var(--mono)">
+      <button class="btn" id="chbtn">I PAID — START THE CHALLENGE</button></div>
+    <div class="sub" style="margin-top:6px;color:var(--dim)">Press once, when the $90 is paid. From that moment the book is the challenge:
+      $10,000, fail at $9,700, pass at $11,200, one position at a time. Paper trades before it stay in History and still count as
+      evidence. Every device and the watcher switch together.</div></div></div>
   <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Sync key</h3><div class="sp"></div>
     <span class="meta" id="skmeta">—</span></div>
     <div class="pb"><input id="skinput" type="password" placeholder="paste the sync key, then tap away" autocomplete="off"
@@ -551,7 +559,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.23 LOOP</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.24 9700</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -590,7 +598,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.23', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.24', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -629,14 +637,35 @@ if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.on
    The app now re-runs this whole test ITSELF once a day (see WF below) and will
    move these values, or move them back, on evidence. The values written here are
    the file defaults; adapted values live in localStorage and the journal file. */
-var RULES={start:10000,floor:9500,target:11200,cushionRisk:0.25,slot2Risk:0.4,maxConc:2,maxAlloc:0.60,
+/* 5 Oct 2026: Kraken's plan screen for his $10k challenge reads "Fail at (-3%) $9,700" - the
+   floor is $9,700, not $9,500. With 3% of room, two positions at 25% stopped passing; the lab
+   (102 starts 2018-2026, slot-2 0.4x, 0.4% stop slippage) plateaus at ONE position, 35-40% of
+   the buffer: 1 slot 0.30 -> 83/0/19, 0.35 -> 91/0/11, 0.40 -> 90/0/12, 0.45 -> 84/0/18
+   (pass/fail/unresolved; median 425 days; 2024+ starts 20/0/10). 0.35 = most passes, lower
+   drawdown, same speed. Two slots at 0.35 -> 43/27/32: never two at once on this floor. */
+var RULES={start:10000,floor:9700,target:11200,cushionRisk:0.35,slot2Risk:0.4,maxConc:1,maxAlloc:0.60,
            /* fee 0.04% (28 Sep 2026): Kraken Funded charges no commission - the cost is a 0.04%
     spread each side, built into the price you see (support.kraken.com/articles/funded,
     "How much does it cost?"). Was modelled at 0.26% (Kraken Pro retail taker), which
     understated every backtest's real edge - the true cost is lower, not higher. */
  slip:0.004,fee:0.0004,lookback:20,atrMult:1.5,rr:6,extLimit:0.12,staleLimit:0.02,
            momN:60,momThr:0.10};
-var RULES_FILE=JSON.parse(JSON.stringify(RULES));   /* the defaults, for revert + display */
+var RULES_FILE=JSON.parse(JSON.stringify(RULES));
+/* CHALLENGE START (5 Oct 2026). Until he pays, every trade is paper and the book is the paper
+   book. From CHAL.start the book - equity, buffer, slots, stops, sizing - is only the trades
+   logged after that moment; everything before stays as history and still counts as evidence
+   (gate, kill rule, hand-vs-rule). Set on one device, it travels like a trade: posted to the
+   inbox, written by the watcher into kraken-journal.json, adopted by every other device. */
+var CHAL=(function(){try{var o=JSON.parse(localStorage.getItem('kraken_desk_challenge')||'null');if(o&&o.start)return o;}catch(e){}return{start:null};})();
+function inBook(t){return !CHAL.start||String(t.t||t.day)>=CHAL.start;}
+function chalAdopt(c){if(!c||!c.start)return false;if(CHAL.set&&c.set&&c.set<=CHAL.set)return false;if(CHAL.start===c.start&&CHAL.set===c.set)return false;
+ CHAL=c;try{localStorage.setItem('kraken_desk_challenge',JSON.stringify(c));}catch(e){}return true;}
+function chalStart(iso){
+ var c={start:iso,startBal:RULES.start,floor:RULES.floor,target:RULES.target,set:new Date().toISOString()};
+ CHAL=c;try{localStorage.setItem('kraken_desk_challenge',JSON.stringify(c));}catch(e){}
+ try{fetch('https://ntfy.sh/'+syncTopic(),{method:'POST',body:JSON.stringify({kind:'challenge',id:'CHAL'+Date.now(),origin:'me',challenge:c}),
+   headers:{'Title':'challenge start','Priority':'min','Tags':'checkered_flag'}});}catch(e){}
+ return c;}   /* the defaults, for revert + display */
 /* ONE RULE SET (30 Sep 2026). A setting adapted on one device used to live only in that
    browser, so the phone, the desktop and the watcher could each run a different rule.
    Now every device runs the file's RULES - the same numbers as watch/rule.js - and the
@@ -1746,7 +1775,9 @@ function syncInbox(){
    .then(function(r){if(!r.ok)throw new Error('inbox http '+r.status);return r.text();})
    .then(function(txt){var out=[];txt.split('\n').forEach(function(line){if(!line.trim())return;
        var m;try{m=JSON.parse(line);}catch(e){return;}if(!m||m.event!=='message'||!m.message)return;
-       var t;try{t=JSON.parse(m.message);}catch(e){return;}if(t&&t.id&&t.origin==='me'&&t.sym)out.push(t);});
+       var t;try{t=JSON.parse(m.message);}catch(e){return;}
+       if(t&&t.kind==='challenge'&&t.challenge){if(chalAdopt(t.challenge))SYNC.chal=1;return;}
+       if(t&&t.id&&t.origin==='me'&&t.sym)out.push(t);});
      /* no key needed (4.22): a signed post must verify; an unsigned one is taken when it is
         a plausible trade of ours - the same test the watcher applies */
      var key=SYNCKEY.get();
@@ -1760,13 +1791,14 @@ function syncPull(){
   if(SYNC.busy)return Promise.resolve(false);SYNC.busy=true;setTimeout(function(){SYNC.busy=false;},4000);
   var seen={},rem={},n=0,pushed=0;
   var repo=fetch(repoUrl('kraken-journal.json'),{cache:'no-store'}).then(function(r){if(!r.ok)throw new Error('http '+r.status);return r.json();})
-     .then(function(j){return (j&&j.trades)||[];}).catch(function(e){SYNC.err='repo: '+((e&&e.message)||'failed');return [];});
+     .then(function(j){if(j&&j.challenge&&chalAdopt(j.challenge))SYNC.chal=1;return (j&&j.trades)||[];}).catch(function(e){SYNC.err='repo: '+((e&&e.message)||'failed');return [];});
   var inbox=syncInbox().catch(function(e){SYNC.err='inbox: '+((e&&e.message)||'failed');return [];});
   return Promise.all([repo,inbox]).then(function(rs){
      rs[0].concat(rs[1]).forEach(function(e){if(!e||!e.id)return;seen[e.id]=e.status||'OPEN';if(e.browserId)seen[e.browserId]=e.status||'OPEN';
        var r0=rem[e.id]||{};Object.keys(e).forEach(function(k){if(e[k]!=null)r0[k]=e[k];});rem[e.id]=r0;
        if(syncMergeTrade(e))n++;});
      if(journalDedupe())n++;
+     if(SYNC.chal){SYNC.chal=0;try{toast('Challenge start arrived from your other device - the book now starts '+CHAL.start.slice(0,16).replace('T',' ')+' UTC');}catch(e){}try{render();}catch(e){}}
      /* what only this device knows: a trade the others have never seen, or a close they still show as open */
      mine().forEach(function(t){var s=seen[t.id]||seen[t.browserId];
        var r=rem[t.id]||rem[t.browserId]||{};
@@ -2175,7 +2207,7 @@ function fallbackCopy(txt,done){
   ta.style.position='fixed';ta.style.left='-9999px';document.body.appendChild(ta);
   ta.select();document.execCommand('copy');document.body.removeChild(ta);done();
  }catch(e){try{window.prompt('Copy this and send it to Claude:',txt);}catch(e2){}}}
-function isLive(){try{return localStorage.getItem('kraken_desk_mode')==='live';}catch(e){return false;}}
+function isLive(){if(CHAL.start)return true;try{return localStorage.getItem('kraken_desk_mode')==='live';}catch(e){return false;}}
 function setLive(v){try{localStorage.setItem('kraken_desk_mode',v?'live':'paper');}catch(e){}}
 function mine(){return JOURNAL.filter(function(t){return t.origin==='me';});}
 /* BACKFILL = trades the rule itself would have taken, replayed over real bars by
@@ -2196,7 +2228,8 @@ function unsavedTrades(){
  var seedIds={};
  try{(SEED||[]).forEach(function(t){if(t&&t.id)seedIds[t.id]=1;});}catch(e){}
  return mine().filter(function(t){return !seedIds[t.id];});}
-function opens(){return mine().filter(function(t){return t.status==='OPEN';});}
+function opens(){return mine().filter(function(t){return t.status==='OPEN'&&inBook(t);});}
+function allOpen(){return mine().filter(function(t){return t.status==='OPEN';});}   /* paper positions from before the start still resolve */
 function closes(){return mine().filter(function(t){return t.status==='WIN'||t.status==='LOSS';});}
 /* OFF-RULE (28 Sep 2026). A trade logged by hand that the rule did not signal, or
    was logged more than staleLimit above the signal, is real money and counts in
@@ -2230,7 +2263,7 @@ function offRuleWhy(sym,entry){
   if(!o||!o.f||!o.f.breakout||!o.f.breakout.ok)return 'no breakout signal';
   if(o.f.fresh&&!o.f.fresh.ok)return 'stale: '+o.f.fresh.v;
   return null;}
-function realised(){return closes().reduce(function(a,t){return a+(t.pnl||0);},0);}
+function realised(){return closes().filter(inBook).reduce(function(a,t){return a+(t.pnl||0);},0);}
 function floatPnl(){return opens().reduce(function(a,t){var p=price(t.sym);
  return a+(p!=null?(p/t.entry-1)*t.size:0);},0);}
 function equity(){return RULES.start+realised()+floatPnl();}
@@ -2435,7 +2468,7 @@ function scan(){
 
 /* ==== resolve from real bars (mental-stop penalty; same-bar = loss) ==== */
 function resolve(){var n=0,justClosed=[];
- opens().forEach(function(t){var b=bars(t.sym);if(!b)return;
+ allOpen().forEach(function(t){var b=bars(t.sym);if(!b)return;
   for(var i=0;i<b.length;i++){if(b[i][0]<=t.day)continue;
    var hs=b[i][3]<=t.stop,ht=(t.tp!=null&&b[i][2]>=t.tp),ex=null,how=null;
    if(hs){ex=Math.max(b[i][3],t.stop*(1-RULES.slip));how=ht?'stop (bar hit both)':'stop';}
@@ -3330,7 +3363,7 @@ function render(){
  var nl=SYMS().filter(isLivePx).length;
 
  $('mode').className='badge '+(isLive()?'live':'paper');
- $('mode').innerHTML='<span class="dot"></span>'+(isLive()?'LIVE':'PAPER');
+ $('mode').innerHTML='<span class="dot"></span>'+(CHAL.start?'CHALLENGE':(isLive()?'LIVE':'PAPER'));
  $('sess').textContent=clockTxt()+' Nicosia';
  $('uni').textContent=SYMS().join(' · ');
  $('rulestate').innerHTML=sc.regime.on
@@ -3824,7 +3857,7 @@ function renderMobile(){
   return true;});
  var _ns=notifyState(),_ao=alertsOn();
  T.innerHTML='<div class="mt1"><b>Mpourdelo Genius</b>'+
-   '<span class="mpill p">'+(isLive()?'LIVE':'PAPER')+'</span><span class="sp"></span>'+
+   '<span class="mpill p">'+(CHAL.start?'CHALLENGE':(isLive()?'LIVE':'PAPER'))+'</span><span class="sp"></span>'+
    '<button class="mib '+(!_ao?'':(_ns==='granted'?'on':'warnb'))+'" id="mbell">'+(_ao?'🔔':'🔕')+'</button>'+
    '<button class="mib" id="mrfr" style="margin-left:8px">'+(REFRESHING?'…':'↻')+'</button></div>';
 
@@ -4421,6 +4454,14 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
    sm.textContent=SYNCKEY.get()?'set on this device':'not set — pushes go unsigned';
    sk.onchange=function(){SYNCKEY.set(sk.value.trim());sm.textContent=SYNCKEY.get()?'set on this device':'not set — pushes go unsigned';toast(SYNCKEY.get()?'Sync key saved on this device':'Sync key cleared');try{render();syncPull();}catch(e){}};}
 })();
+(function(){var b=$('chbtn'),w=$('chwhen'),m=$('chmeta');if(!b||!w||!m)return;
+  var show=function(){m.textContent=CHAL.start?('started '+CHAL.start.slice(0,16).replace('T',' ')+' UTC'):'not started — paper';
+    b.textContent=CHAL.start?'RESTART FROM THIS TIME':'I PAID — START THE CHALLENGE';};
+  var p=function(n){return String(n).padStart(2,'0');},d0=new Date();
+  w.value=d0.getFullYear()+'-'+p(d0.getMonth()+1)+'-'+p(d0.getDate())+'T'+p(d0.getHours())+':'+p(d0.getMinutes());show();
+  b.onclick=function(){var t=new Date(w.value);if(isNaN(t.getTime()))t=new Date();
+    if(!confirm('Start the challenge book at '+t.toLocaleString()+'?\n\nFrom then: $10,000, fail $9,700, pass $11,200, one position at a time. Paper trades before it stay as history.'))return;
+    chalStart(t.toISOString());show();try{render();}catch(e){}toast('Challenge book started - every device and the watcher follow');};})();
 (function(){var b=$('detbtn'),d=$('details');if(!b||!d)return;
   var on=false;try{on=localStorage.getItem('kraken_desk_details')==='on';}catch(e){}
   var ap=function(){d.className='details'+(on?' on':'');b.textContent=on?'DETAILS ▾':'DETAILS ▸';};
