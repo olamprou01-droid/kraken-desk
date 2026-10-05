@@ -25,6 +25,12 @@ jobs:
     timeout-minutes: 358
     steps:
       - uses: actions/checkout@v5
+      # A queued job checks out the commit from when it was QUEUED, not when it starts. A loop
+      # job that waited 2.5 h behind the previous one started on 5 Oct 08:27 with 05:56 state and
+      # sent the daily heartbeat twice - the same stale state could re-send alerts or overwrite
+      # trades the previous job had merged. Always start from the newest commit.
+      - name: start from the newest state and code
+        run: git fetch -q origin main && git reset -q --hard origin/main && git log -1 --format='running on %h %s'
       - uses: actions/setup-node@v5
         with:
           node-version: '22'
