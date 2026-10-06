@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-06T22:24:12.077Z",
- "ms": 619,
+ "ran": "2026-10-06T22:24:29.507Z",
+ "ms": 720,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,33 +18,33 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 85574.5,
+   "live": 85557.6,
    "level": 87397,
-   "distPct": 2.1297232236238584,
+   "distPct": 2.1498966777936612,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ETH",
-   "live": 2697.31,
+   "live": 2697.14,
    "level": 2807.1,
-   "distPct": 4.070351572492603,
+   "distPct": 4.076911098422786,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "XRP",
-   "live": 1.4998,
+   "live": 1.49981,
    "level": 1.6581,
-   "distPct": 10.55474063208428,
+   "distPct": 10.554003507110888,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "ADA",
-   "live": 0.268158,
+   "live": 0.26806,
    "level": 0.26853,
-   "distPct": 0.13872418499540906,
+   "distPct": 0.17533388047450416,
    "buyable": false,
    "fail": "holding"
   },
@@ -66,9 +66,9 @@
   },
   {
    "sym": "LINK",
-   "live": 13.91754,
+   "live": 13.9148,
    "level": 15.769,
-   "distPct": 13.303069364269838,
+   "distPct": 13.325380170753442,
    "buyable": false,
    "fail": "breakout"
   },
@@ -82,17 +82,17 @@
   },
   {
    "sym": "AVAX",
-   "live": 11.556,
+   "live": 11.561,
    "level": 12.002,
-   "distPct": 3.859466943579104,
+   "distPct": 3.8145489144537637,
    "buyable": false,
    "fail": "breakout"
   },
   {
    "sym": "DOT",
-   "live": 1.2042,
+   "live": 1.2037,
    "level": 1.3066,
-   "distPct": 8.503570835409402,
+   "distPct": 8.548641688128278,
    "buyable": false,
    "fail": "breakout"
   },
@@ -106,9 +106,9 @@
   },
   {
    "sym": "UNI",
-   "live": 8.5325,
+   "live": 8.532,
    "level": 10.9321,
-   "distPct": 28.123058892469956,
+   "distPct": 28.130567276136897,
    "buyable": false,
    "fail": "breakout"
   }
