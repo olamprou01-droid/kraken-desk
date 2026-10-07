@@ -559,7 +559,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.24 9700</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.25 2ND EARNED</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -598,7 +598,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.24', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.25', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -643,7 +643,13 @@ if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.on
    the buffer: 1 slot 0.30 -> 83/0/19, 0.35 -> 91/0/11, 0.40 -> 90/0/12, 0.45 -> 84/0/18
    (pass/fail/unresolved; median 425 days; 2024+ starts 20/0/10). 0.35 = most passes, lower
    drawdown, same speed. Two slots at 0.35 -> 43/27/32: never two at once on this floor. */
-var RULES={start:10000,floor:9700,target:11200,cushionRisk:0.35,slot2Risk:0.4,maxConc:1,maxAlloc:0.60,
+/* SECOND POSITION, EARNED (7 Oct 2026, his ask: "I can hold more than one; opportunities arise").
+   Lab grid on the same 102 starts, floor 9,700, first position 35% of buffer: a 2nd position is
+   allowed only when every open one is already >= +gate R in profit at the live price, sized at
+   slot2Risk x. gate 2.5R row: 0.2x 98/0/4 · 0.3x 98/0/4 · 0.4x 97/0/5 · 0.5x 96/0/6; at 0.3x the
+   gate neighbours agree (2R 98/0/4, 3R 93/0/9). Free 2nd slot at 0.4x: 66/0/36; 0.35x unconditional
+   two slots: 43/27/32. Adopted gate 2.5R, 0.3x - every neighbour beats one-position (91/0/11). */
+var RULES={start:10000,floor:9700,target:11200,cushionRisk:0.35,slot2Risk:0.3,slot2GateR:2.5,maxConc:2,maxAlloc:0.60,
            /* fee 0.04% (28 Sep 2026): Kraken Funded charges no commission - the cost is a 0.04%
     spread each side, built into the price you see (support.kraken.com/articles/funded,
     "How much does it cost?"). Was modelled at 0.26% (Kraken Pro retail taker), which
@@ -2229,6 +2235,10 @@ function unsavedTrades(){
  try{(SEED||[]).forEach(function(t){if(t&&t.id)seedIds[t.id]=1;});}catch(e){}
  return mine().filter(function(t){return !seedIds[t.id];});}
 function opens(){return mine().filter(function(t){return t.status==='OPEN'&&inBook(t);});}
+/* the second position is earned: every open trade must already be >= slot2GateR in profit */
+function slot2Open(){var op=opens();if(!op.length)return{ok:true,why:''};
+ var lag=op.filter(function(t){var p=price(t.sym);return !(p!=null&&t.riskAmt>0&&((p/t.entry-1)*t.size)/t.riskAmt>=RULES.slot2GateR);});
+ return lag.length?{ok:false,why:'2nd position opens when '+lag.map(function(t){return t.sym;}).join(', ')+' is +'+RULES.slot2GateR+'R'}:{ok:true,why:''};}
 function allOpen(){return mine().filter(function(t){return t.status==='OPEN';});}   /* paper positions from before the start still resolve */
 function closes(){return mine().filter(function(t){return t.status==='WIN'||t.status==='LOSS';});}
 /* OFF-RULE (28 Sep 2026). A trade logged by hand that the rule did not signal, or
@@ -2398,8 +2408,9 @@ function evalSym(s,R){
  var _held=opens().some(function(t){return t.sym===s;});
  o.f.live={ok:liveFresh()&&isLivePx(s),
    v:liveFresh()?(isLivePx(s)?('fetched '+liveAgeTxt()):'no quote for '+s):('not live — last fetch '+liveAgeTxt())};
- o.f.slot={ok:opens().length<RULES.maxConc&&!_held,
-   v:_held?'already holding '+s:(opens().length+'/'+RULES.maxConc+' open')};
+ var _gate=slot2Open();
+ o.f.slot={ok:opens().length<RULES.maxConc&&!_held&&_gate.ok,
+   v:_held?'already holding '+s:(!_gate.ok&&opens().length<RULES.maxConc?_gate.why:(opens().length+'/'+RULES.maxConc+' open'))};
  o.f.atrpct={ok:true,v:o.atrPct==null?'—':nf(o.atrPct,2)+'%'};
  o.f.rr={ok:true,v:'1:'+nf(RULES.rr,0)};
  /* Whale factors: info only. ok stays true so they can never gate a trade —
