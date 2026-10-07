@@ -53,7 +53,7 @@ eq ('cushion (floor 9,700)',  ev.cushion, 300);
 const sz = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live);
 eq ('UNI ticket risk $ (35% of 300)', sz.risk, 105);
 eq ('UNI ticket notional $',  sz.notional, 105 / (1.5 * 0.677321 / 7.4831), 0.5);
-eq ('one position at a time', R.RULES.maxConc, 1);
+eq ('first position risk is 35% of buffer', R.RULES.cushionRisk, 0.35);
 
 /* SIGNING (28 Sep 2026). The app signs with Web Crypto (crypto.subtle.sign,
    HMAC-SHA256, hex-encoded) over id|origin|sym|status|entry|stop|tp|size|exit; the
@@ -80,10 +80,20 @@ eq ('one position at a time', R.RULES.maxConc, 1);
   is('sigOk: tampered field -> rejected', sigOk(Object.assign({}, signed, { entry: 999 }), key), false);
 }
 
-/* second slot: with one position open the next ticket risks 0.4x (28 Sep 2026) */
+/* second slot: with one position open the next ticket risks 0.3x (7 Oct 2026) */
 const j1 = { trades: [{ id:'T0', origin:'me', sym:'LINK', entry:13.34, stop:12.37, tp:19.2, size:100, riskAmt:7, status:'OPEN' }] };
 const sz2 = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, j1, live);
-eq ('slot-2 ticket risk is 0.4x', sz2.risk / R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live).risk, 0.4, 0.001);
+eq ('slot-2 ticket risk is 0.3x', sz2.risk / R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live).risk, 0.3, 0.001);
+/* the 2nd position is earned: ETH open at +2.0R keeps the slot shut, at +3.33R opens it.
+   ETH live 2474.4; entry = live/1.1 -> P&L +100 on size 1000; riskAmt 50 -> 2.0R, 30 -> 3.33R */
+{
+  const e = 2474.4 / 1.1, rg0 = R.regime(bars.BTC);
+  const at2 = { trades: [{ id:'E1', origin:'me', sym:'ETH', entry:e, stop:e*0.9, tp:e*1.6, size:1000, riskAmt:50, status:'OPEN', t:'2026-10-01T00:00:00Z' }] };
+  const at3 = { trades: [{ id:'E1', origin:'me', sym:'ETH', entry:e, stop:e*0.9, tp:e*1.6, size:1000, riskAmt:30, status:'OPEN', t:'2026-10-01T00:00:00Z' }] };
+  is ('2nd slot shut while ETH is +2.0R',  R.evalSym('UNI', bars, live, rg0, at2).f.slot, false);
+  is ('2nd slot open once ETH is +3.33R',  R.evalSym('UNI', bars, live, rg0, at3).f.slot, true);
+  is ('still no third position',            R.RULES.maxConc, 2);
+}
 
 /* stop watch on a journal with an open trade */
 const j = { trades: [{ id:'T1', origin:'me', sym:'UNI', entry:5.879, stop:5.1665, tp:10.154, size:1031, riskAmt:125, status:'OPEN' }] };

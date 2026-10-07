@@ -16,7 +16,8 @@ const RULES = {
   /* 5 Oct 2026: his plan screen reads "Fail at (-3%) $9,700". One position at 35% of the
      buffer is the lab's plateau on that floor (91/0/11 of 102 starts) - same as the app. */
   start: 10000, floor: 9700, target: 11200,
-  cushionRisk: 0.35, slot2Risk: 0.4, maxConc: 1, maxAlloc: 0.60,
+  /* 7 Oct 2026: a 2nd position only once every open one is >= +2.5R, at 0.3x (lab 98/0/4) */
+  cushionRisk: 0.35, slot2Risk: 0.3, slot2GateR: 2.5, maxConc: 2, maxAlloc: 0.60,
   /* fee 0.04% each side (28 Sep 2026): Kraken Funded charges no commission - cost is a
      0.04% spread built into the price (support.kraken.com/articles/funded). Was 0.26%. */
   slip: 0.004, fee: 0.0004,
@@ -101,7 +102,9 @@ function evalSym(s, bars, live, R, journal) {
   o.f.holding  = dataOK && now >= h;
   o.f.size     = !!o.size;
   const held = opens(journal).some(t => t.sym === s);
-  o.f.slot     = opens(journal).length < RULES.maxConc && !held;
+  /* the 2nd position is earned: every open trade >= slot2GateR in profit at the live price (= slot2Open() in the app) */
+  const gateOk = opens(journal).every(t => { const p = live[t.sym]; return p != null && t.riskAmt > 0 && ((p / t.entry - 1) * t.size) / t.riskAmt >= RULES.slot2GateR; });
+  o.f.slot     = opens(journal).length < RULES.maxConc && !held && gateOk;
   const order  = ['data','regime','breakout','vertical','fresh','holding','size','slot'];
   o.buyable = order.every(k => o.f[k]);
   o.firstFail = order.find(k => !o.f[k]) || null;
