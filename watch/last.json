@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-08T12:24:17.646Z",
- "ms": 1556,
+ "ran": "2026-10-08T12:24:34.557Z",
+ "ms": 884,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,25 +18,25 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 82415.1,
+   "live": 82421.8,
    "level": 87397,
-   "distPct": 6.04488740534197,
+   "distPct": 6.036267104091397,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2534.53,
+   "live": 2534.86,
    "level": 2807.1,
-   "distPct": 10.754262131440528,
+   "distPct": 10.739843620554979,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.39653,
+   "live": 1.39629,
    "level": 1.6581,
-   "distPct": 18.72999505918238,
+   "distPct": 18.75040285327545,
    "buyable": false,
    "fail": "regime"
   },
@@ -82,9 +82,9 @@
   },
   {
    "sym": "AVAX",
-   "live": 10.702,
+   "live": 10.692,
    "level": 12.002,
-   "distPct": 12.147262193982433,
+   "distPct": 12.252151141040034,
    "buyable": false,
    "fail": "regime"
   },
@@ -98,9 +98,9 @@
   },
   {
    "sym": "ATOM",
-   "live": 1.8188,
+   "live": 1.8151,
    "level": 1.9262,
-   "distPct": 5.904992302617118,
+   "distPct": 6.120874882926564,
    "buyable": false,
    "fail": "regime"
   },
