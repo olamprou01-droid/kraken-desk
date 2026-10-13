@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-13T11:38:36.956Z",
- "ms": 824,
+ "ran": "2026-10-13T11:38:55.546Z",
+ "ms": 854,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,25 +18,25 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 83446.7,
+   "live": 83485.7,
    "level": 87282.81,
-   "distPct": 4.597078134905286,
+   "distPct": 4.548216041789188,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2505.56,
+   "live": 2507.01,
    "level": 2788.35,
-   "distPct": 11.286498826609614,
+   "distPct": 11.222133138679125,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.35972,
+   "live": 1.36051,
    "level": 1.6581,
-   "distPct": 21.944223810784557,
+   "distPct": 21.87341511639016,
    "buyable": false,
    "fail": "regime"
   },
@@ -50,17 +50,17 @@
   },
   {
    "sym": "SOL",
-   "live": 106.81,
+   "live": 106.89,
    "level": 124.93,
-   "distPct": 16.96470367943077,
+   "distPct": 16.877163439049504,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOGE",
-   "live": 0.0837727,
+   "live": 0.0838161,
    "level": 0.10589,
-   "distPct": 26.40156041287913,
+   "distPct": 26.336109649578066,
    "buyable": false,
    "fail": "regime"
   },
@@ -74,9 +74,9 @@
   },
   {
    "sym": "LTC",
-   "live": 60.75,
+   "live": 60.78,
    "level": 80.25,
-   "distPct": 32.09876543209877,
+   "distPct": 32.0335636722606,
    "buyable": false,
    "fail": "regime"
   },
@@ -90,9 +90,9 @@
   },
   {
    "sym": "DOT",
-   "live": 1.1746,
+   "live": 1.1756,
    "level": 1.3066,
-   "distPct": 11.237868210454604,
+   "distPct": 11.143246002041508,
    "buyable": false,
    "fail": "regime"
   },
@@ -106,9 +106,9 @@
   },
   {
    "sym": "UNI",
-   "live": 7.2969,
+   "live": 7.3109,
    "level": 10.9321,
-   "distPct": 49.81841603968809,
+   "distPct": 49.53152142691051,
    "buyable": false,
    "fail": "regime"
   }
@@ -120,7 +120,7 @@
  "inboxSince": 1791891470,
  "inboxMerged": {
   "new": 0,
-  "updated": 1
+  "updated": 0
  },
  "journalOpen": [],
  "signals": [
