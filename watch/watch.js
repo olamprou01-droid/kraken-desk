@@ -223,8 +223,10 @@ async function runOnce() {
   /* challenge start from the app: newest "set" wins; written into the shared journal */
   if (inbox.challenge && (!journal.challenge || String(inbox.challenge.set || '') > String(journal.challenge.set || ''))) {
     journal.challenge = inbox.challenge; merged.updated++;
-    await notify('CHALLENGE STARTED', 'book starts ' + journal.challenge.start.slice(0, 16).replace('T', ' ') + ' UTC · $10,000 · fail $' +
-      (journal.challenge.floor || R.RULES.floor) + ' · pass $' + (journal.challenge.target || R.RULES.target) + ' · one position at a time', 'default', 'checkered_flag');
+    const C = journal.challenge, prevRuns = (C.prev || []).map(r => 'run ' + r.run + ' ' + r.result + ' $' + Math.round(r.equity)).join(', ');
+    await notify(C.paper ? 'PAPER RUN ' + (C.run || 2) + ' STARTED' : 'CHALLENGE STARTED',
+      'book starts ' + C.start.slice(0, 16).replace('T', ' ') + ' UTC · $10,000 · fail $' + (C.floor || R.RULES.floor) + ' · pass $' + (C.target || R.RULES.target) +
+      ' · one position, a 2nd only at +' + R.RULES.slot2GateR + 'R · only the top-ranked BUY is sent' + (prevRuns ? ' · before: ' + prevRuns : ''), 'default', 'checkered_flag');
   }
   if (merged.new || merged.updated) {
     journal.written = new Date().toISOString();
@@ -263,9 +265,15 @@ async function runOnce() {
   /* SELL — repeats while true (a stop is a human action), but at most every 30 minutes
      now that the loop runs every 5 - the phone must not buzz twelve times an hour. */
   for (const s of ev.stops) {
+    /* while the position is open the SELL clock is kept, so price wobbling over and under the stop cannot re-send */
+    for (const k of ['sell:' + s.sym, 'sellN:' + s.sym]) if (prev.alerted && prev.alerted[k]) alerted[k] = prev.alerted[k];
     if (s.hitStop) {
-      const key = 'sell:' + s.sym, last = prev.alerted && +prev.alerted[key] || 0;
-      alerted[key] = (Date.now() - last < 30 * 60e3) ? last : Date.now();
+      /* 13 Oct: 10 buzzes overnight for one paper stop. Every 30 min for the first 3, then every 3 h. */
+      const key = 'sell:' + s.sym, last = prev.alerted && +prev.alerted[key] || 0, nk = 'sellN:' + s.sym, cnt = prev.alerted && +prev.alerted[nk] || 0;
+      const gap = cnt >= 3 ? 180 * 60e3 : 30 * 60e3;
+      alerted[key] = (Date.now() - last < gap) ? last : Date.now();
+      alerted[nk] = alerted[key] === last ? cnt : cnt + 1;
+      alerted['near:' + s.sym] = 1;               // a stop that is hit must not re-arm STOP NEAR when price wobbles back over it
       if (alerted[key] === last) continue;
       events.push({ k: 'sell', sym: s.sym });
       const isV = String(s.id).charAt(0) === 'W';
@@ -294,11 +302,13 @@ async function runOnce() {
     if (s.live == null || s.hitStop || s.hitTp || String(s.id).charAt(0) === 'W') continue;
     const dist = s.entry - s.stop; if (!(dist > 0)) continue;
     const prog = (s.entry - s.live) / dist, key = 'near:' + s.sym;
+    const prevLvl = prev.alerted && prev.alerted[key] ? +prev.alerted[key] : 0;
     let lvl = 0; for (const n of NEAR) if (prog >= n) lvl = n; if (prog < 0.60) lvl = 0;
     s.near = +prog.toFixed(3);
+    /* re-arm ONLY below 60% (the comment always said so; between 60% and 75% the old code dropped the key and re-sent) */
+    if (prog >= 0.60 && prevLvl > lvl) { alerted[key] = prevLvl; continue; }
     if (!lvl) continue;
     alerted[key] = lvl;
-    const prevLvl = prev.alerted && prev.alerted[key] ? +prev.alerted[key] : 0;
     if (lvl > prevLvl) {
       events.push({ k: 'near', sym: s.sym, prog: +prog.toFixed(2) });
       await notify('STOP NEAR ' + s.sym,
@@ -329,10 +339,16 @@ async function runOnce() {
   }
 
   /* BUY — once per signal. Re-alerts only if it stopped being buyable and then fired again. */
-  const buyable = paused ? [] : ev.coins.filter(c => c.buyable);
+  /* 13 Oct (Run 1 lesson): when several coins fire, only the TOP-RANKED one (calmest breakout = lowest
+     extension, the app's scan order before its whale tie-break) is sent. The rest are marked seen
+     silently, so they cannot buzz 5 minutes later once the top one is signalled. */
+  const buyable = paused ? [] : ev.coins.filter(c => c.buyable).sort((a, b) => a.ext - b.ext);
+  let sentBuy = false;
   for (const c of buyable) {
     alerted['buy:' + c.sym] = true;
-    if (!prev.alerted['buy:' + c.sym]) {
+    if (sentBuy || prev.alerted['buy:' + c.sym]) { if (!prev.alerted['buy:' + c.sym]) events.push({ k: 'ranked-out', sym: c.sym }); continue; }
+    sentBuy = true;
+    {
       events.push({ k: 'buy', sym: c.sym });
       const z = c.size;
       await notify('BUY ' + c.sym, c.sym + ' in ' + R.px(c.sym, c.buy) + ' · stop ' + R.px(c.sym, c.stop) + ' · target ' + R.px(c.sym, c.tp) +
