@@ -559,7 +559,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.26 RUN 2</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.26.1 RUN 2</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -598,7 +598,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.26', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.26.1', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -671,6 +671,7 @@ function chalAdopt(c){if(!c||!c.start)return false;if(CHAL.set&&c.set&&c.set<=CH
    the losses were the hand - UNI sold early, AVAX bought 36% over its signal, SOL taken where the
    rule ranked AVAX first. Run 2 is paper again, from 0 with $10,000; Run 1 stays in History as
    evidence. CHAL.paper = a paper run (not live), CHAL.run = its number, CHAL.prev = finished runs. */
+var chShow=function(){};
 var RUN1={run:1,start:'2026-09-02',end:'2026-10-13',result:'FAIL',equity:9684.49,trades:5,wins:1,paper:true};
 function runsPrev(){return (CHAL.prev&&CHAL.prev.length)?CHAL.prev:[RUN1];}
 function runNo(){return CHAL.run||(runsPrev().length+1);}
@@ -1815,7 +1816,7 @@ function syncPull(){
        var r0=rem[e.id]||{};Object.keys(e).forEach(function(k){if(e[k]!=null)r0[k]=e[k];});rem[e.id]=r0;
        if(syncMergeTrade(e))n++;});
      if(journalDedupe())n++;
-     if(SYNC.chal){SYNC.chal=0;try{toast('Challenge start arrived from your other device - the book now starts '+CHAL.start.slice(0,16).replace('T',' ')+' UTC');}catch(e){}try{render();}catch(e){}}
+     if(SYNC.chal){SYNC.chal=0;try{toast(bookLabel()+' arrived - the book now starts '+CHAL.start.slice(0,16).replace('T',' ')+' UTC');}catch(e){}try{chShow();}catch(e){}try{render();}catch(e){}}
      /* what only this device knows: a trade the others have never seen, or a close they still show as open */
      mine().forEach(function(t){var s=seen[t.id]||seen[t.browserId];
        var r=rem[t.id]||rem[t.browserId]||{};
@@ -4491,7 +4492,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
 })();
 (function(){var b=$('chbtn'),w=$('chwhen'),m=$('chmeta');if(!b||!w||!m)return;
   var show=function(){m.textContent=(CHAL.start?(bookLabel()+' since '+CHAL.start.slice(0,16).replace('T',' ')+' UTC'):'not started — paper')+' · '+runsLine();
-    b.textContent=(CHAL.start&&!CHAL.paper)?'RESTART FROM THIS TIME':'I PAID — START THE CHALLENGE';};
+    b.textContent=(CHAL.start&&!CHAL.paper)?'RESTART FROM THIS TIME':'I PAID — START THE CHALLENGE';};chShow=show;
   var p=function(n){return String(n).padStart(2,'0');},d0=new Date();
   w.value=d0.getFullYear()+'-'+p(d0.getMonth()+1)+'-'+p(d0.getDate())+'T'+p(d0.getHours())+':'+p(d0.getMinutes());show();
   b.onclick=function(){var t=new Date(w.value);if(isNaN(t.getTime()))t=new Date();
