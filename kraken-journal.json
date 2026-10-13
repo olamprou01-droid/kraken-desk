@@ -1,6 +1,6 @@
 {
  "v": 3,
- "written": "2026-10-13T11:18:30.836Z",
+ "written": "2026-10-13T11:38:36.955Z",
  "note": "merged by the watcher from the shared inbox; every copy of the app pulls this file",
  "rules": {
   "start": 10000,
@@ -158,5 +158,26 @@
    "why": "stop near"
   }
  ],
- "adapted": []
+ "adapted": [],
+ "challenge": {
+  "start": "2026-10-13T11:37:50.052Z",
+  "startBal": 10000,
+  "floor": 9700,
+  "target": 11200,
+  "set": "2026-10-13T11:37:50.052Z",
+  "paper": true,
+  "run": 2,
+  "prev": [
+   {
+    "run": 1,
+    "start": "2026-09-02",
+    "end": "2026-10-13",
+    "result": "FAIL",
+    "equity": 9684.49,
+    "trades": 5,
+    "wins": 1,
+    "paper": true
+   }
+  ]
+ }
 }
