@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-22T10:15:53.574Z",
- "ms": 475,
+ "ran": "2026-10-22T10:16:14.405Z",
+ "ms": 1196,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,25 +18,25 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 81960.1,
+   "live": 81953.6,
    "level": 87249.05,
-   "distPct": 6.4530789981954495,
+   "distPct": 6.461522129595276,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2407.03,
+   "live": 2406.35,
    "level": 2776.8,
-   "distPct": 15.362085225360712,
+   "distPct": 15.39468489621212,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.33077,
+   "live": 1.33042,
    "level": 1.555,
-   "distPct": 16.84964343951245,
+   "distPct": 16.880383638249576,
    "buyable": false,
    "fail": "regime"
   },
@@ -50,33 +50,33 @@
   },
   {
    "sym": "SOL",
-   "live": 104.43,
+   "live": 104.4,
    "level": 123.73,
-   "distPct": 18.481279325864207,
+   "distPct": 18.515325670498072,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOGE",
-   "live": 0.079286,
+   "live": 0.0792773,
    "level": 0.09792,
-   "distPct": 23.502257649521987,
+   "distPct": 23.51581095723492,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LINK",
-   "live": 12.06711,
+   "live": 12.05726,
    "level": 14.651,
-   "distPct": 21.412666330214947,
+   "distPct": 21.5118526099628,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LTC",
-   "live": 59.45,
+   "live": 59.47,
    "level": 72.307,
-   "distPct": 21.626576955424714,
+   "distPct": 21.585673448797714,
    "buyable": false,
    "fail": "regime"
   },
@@ -106,9 +106,9 @@
   },
   {
    "sym": "UNI",
-   "live": 7.0954,
+   "live": 7.096,
    "level": 9.3216,
-   "distPct": 31.375257208895913,
+   "distPct": 31.364148816234504,
    "buyable": false,
    "fail": "regime"
   }
