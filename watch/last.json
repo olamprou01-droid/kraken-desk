@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-22T21:30:33.285Z",
- "ms": 642,
+ "ran": "2026-10-22T21:30:51.600Z",
+ "ms": 705,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,9 +18,9 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 81446.6,
+   "live": 81446.5,
    "level": 87249.05,
-   "distPct": 7.124238458081722,
+   "distPct": 7.124369985205026,
    "buyable": false,
    "fail": "regime"
   },
@@ -34,9 +34,9 @@
   },
   {
    "sym": "XRP",
-   "live": 1.30755,
+   "live": 1.30733,
    "level": 1.555,
-   "distPct": 18.924706512179256,
+   "distPct": 18.944719389901543,
    "buyable": false,
    "fail": "regime"
   },
