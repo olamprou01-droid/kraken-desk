@@ -1,5 +1,5 @@
 {
- "ran": "2026-10-24T01:35:10.436Z",
+ "ran": "2026-10-24T01:35:29.049Z",
  "ms": 845,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
@@ -18,25 +18,25 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 80711.8,
+   "live": 80709.5,
    "level": 86996,
-   "distPct": 7.785974293721609,
+   "distPct": 7.789045899181635,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2373.42,
+   "live": 2373.11,
    "level": 2739,
-   "distPct": 15.403089213034349,
+   "distPct": 15.418164349735154,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.28871,
+   "live": 1.28837,
    "level": 1.5309,
-   "distPct": 18.793211816467625,
+   "distPct": 18.824561267337803,
    "buyable": false,
    "fail": "regime"
   },
@@ -50,17 +50,17 @@
   },
   {
    "sym": "SOL",
-   "live": 102.36,
+   "live": 102.28,
    "level": 122.26,
-   "distPct": 19.441187964048456,
+   "distPct": 19.534610872115763,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOGE",
-   "live": 0.0785097,
+   "live": 0.0784865,
    "level": 0.09757,
-   "distPct": 24.27763703083823,
+   "distPct": 24.314372535404182,
    "buyable": false,
    "fail": "regime"
   },
@@ -74,33 +74,33 @@
   },
   {
    "sym": "LTC",
-   "live": 57.1,
+   "live": 57.07,
    "level": 72.307,
-   "distPct": 26.632224168126093,
+   "distPct": 26.698790958472053,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "AVAX",
-   "live": 9.021,
+   "live": 9.023,
    "level": 11.732,
-   "distPct": 30.052100654029456,
+   "distPct": 30.023273855702094,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOT",
-   "live": 1.0808,
+   "live": 1.0807,
    "level": 1.2966,
-   "distPct": 19.966691339748333,
+   "distPct": 19.97779217174054,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ATOM",
-   "live": 1.6844,
+   "live": 1.6827,
    "level": 2.0836,
-   "distPct": 23.69983376870104,
+   "distPct": 23.824805372318302,
    "buyable": false,
    "fail": "regime"
   },
