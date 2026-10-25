@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-25T05:39:34.449Z",
- "ms": 1719,
+ "ran": "2026-10-25T05:39:51.745Z",
+ "ms": 901,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,65 +18,65 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 80517.5,
+   "live": 80524.7,
    "level": 86996,
-   "distPct": 8.046076939795688,
+   "distPct": 8.03641615553985,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2351.68,
+   "live": 2352.35,
    "level": 2739,
-   "distPct": 16.469927881344404,
+   "distPct": 16.43675473462709,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.30194,
+   "live": 1.30256,
    "level": 1.5309,
-   "distPct": 17.58606387391122,
+   "distPct": 17.530094582975075,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ADA",
-   "live": 0.206396,
+   "live": 0.206417,
    "level": 0.28221,
-   "distPct": 36.732301013585555,
+   "distPct": 36.71839044264766,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "SOL",
-   "live": 101.96,
+   "live": 102.04,
    "level": 122.26,
-   "distPct": 19.90976853668107,
+   "distPct": 19.815758526068205,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOGE",
-   "live": 0.0770443,
+   "live": 0.0771317,
    "level": 0.09757,
-   "distPct": 26.641425777117856,
+   "distPct": 26.497924977668074,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LINK",
-   "live": 11.4515,
+   "live": 11.46165,
    "level": 14.328,
-   "distPct": 25.118980046282147,
+   "distPct": 25.008179450602654,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LTC",
-   "live": 56.31,
+   "live": 56.3,
    "level": 72.307,
-   "distPct": 28.408808382170125,
+   "distPct": 28.431616341030196,
    "buyable": false,
    "fail": "regime"
   },
@@ -90,9 +90,9 @@
   },
   {
    "sym": "DOT",
-   "live": 1.0366,
+   "live": 1.0369,
    "level": 1.2966,
-   "distPct": 25.08199884236928,
+   "distPct": 25.045809624843287,
    "buyable": false,
    "fail": "regime"
   },
