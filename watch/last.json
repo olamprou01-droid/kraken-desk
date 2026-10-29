@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-29T05:59:46.878Z",
- "ms": 785,
+ "ran": "2026-10-29T06:04:49.846Z",
+ "ms": 1167,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,57 +18,57 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 80124.2,
+   "live": 80151,
    "level": 84856.07,
-   "distPct": 5.905668948956766,
+   "distPct": 5.870257389177946,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2319.98,
+   "live": 2320.73,
    "level": 2585.67,
-   "distPct": 11.452253898740516,
+   "distPct": 11.41623540868606,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.29787,
+   "live": 1.29836,
    "level": 1.4287,
-   "distPct": 10.080362439997836,
+   "distPct": 10.03881820142334,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ADA",
-   "live": 0.199032,
+   "live": 0.199435,
    "level": 0.25921,
-   "distPct": 30.23533904095825,
+   "distPct": 29.97217138416024,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "SOL",
-   "live": 100.18,
+   "live": 100.24,
    "level": 116.77,
-   "distPct": 16.56019165502094,
+   "distPct": 16.490422984836385,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOGE",
-   "live": 0.0785676,
+   "live": 0.0785279,
    "level": 0.08967,
-   "distPct": 14.131015838589956,
+   "distPct": 14.18871509361641,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LINK",
-   "live": 11.50879,
+   "live": 11.49914,
    "level": 13.748,
-   "distPct": 19.456519755769296,
+   "distPct": 19.556766853869068,
    "buyable": false,
    "fail": "regime"
   },
@@ -82,17 +82,17 @@
   },
   {
    "sym": "AVAX",
-   "live": 8.747,
+   "live": 8.733,
    "level": 11.194,
-   "distPct": 27.975305819138008,
+   "distPct": 28.180464903240576,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOT",
-   "live": 0.9823,
+   "live": 0.9824,
    "level": 1.2966,
-   "distPct": 31.996335131833465,
+   "distPct": 31.98289902280129,
    "buyable": false,
    "fail": "regime"
   },
@@ -106,17 +106,21 @@
   },
   {
    "sym": "UNI",
-   "live": 7.0623,
+   "live": 7.0603,
    "level": 8.0267,
-   "distPct": 13.655607946419735,
+   "distPct": 13.687803634406471,
    "buyable": false,
    "fail": "regime"
   }
  ],
  "stops": [],
- "events": [],
+ "events": [
+  {
+   "k": "heartbeat"
+  }
+ ],
  "alerted": {},
- "heartbeatDay": "2026-10-28",
+ "heartbeatDay": "2026-10-29",
  "inboxSince": 1791891470,
  "inboxMerged": {
   "new": 0,
