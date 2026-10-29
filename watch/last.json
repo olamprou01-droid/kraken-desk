@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-29T11:41:31.515Z",
- "ms": 622,
+ "ran": "2026-10-29T11:41:49.043Z",
+ "ms": 601,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -26,9 +26,9 @@
   },
   {
    "sym": "ETH",
-   "live": 2322.17,
+   "live": 2322.11,
    "level": 2585.67,
-   "distPct": 11.347145127187064,
+   "distPct": 11.350022178105256,
    "buyable": false,
    "fail": "regime"
   },
@@ -42,9 +42,9 @@
   },
   {
    "sym": "ADA",
-   "live": 0.200462,
+   "live": 0.200511,
    "level": 0.25921,
-   "distPct": 29.306302441360454,
+   "distPct": 29.27470313349392,
    "buyable": false,
    "fail": "regime"
   },
@@ -74,9 +74,9 @@
   },
   {
    "sym": "LTC",
-   "live": 57.85,
+   "live": 57.86,
    "level": 66.3,
-   "distPct": 14.606741573033698,
+   "distPct": 14.586933978568961,
    "buyable": false,
    "fail": "regime"
   },
@@ -90,17 +90,17 @@
   },
   {
    "sym": "DOT",
-   "live": 0.9827,
+   "live": 0.9834,
    "level": 1.2966,
-   "distPct": 31.942607102879816,
+   "distPct": 31.848688224527134,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ATOM",
-   "live": 1.6215,
+   "live": 1.6217,
    "level": 2.0836,
-   "distPct": 28.498304039469645,
+   "distPct": 28.482456681260416,
    "buyable": false,
    "fail": "regime"
   },
