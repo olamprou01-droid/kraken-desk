@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-29T06:04:49.846Z",
- "ms": 1167,
+ "ran": "2026-10-29T06:05:09.023Z",
+ "ms": 772,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -18,41 +18,41 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 80151,
+   "live": 80145.3,
    "level": 84856.07,
-   "distPct": 5.870257389177946,
+   "distPct": 5.8777869694168094,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2320.73,
+   "live": 2320.8,
    "level": 2585.67,
-   "distPct": 11.41623540868606,
+   "distPct": 11.412874870734214,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.29836,
+   "live": 1.29788,
    "level": 1.4287,
-   "distPct": 10.03881820142334,
+   "distPct": 10.079514284833735,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ADA",
-   "live": 0.199435,
+   "live": 0.19942,
    "level": 0.25921,
-   "distPct": 29.97217138416024,
+   "distPct": 29.98194764817972,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "SOL",
-   "live": 100.24,
+   "live": 100.25,
    "level": 116.77,
-   "distPct": 16.490422984836385,
+   "distPct": 16.478802992518695,
    "buyable": false,
    "fail": "regime"
   },
@@ -66,25 +66,25 @@
   },
   {
    "sym": "LINK",
-   "live": 11.49914,
+   "live": 11.50041,
    "level": 13.748,
-   "distPct": 19.556766853869068,
+   "distPct": 19.543564099019072,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LTC",
-   "live": 57.67,
+   "live": 57.66,
    "level": 66.3,
-   "distPct": 14.964452921796422,
+   "distPct": 14.98439125910509,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "AVAX",
-   "live": 8.733,
+   "live": 8.735,
    "level": 11.194,
-   "distPct": 28.180464903240576,
+   "distPct": 28.151116199198633,
    "buyable": false,
    "fail": "regime"
   },
@@ -114,11 +114,7 @@
   }
  ],
  "stops": [],
- "events": [
-  {
-   "k": "heartbeat"
-  }
- ],
+ "events": [],
  "alerted": {},
  "heartbeatDay": "2026-10-29",
  "inboxSince": 1791891470,
