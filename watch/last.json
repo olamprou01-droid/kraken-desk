@@ -1,6 +1,6 @@
 {
- "ran": "2026-10-31T03:18:24.706Z",
- "ms": 1302,
+ "ran": "2026-10-31T03:18:41.220Z",
+ "ms": 490,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -34,9 +34,9 @@
   },
   {
    "sym": "XRP",
-   "live": 1.25376,
+   "live": 1.25388,
    "level": 1.4251,
-   "distPct": 13.66609239407861,
+   "distPct": 13.655214215076406,
    "buyable": false,
    "fail": "regime"
   },
@@ -90,9 +90,9 @@
   },
   {
    "sym": "DOT",
-   "live": 0.9641,
+   "live": 0.9627,
    "level": 1.2966,
-   "distPct": 34.4881236386267,
+   "distPct": 34.68370208787783,
    "buyable": false,
    "fail": "regime"
   },
