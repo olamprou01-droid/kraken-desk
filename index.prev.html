@@ -506,7 +506,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
       <input id="chwhen" type="datetime-local" style="background:var(--panel2);border:1px solid var(--line2);color:var(--txt);padding:6px 8px;border-radius:4px;font:12px var(--mono)">
       <button class="btn" id="chbtn">I PAID — START THE CHALLENGE</button></div>
     <div class="sub" style="margin-top:6px;color:var(--dim)">Paper runs reset the book to $10,000 with the same rules; earlier runs stay in History as evidence.
-      Press I PAID once, when the $90 is paid: from then the book is the real challenge - fail $9,400, pass $11,000, one position
+      Press I PAID once, when the $90 is paid: from then the book is the real challenge - fail $9,700, pass $11,200, one position
       (a 2nd only once the first is +2.5R). Every device and the watcher switch together.</div></div></div>
   <div class="pnl" style="margin-bottom:10px"><div class="ph"><h3>Sync key</h3><div class="sp"></div>
     <span class="meta" id="skmeta">—</span></div>
@@ -649,7 +649,7 @@ if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.on
    slot2Risk x. gate 2.5R row: 0.2x 98/0/4 · 0.3x 98/0/4 · 0.4x 97/0/5 · 0.5x 96/0/6; at 0.3x the
    gate neighbours agree (2R 98/0/4, 3R 93/0/9). Free 2nd slot at 0.4x: 66/0/36; 0.35x unconditional
    two slots: 43/27/32. Adopted gate 2.5R, 0.3x - every neighbour beats one-position (91/0/11). */
-var RULES={start:10000,floor:9400,target:11000,cushionRisk:0.35,slot2Risk:0.3,slot2GateR:2.5,maxConc:2,maxAlloc:0.60,
+var RULES={start:10000,floor:9700,target:11200,cushionRisk:0.35,slot2Risk:0.3,slot2GateR:2.5,maxConc:2,maxAlloc:0.60,
            /* fee 0.04% (28 Sep 2026): Kraken Funded charges no commission - the cost is a 0.04%
     spread each side, built into the price you see (support.kraken.com/articles/funded,
     "How much does it cost?"). Was modelled at 0.26% (Kraken Pro retail taker), which
@@ -4499,7 +4499,7 @@ document.addEventListener('visibilitychange',function(){if(document.visibilitySt
   var p=function(n){return String(n).padStart(2,'0');},d0=new Date();
   w.value=d0.getFullYear()+'-'+p(d0.getMonth()+1)+'-'+p(d0.getDate())+'T'+p(d0.getHours())+':'+p(d0.getMinutes());show();
   b.onclick=function(){var t=new Date(w.value);if(isNaN(t.getTime()))t=new Date();
-    if(!confirm('Start the challenge book at '+t.toLocaleString()+'?\n\nFrom then: $10,000, fail $9,400, pass $11,000, one position (a 2nd only once the first is +'+RULES.slot2GateR+'R). Earlier trades stay as history.'))return;
+    if(!confirm('Start the challenge book at '+t.toLocaleString()+'?\n\nFrom then: $10,000, fail $9,700, pass $11,200, one position (a 2nd only once the first is +'+RULES.slot2GateR+'R). Earlier trades stay as history.'))return;
     var pv=runsPrev().slice();if(CHAL.start&&CHAL.paper){var cl=closes().filter(inBook);pv.push({run:runNo(),start:CHAL.start.slice(0,10),end:new Date().toISOString().slice(0,10),
       result:'STOPPED',equity:Math.round(equity()*100)/100,trades:cl.length,wins:cl.filter(function(x){return x.pnl>0;}).length,paper:true});}
     chalStart(t.toISOString(),{paper:false,run:pv.length+1,prev:pv});show();try{render();}catch(e){}toast('Challenge book started - every device and the watcher follow');};})();
