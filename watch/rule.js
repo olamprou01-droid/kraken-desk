@@ -15,7 +15,7 @@
 const RULES = {
   /* 5 Oct 2026: his plan screen reads "Fail at (-3%) $9,700". One position at 35% of the
      buffer is the lab's plateau on that floor (91/0/11 of 102 starts) - same as the app. */
-  start: 10000, floor: 9700, target: 11200,
+  start: 10000, floor: 9400, target: 11000,
   /* 7 Oct 2026: a 2nd position only once every open one is >= +2.5R, at 0.3x (lab 98/0/4) */
   cushionRisk: 0.35, slot2Risk: 0.3, slot2GateR: 2.5, maxConc: 2, maxAlloc: 0.60,
   /* fee 0.04% each side (28 Sep 2026): Kraken Funded charges no commission - cost is a

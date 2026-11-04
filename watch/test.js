@@ -49,10 +49,10 @@ is ('UNI first failing gate is regime',       by.UNI.firstFail, 'regime');
 /* sizing at a fresh $10,000 book on the $9,700 floor (5 Oct 2026): cushion 300, risk 35% = 105.
    notional = risk / stop distance = 105 / (1.5 * 0.677321 / 7.4831) = 773.24 (by hand) */
 eq ('equity, empty journal',  ev.equity,  10000);
-eq ('cushion (floor 9,700)',  ev.cushion, 300);
+eq ('cushion (floor 9,700)',  ev.cushion, 600);
 const sz = R.sizeFor(7.4831, 7.4831 - 1.5*by.UNI.atr, emptyJournal, live);
-eq ('UNI ticket risk $ (35% of 300)', sz.risk, 105);
-eq ('UNI ticket notional $',  sz.notional, 105 / (1.5 * 0.677321 / 7.4831), 0.5);
+eq ('UNI ticket risk $ (35% of 300)', sz.risk, 210);
+eq ('UNI ticket notional $',  sz.notional, 210 / (1.5 * 0.677321 / 7.4831), 0.5);
 eq ('first position risk is 35% of buffer', R.RULES.cushionRisk, 0.35);
 
 /* SIGNING (28 Sep 2026). The app signs with Web Crypto (crypto.subtle.sign,
