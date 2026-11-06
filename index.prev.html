@@ -559,7 +559,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.26.2 RUN 2</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.30 RUN 2</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -598,7 +598,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.26.2', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.30', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -655,7 +655,7 @@ var RULES={start:10000,floor:9400,target:11000,cushionRisk:0.35,slot2Risk:0.3,sl
     "How much does it cost?"). Was modelled at 0.26% (Kraken Pro retail taker), which
     understated every backtest's real edge - the true cost is lower, not higher. */
  slip:0.004,fee:0.0004,lookback:20,atrMult:1.5,rr:6,extLimit:0.12,staleLimit:0.02,
-           momN:60,momThr:0.10};
+           momN:60,momThr:0.10,legacyBuy:false};
 var RULES_FILE=JSON.parse(JSON.stringify(RULES));
 /* CHALLENGE START (5 Oct 2026). Until he pays, every trade is paper and the book is the paper
    book. From CHAL.start the book - equity, buffer, slots, stops, sizing - is only the trades
@@ -2283,7 +2283,7 @@ function killCheck(){
   var why=null;if(streak>=KILL.streak)why=streak+' losses in a row (limit '+KILL.streak+')';
   else if(pf!=null&&pf<KILL.pf20)why='rolling-20 profit factor '+nf(pf,2)+' (limit '+KILL.pf20+')';
   return{on:!!why,why:why,streak:streak,pf20:pf,n:C.length};}
-function offRuleWhy(sym,entry){
+function planCard(mob){var st=WATCH.st,P=st&&st.plan;if(RULES.legacyBuy!==false||!P||!P.coins)return '';var age=st.ran?Math.round((Date.now()-new Date(st.ran).getTime())/60000):null;var cU='var(--up)',cD='var(--dn)',cW='var(--warn)',cT='var(--txt2)';var kill=P.coins.filter(function(c){var p=(liveFresh()&&isLivePx(c.sym))?price(c.sym):c.live;return c.held&&c.stop!=null&&p!=null&&p<=c.stop;});var h='<div style="border:1px solid '+(kill.length?cD:'var(--line,#333)')+';padding:'+(mob?'10px':'8px 12px')+';margin:'+(mob?'10px 0':'0 0 8px 0')+';font-family:inherit">';h+='<div style="display:flex;justify-content:space-between;font-size:11px;color:'+cT+'"><span>TREND PLAN · HULL 55 · BTC + ETH · ORDERS FROM 08:00 CYPRUS · DAILY CLOSE '+(P.at||'—')+'</span><span style="color:'+(age==null||age>20?cW:cT)+'">WATCHER '+(age==null?'—':age+' MIN AGO')+'</span></div>';if(kill.length)h+='<div style="color:'+cD+';font-weight:700;margin:6px 0">SELL ALL NOW · '+kill.map(function(c){return c.sym;}).join(' + ')+' at or under the day stop (1.5% daily limit - sell ALL, no new buys today)</div>';else if(P.passed)h+='<div style="color:'+cU+';font-weight:700;margin:6px 0">TARGET HIT · SELL EVERYTHING</div>';P.coins.forEach(function(c){var col=c.action==='BUY'?cU:c.action==='SELL'?cD:c.action==='HOLD'?'var(--acc,#2bb)':cT;var d=c.action==='BUY'?('buy '+usd(c.notional,0)+' at ~'+px(c.sym,c.live)+' · stop '+px(c.sym,c.stop)):c.action==='HOLD'?('stop today '+px(c.sym,c.stop)):c.action==='SELL'?('trend off · sell all '+c.sym):c.action==='WAIT'?('needs a daily close > '+px(c.sym,c.next)):'no data';h+='<div style="display:flex;gap:10px;align-items:baseline;margin-top:6px"><b style="width:36px">'+c.sym+'</b><b style="color:'+col+';width:44px">'+c.action+'</b><span style="font-size:'+(mob?'12px':'13px')+'">'+d+'</span></div>';});h+='<div style="font-size:11px;color:'+cT+';margin-top:6px">sell everything today if equity &le; '+usd(P.killEq,0)+' · fail '+usd(RULES.floor,0)+' · pass '+usd(RULES.target,0)+'</div></div>';return h;}function planOff(sym){if(RULES.legacyBuy!==false)return undefined;var P=WATCH.st&&WATCH.st.plan;if(!P||!P.coins)return 'no trend plan from the watcher yet - press ↻';var c=null;P.coins.forEach(function(x){if(x.sym===sym)c=x;});if(!c)return sym+' is not in the trend plan (BTC, ETH only)';return (c.action==='BUY'||c.action==='HOLD')?null:('trend plan says '+c.action+' for '+sym);}function offRuleWhy(sym,entry){var _po=planOff(sym);if(_po!==undefined)return _po;
   if(opens().length>=RULES.maxConc)return 'no free slot ('+RULES.maxConc+' open)';
   var g2=slot2Open();if(!g2.ok)return g2.why;
   var g=null;((WATCH.st&&WATCH.st.signals)||[]).forEach(function(s){if(s.sym===sym&&s.status==='OPEN')g=s;});
@@ -2417,7 +2417,7 @@ function evalSym(s,R){
  o.atr=a;o.atrPct=(a!=null&&now)?a/now*100:null;
  var dataOK=!!(b&&a!=null&&h!=null&&a>0&&close!=null&&now!=null&&now>0);
  o.f.data={ok:dataOK,v:o.nbars+' bars'+(dataOK?'':' — cannot compute')};
- o.f.regime={ok:!!(R&&R.on),v:R?R.txt:'—'};
+ o.f.regime={ok:!!(R&&R.on)&&RULES.legacyBuy!==false,v:RULES.legacyBuy===false?'breakout rule retired - Hull 55 trend plan since 6 Nov 2026 - trend plan instead':(R?R.txt:'—')};
  o.f.breakout={ok:!!(dataOK&&close>h),
    v:dataOK?(px(s,close)+' vs '+px(s,h)+(close>h?' ✓':' — below')):'—'};
  if(dataOK){
@@ -3404,7 +3404,7 @@ function render(){
  $('mode').innerHTML='<span class="dot"></span>'+bookLabel();
  $('sess').textContent=clockTxt()+' Nicosia';
  $('uni').textContent=SYMS().join(' · ');
- $('rulestate').innerHTML=sc.regime.on
+ $('rulestate').innerHTML=RULES.legacyBuy===false?'<span class="tag g">TREND PLAN</span> <span class="sub">BTC + ETH · old breakout rule retired - Hull 55 trend plan since 6 Nov 2026</span>':sc.regime.on
    ? '<span class="tag g">RULE ON</span> <span class="sub">'+sc.regime.txt+'</span>'
    : '<span class="tag r">RULE OFF</span> <span class="sub">'+sc.regime.txt+'</span>';
  /* the bell tells the truth in three states, because "on" with no OS permission
@@ -3445,7 +3445,7 @@ function render(){
  var _ub=$('unsignedbar');if(!_ub){_ub=el('div');_ub.id='unsignedbar';K.parentNode.insertBefore(_ub,K);}
  _ub.innerHTML=unsignedHere()?'<div class="act s" style="margin-bottom:8px"><div><div class="t">NOT SYNCING — THIS DEVICE HAS NO SYNC KEY</div><div class="m">the watcher accepts signed trades only · DETAILS → Sync key</div></div></div>':'';
  [['Equity',usd(eq,2),(eq>=RULES.start?'pos':'neg'),pc(gainPct,2)],
-  ['To target',usd(toPass,0),'info',nf(12-gainPct,2)+'%'],
+  ['To target',usd(toPass,0),'info',nf((RULES.target/RULES.start-1)*100-gainPct,2)+'%'],
   ['Buffer',usd(cu,0),(cu<200?'neg':'pos'),'limit '+usd(RULES.floor,0)],
   ['Open',op.length+' / '+RULES.maxConc,(op.length?'info':''),''],
   ['Next risk',usd(RULES.cushionRisk*cu*(op.length>=1?(RULES.slot2Risk||1):1),0),'warnk',op.length>=1?(slot2Open().ok?'slot 2 · '+Math.round(RULES.cushionRisk*RULES.slot2Risk*100)+'% of buffer':'2nd not earned yet'):Math.round(RULES.cushionRisk*100)+'% of buffer'],
@@ -3472,7 +3472,7 @@ function render(){
   var te=t.t?new Date(t.t).getTime():0;
   if(_pxAt&&te&&_pxAt<te){_preEntry.push(t.sym);return false;}
   return true;});
- var A=$('act');
+ var _pcd=$('plancard');if(!_pcd){_pcd=el('div');_pcd.id='plancard';K.parentNode.insertBefore(_pcd,K);}_pcd.innerHTML=planCard(false);var A=$('act');
  if(danger.length){A.className='act s';
   A.innerHTML='<div><div class="t">SELL '+danger.map(function(t){return t.sym;}).join(' + ')+' NOW</div>'+
    '<div class="m">at or below your stop · no resting stop order on this book · price '+
@@ -3910,7 +3910,7 @@ function renderMobile(){
       usd(eq-RULES.start,2)+' &nbsp;·&nbsp; '+pc(gainPct,2)+'</div>'+
      '<div class="mbarw"><div class="track"><div class="fill" style="width:'+pct.toFixed(1)+'%"></div></div>'+
       '<div class="ends"><span>Limit <b>'+usd(RULES.floor,0)+'</b></span>'+
-      '<span>Target <b>'+usd(RULES.target,0)+'</b></span></div></div></div>';
+      '<span>Target <b>'+usd(RULES.target,0)+'</b></span></div></div></div>';h+=planCard(true);
 
   if(_withheld.length){
    h+='<div class="mact wait"><div class="w">TAP ↻</div>'+
@@ -3941,7 +3941,7 @@ function renderMobile(){
    h+='<div class="mact wait"><div class="w">HOLD</div><div class="sub">'+op.length+' of '+RULES.maxConc+' slots used</div></div>';
   }else if(killCheck().on){
    h+='<div class="mact sell"><div class="w">PAUSED</div><div class="sub">'+killCheck().why+' · no new entries until reviewed</div></div>';
-  }else if(!sc.regime.on){
+  }else if(!sc.regime.on&&RULES.legacyBuy!==false){
    var R=sc.regime;
    h+='<div class="mact wait"><div class="w">WAIT</div>'+
       '<div class="mgrid"><div class="c"><div class="k">BTC</div><div class="v">'+px('BTC',R.px)+'</div></div>'+
