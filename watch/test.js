@@ -125,5 +125,81 @@ const btc2 = bars.BTC.map(b => b.slice()); btc2[btc2.length-1][4] = 79000;
 const rg2 = R.regime(btc2);
 is ('synthetic: regime turns ON when close > sma', rg2.on, true);
 
+
+/* ==== TREND PLAN v4.30 (6 Nov 2026): Hull 55 rising + above 200-day average ===================
+   Expected values computed independently in Python/pandas (the backtest's own hma(): rolling weighted means;
+   'next' found by bisection, appending a candidate close and recomputing) from watch/plan-fixture.json. */
+const PF = require('./plan-fixture.json');
+for (const k of Object.keys(PF.cases)) { const C = PF.cases[k]; C.bars = {};
+  for (const s of Object.keys(C.close)) C.bars[s] = C.close[s].map((c, j) => [new Date(Date.parse(C.start) + j * 864e5).toISOString().slice(0, 10), c, c, c, c, 0]); }
+const pj = held => ({ trades: Object.keys(held).map((s, k) => ({ id: 'P' + k, origin: 'me', sym: s, status: 'OPEN', entry: held[s][0], size: held[s][1], t: '2000-01-01' })) });
+is ('legacy breakout BUY is retired', R.RULES.legacyBuy, false);
+is ('old rule cannot buy even with regime ON', R.evalSym('BTC', bars, live, { on: true }, emptyJournal).f.regime, false);
+is ('tp missing never reads as target hit', R.evaluate(bars, live, { trades: [{ id: 'X', origin: 'me', sym: 'BTC', status: 'OPEN', entry: 70000, stop: 60000, size: 1000 }] }).stops[0].hitTp, false);
+eq ('plan size multiple', R.RULES.plan.mult, 12); eq('plan max leverage', R.RULES.plan.maxLev, 1); eq('plan day stop', R.RULES.plan.dayKill, 0.015);
+{ const T = R.trendAt(PF.cases.today.bars.BTC, PF.cases.today.bars.BTC.length - 1);
+  eq('today BTC close', T.close, 77454.2); eq('today BTC Hull 55', T.hull, 79471.75901008, 1e-6); eq('today BTC Hull 55 yesterday', T.hullPrev, 79919.59452115, 1e-6);
+  eq('today BTC 200-day avg', T.sma, 73207.001500, 0.001); eq('today BTC 30-day vol', T.vol, 0.0145453555, 1e-9);
+  eq('today BTC close needed tomorrow', T.next, 93420.108110, 0.01); is('today BTC ON', T.on, false); }
+{ const T = R.trendAt(PF.cases.today.bars.ETH, PF.cases.today.bars.ETH.length - 1);
+  eq('today ETH close', T.close, 2274.91); eq('today ETH Hull 55', T.hull, 2262.42747159, 1e-6); eq('today ETH Hull 55 yesterday', T.hullPrev, 2276.94332132, 1e-6);
+  eq('today ETH 200-day avg', T.sma, 2157.852000, 0.001); eq('today ETH 30-day vol', T.vol, 0.0185544233, 1e-9);
+  eq('today ETH close needed tomorrow', T.next, 2741.071881, 0.01); is('today ETH ON', T.on, false); }
+{ const T = R.trendAt(PF.cases.bothOn.bars.BTC, PF.cases.bothOn.bars.BTC.length - 1);
+  eq('bothOn BTC close', T.close, 83323.0); eq('bothOn BTC Hull 55', T.hull, 85828.07382868, 1e-6); eq('bothOn BTC Hull 55 yesterday', T.hullPrev, 85597.80398758, 1e-6);
+  eq('bothOn BTC 200-day avg', T.sma, 71765.823000, 0.001); eq('bothOn BTC 30-day vol', T.vol, 0.0203711129, 1e-9);
+  eq('bothOn BTC close needed tomorrow', T.next, 77239.828494, 0.01); is('bothOn BTC ON', T.on, true); }
+{ const T = R.trendAt(PF.cases.bothOn.bars.ETH, PF.cases.bothOn.bars.ETH.length - 1);
+  eq('bothOn ETH close', T.close, 2574.44); eq('bothOn ETH Hull 55', T.hull, 2748.50256908, 1e-6); eq('bothOn ETH Hull 55 yesterday', T.hullPrev, 2747.60026395, 1e-6);
+  eq('bothOn ETH 200-day avg', T.sma, 2127.609850, 0.001); eq('bothOn ETH 30-day vol', T.vol, 0.0224897324, 1e-9);
+  eq('bothOn ETH close needed tomorrow', T.next, 2668.193731, 0.01); is('bothOn ETH ON', T.on, true); }
+{ const T = R.trendAt(PF.cases.btcOff.bars.BTC, PF.cases.btcOff.bars.BTC.length - 1);
+  eq('btcOff BTC close', T.close, 81179.6); eq('btcOff BTC Hull 55', T.hull, 81119.35589732, 1e-6); eq('btcOff BTC Hull 55 yesterday', T.hullPrev, 81226.53877946, 1e-6);
+  eq('btcOff BTC 200-day avg', T.sma, 70540.525500, 0.001); eq('btcOff BTC 30-day vol', T.vol, 0.0194586665, 1e-9);
+  eq('btcOff BTC close needed tomorrow', T.next, 82776.898974, 0.01); is('btcOff BTC ON', T.on, false); }
+{ const T = R.trendAt(PF.cases.btcOff.bars.ETH, PF.cases.btcOff.bars.ETH.length - 1);
+  eq('btcOff ETH close', T.close, 2644.88); eq('btcOff ETH Hull 55', T.hull, 2608.78293823, 1e-6); eq('btcOff ETH Hull 55 yesterday', T.hullPrev, 2608.37182510, 1e-6);
+  eq('btcOff ETH 200-day avg', T.sma, 2077.204000, 0.001); eq('btcOff ETH 30-day vol', T.vol, 0.0238954041, 1e-9);
+  eq('btcOff ETH close needed tomorrow', T.next, 2521.010110, 0.01); is('btcOff ETH ON', T.on, true); }
+{ const Q = R.plan(PF.cases.today.bars, PF.cases.today.live, pj({}));
+  eq('today_empty equity live', Q.eqLive, 10000, 0.01); eq('today_empty equity at day open', Q.eqOpen, 10000, 0.01);
+  eq('today_empty total size', Q.total, 7200, 0.01); eq('today_empty day-stop equity', Q.killEq, 9850.0, 0.01); is('today_empty day stop hit', Q.killed, false);
+  is('today_empty BTC action', Q.coins.BTC.action, 'WAIT');
+  is('today_empty ETH action', Q.coins.ETH.action, 'WAIT');
+}
+{ const Q = R.plan(PF.cases.bothOn.bars, PF.cases.bothOn.live, pj({}));
+  eq('bothOn_empty equity live', Q.eqLive, 10000, 0.01); eq('bothOn_empty equity at day open', Q.eqOpen, 10000, 0.01);
+  eq('bothOn_empty total size', Q.total, 7200, 0.01); eq('bothOn_empty day-stop equity', Q.killEq, 9850.0, 0.01); is('bothOn_empty day stop hit', Q.killed, false);
+  is('bothOn_empty BTC action', Q.coins.BTC.action, 'BUY');
+  eq('bothOn_empty BTC buy $', Q.coins.BTC.notional, 3777.9486627428614, 0.01); eq('bothOn_empty BTC pass price', Q.coins.BTC.passPx, 105378.09058969213, 0.01);
+  eq('bothOn_empty BTC day stop', Q.coins.BTC.stop, 81587.10416666666, 0.01);
+  is('bothOn_empty ETH action', Q.coins.ETH.action, 'BUY');
+  eq('bothOn_empty ETH buy $', Q.coins.ETH.notional, 3422.0513372571395, 0.01); eq('bothOn_empty ETH pass price', Q.coins.ETH.passPx, 3326.748994307338, 0.01);
+  eq('bothOn_empty ETH day stop', Q.coins.ETH.stop, 2520.8058333333333, 0.01);
+  eq('bothOn_empty day-stop distance', Q.move, 0.020833333333333332, 1e-9);
+}
+{ const Q = R.plan(PF.cases.bothOn.bars, PF.cases.bothOn.live, pj({ BTC: [80000, 4000] }));
+  eq('bothOn_btcHeld equity live', Q.eqLive, 10166.15, 0.01); eq('bothOn_btcHeld equity at day open', Q.eqOpen, 10166.15, 0.01);
+  eq('bothOn_btcHeld total size', Q.total, 9193.799999999996, 0.01); eq('bothOn_btcHeld day-stop equity', Q.killEq, 10013.65775, 0.01); is('bothOn_btcHeld day stop hit', Q.killed, false);
+  is('bothOn_btcHeld BTC action', Q.coins.BTC.action, 'HOLD');
+  eq('bothOn_btcHeld BTC day stop', Q.coins.BTC.stop, 81834.43707144452, 0.01);
+  is('bothOn_btcHeld ETH action', Q.coins.ETH.action, 'BUY');
+  eq('bothOn_btcHeld ETH buy $', Q.coins.ETH.notional, 4369.674386732593, 0.01); eq('bothOn_btcHeld ETH pass price', Q.coins.ETH.passPx, 3065.7115694601644, 0.01);
+  eq('bothOn_btcHeld ETH day stop', Q.coins.ETH.stop, 2528.447705606011, 0.01);
+  eq('bothOn_btcHeld day-stop distance', Q.move, 0.017864970398995296, 1e-9);
+}
+{ const Q = R.plan(PF.cases.btcOff.bars, PF.cases.btcOff.live, pj({ BTC: [84000, 3000] }));
+  eq('btcOff_btcHeld equity live', Q.eqLive, 9899.289285714285, 0.01); eq('btcOff_btcHeld equity at day open', Q.eqOpen, 9899.271428571428, 0.01);
+  eq('btcOff_btcHeld total size', Q.total, 5991.471428571422, 0.01); eq('btcOff_btcHeld day-stop equity', Q.killEq, 9750.782357142856, 0.01); is('btcOff_btcHeld day stop hit', Q.killed, false);
+  is('btcOff_btcHeld BTC action', Q.coins.BTC.action, 'SELL');
+  is('btcOff_btcHeld ETH action', Q.coins.ETH.action, 'BUY');
+  eq('btcOff_btcHeld ETH buy $', Q.coins.ETH.notional, 5991.471428571422, 0.01); eq('btcOff_btcHeld ETH pass price', Q.coins.ETH.passPx, 3131.0153717784574, 0.01);
+  eq('btcOff_btcHeld ETH day stop', Q.coins.ETH.stop, 2579.5259073640386, 0.01);
+  eq('btcOff_btcHeld day-stop distance', Q.move, 0.02478340641340193, 1e-9);
+}
+{ const lv = Object.assign({}, PF.cases.bothOn.live, { BTC: 83323 * 0.95 });
+  const Q = R.plan(PF.cases.bothOn.bars, lv, pj({ BTC: [80000, 4000] }));
+  /* by hand: 79156.85 -> equity 10000 + (79156.85/80000 - 1) x 4000 = 9957.84 <= 0.985 x 10166.15 = 10013.66 */
+  eq('day stop: equity', Q.eqLive, 9957.8425, 0.01); is('day stop: SELL ALL', Q.killed, true); }
 console.log('\n' + (fails ? fails + ' FAILED' : 'ALL PASS') + '  (' + (total - fails) + '/' + total + ')');
 process.exit(fails ? 1 : 0);

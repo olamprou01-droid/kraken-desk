@@ -253,6 +253,15 @@ async function runOnce() {
       size: g.size || 0, riskAmt: g.risk || 0, virtual: true }))), challenge: journal.challenge };
   const ev      = R.evaluate(bars, live, journal);          // coins, regime, slots, equity: real book
   ev.stops      = R.evaluate(bars, live, virt).stops;       // stops: real + virtual
+  /* TREND PLAN (4 Nov 2026): today's plan from the real journal. A logged position's stop is
+     the plan's day stop when that is higher than the stop it was logged with - the day stop
+     moves every day so that all positions together can lose at most 2% of the day's opening equity. */
+  const PL = R.plan(bars, live, journal);
+  for (const s of ev.stops) {
+    if (String(s.id).charAt(0) === 'W') continue;
+    const c = PL.coins[s.sym];
+    if (c && c.stop != null && c.stop > s.stop) { s.stop = c.stop; s.dayStop = true; s.hitStop = s.live != null && s.live <= s.stop; }
+  }
   /* A coin the watcher has already signalled, and whose signal is still open, is
      never signalled again - you may well be holding it. It does not, however, use
      up one of the two slots for other coins: an alert you ignored costs nothing. */
@@ -276,8 +285,9 @@ async function runOnce() {
       alerted['near:' + s.sym] = 1;               // a stop that is hit must not re-arm STOP NEAR when price wobbles back over it
       if (alerted[key] === last) continue;
       events.push({ k: 'sell', sym: s.sym });
+      if (s.dayStop) alerted['halt'] = nowIso.slice(0, 10);
       const isV = String(s.id).charAt(0) === 'W';
-      await notify('SELL ' + s.sym + ' NOW', s.sym + ' ' + R.px(s.sym, s.live) + ' is at or under the stop ' + R.px(s.sym, s.stop) +
+      await notify('SELL ' + s.sym + ' NOW', s.sym + ' ' + R.px(s.sym, s.live) + ' is at or under the ' + (s.dayStop ? 'day stop (' + (R.RULES.plan.dayKill * 100) + '% daily limit - sell ALL positions, no new buys today) ' : 'stop ') + R.px(s.sym, s.stop) +
         (isV ? ' of the BUY signal sent ' + s.id.slice(1, 11) + ' · if you took it, sell by hand on Kraken now' :
                ' · P&L ' + (s.pnl >= 0 ? '+' : '') + R.usd(s.pnl) + ' · sell by hand on Kraken'), 'urgent', 'rotating_light');
       signals.forEach(g => { if (g.sym === s.sym && g.status === 'OPEN') { g.status = 'STOP'; g.closed = nowIso.slice(0, 10); g.exit = s.live; } });
@@ -359,8 +369,51 @@ async function runOnce() {
     }
   }
 
-  /* regime flip */
-  if (prev.regimeOn !== null && prev.regimeOn !== ev.regime.on) {
+  /* TREND PLAN alerts (4 Nov 2026) - BUY when a coin is ON and not held (once per ON spell),
+     SELL when a coin turns OFF (held or not: an alert you acted on but did not log still gets its exit),
+     TARGET when the book reaches the pass line. Day-stop hits come through SELL ... NOW above. */
+  /* v4.30: plan BUY / trend-off SELL are sent from 06:00 UTC (08:00 Cyprus winter), the time the backtest
+     traded; the ON/OFF state is still remembered every pass, so a flip overnight is announced at 06:00. */
+  const prevOn = Object.assign({}, prev.planOn || {});
+  const orderTime = now.getUTCHours() >= (R.RULES.plan.orderHourUTC || 0);
+  const planOnSaved = {};
+  /* day stop hit earlier today -> no new plan buys until tomorrow (as the backtest) */
+  if (prev.alerted && prev.alerted['halt'] === nowIso.slice(0, 10)) alerted['halt'] = prev.alerted['halt'];
+  const haltedToday = alerted['halt'] === nowIso.slice(0, 10) || PL.killed;
+  for (const s of R.RULES.plan.syms) {
+    const c = PL.coins[s];
+    if (!c || !c.ok) { planOnSaved[s] = prevOn[s] != null ? prevOn[s] : null; continue; }
+    if (c.on && prev.alerted && prev.alerted['pbuy:' + s]) alerted['pbuy:' + s] = prev.alerted['pbuy:' + s];
+    /* before order time keep yesterday's state so the OFF flip is still seen at 06:00 */
+    planOnSaved[s] = orderTime ? c.on : (prevOn[s] != null ? prevOn[s] : c.on);
+    if (!orderTime) continue;
+    if (c.action === 'BUY' && !paused && !haltedToday && !alerted['pbuy:' + s] && c.notional >= 25) {
+      alerted['pbuy:' + s] = nowIso;
+      events.push({ k: 'pbuy', sym: s });
+      await notify('BUY ' + s + ' - TREND PLAN', s + ' ' + R.px(s, c.live) + ' · buy ' + R.usd(c.notional) + ' · stop ' + R.px(s, c.stop) +
+        ' (moves daily - set it as a stop order) · ' + s + ' 55-day Hull average rising, close ' + R.px(s, c.close) + ' > 200-day ' + R.px(s, c.sma) +
+        ' · log it in the app after buying', 'high', 'green_circle');
+      if (!signals.some(g => g.sym === s && g.status === 'OPEN'))
+        signals.push({ sym: s, date: nowIso.slice(0, 10), t: nowIso, entry: c.live, stop: c.stop, tp: c.passPx, level: c.hull,
+                       size: c.notional, risk: c.notional * (1 - c.stop / c.live), status: 'OPEN', plan: true });
+    }
+    if (prevOn[s] === true && !c.on) {
+      events.push({ k: 'psell', sym: s });
+      await notify('SELL ' + s + ' - TREND OFF', s + ' closed ' + R.px(s, c.close) + (c.close <= c.sma ? ' <= 200-day ' + R.px(s, c.sma) : ' · 55-day Hull average turned down') +
+        ' · sell all ' + s + ' you hold, then log the sale in the app', 'urgent', 'red_circle');
+      signals.forEach(g => { if (g.sym === s && g.status === 'OPEN') { g.status = 'EXIT'; g.closed = nowIso.slice(0, 10); g.exit = c.live; } });
+    }
+  }
+  if (PL.passed && R.opens(journal).length) {
+    alerted['ptarget'] = true;
+    if (!prev.alerted || !prev.alerted['ptarget']) {
+      events.push({ k: 'ptarget' });
+      await notify('TARGET HIT - SELL EVERYTHING', 'equity ' + R.usd(PL.eqLive) + ' >= ' + R.usd(R.RULES.target) + ' · sell all positions now to lock the pass', 'urgent', 'tada');
+    }
+  }
+
+  /* regime flip - old breakout rule, silent since it was retired */
+  if (R.RULES.legacyBuy !== false && prev.regimeOn !== null && prev.regimeOn !== ev.regime.on) {
     events.push({ k: 'regime', on: ev.regime.on });
     await notify(ev.regime.on ? 'REGIME ON' : 'REGIME OFF',
       'BTC ' + R.px('BTC', ev.regime.px) + (ev.regime.g1 ? ' > ' : ' < ') + '20d avg ' + R.px('BTC', ev.regime.sma) +
@@ -376,9 +429,9 @@ async function runOnce() {
   if (now.getUTCHours() >= HEARTBEAT_UTC_HOUR && prev.heartbeatDay !== day) {
     events.push({ k: 'heartbeat' });
     await notify('Own Book · ' + day,
-      'regime ' + (ev.regime.on ? 'ON' : 'OFF') + ' · BTC ' + R.px('BTC', ev.regime.px) + ' vs 20d ' + R.px('BTC', ev.regime.sma) +
-      (nearest ? ' · nearest ' + nearest.sym + ' ' + (nearest.distPct <= 0 ? 'AT LEVEL' : '+' + nearest.distPct.toFixed(1) + '%') : '') +
-      ' · ' + ev.stops.length + ' open · equity ' + R.usd(ev.equity), 'low', 'eyes');
+      R.RULES.plan.syms.map(s => { const c = PL.coins[s]; if (!c || !c.ok) return s + ' no data';
+        return s + ' ' + c.action + (c.stop != null ? ' stop ' + R.px(s, c.stop) : '') + (c.action === 'WAIT' ? ' (needs close > ' + R.px(s, c.next) + ')' : ''); }).join(' · ') +
+      ' · ' + ev.stops.length + ' open · equity ' + R.usd(ev.equity) + ' · fail ' + R.usd(R.RULES.floor) + ' · pass ' + R.usd(R.RULES.target), 'low', 'eyes');
     prev.heartbeatDay = day;
   }
 
@@ -387,10 +440,15 @@ async function runOnce() {
     ran: nowIso, ms: Date.now() - t0, liveSrc: liveSrc, topic: TOPIC, sigRequired: false,
     barDate: bars.BTC ? bars.BTC[bars.BTC.length - 1][0] : null,
     regimeOn: ev.regime.on,
+    planOn: planOnSaved,
+    plan: { at: PL.at, eqOpen: PL.eqOpen, eqLive: PL.eqLive, cushion: PL.cushion, total: PL.total, killEq: PL.killEq, killed: PL.killed,
+            passed: PL.passed, move: PL.move, coins: R.RULES.plan.syms.map(s => { const c = PL.coins[s];
+              return { sym: s, ok: c.ok, on: c.on, action: c.action, close: c.close, hull: c.hull, sma: c.sma, next: c.next, live: c.live,
+                       held: c.held, notional: c.notional || null, stop: c.stop, passPx: c.passPx || null }; }) },
     regime: { px: ev.regime.px, sma: ev.regime.sma, mom: ev.regime.mom, g1: ev.regime.g1, g2: ev.regime.g2 },
     equity: ev.equity, cushion: ev.cushion,
     coins: ev.coins.map(c => ({ sym: c.sym, live: live[c.sym], level: c.level, distPct: c.distPct, buyable: c.buyable, fail: c.firstFail })),
-    stops: ev.stops.map(s => ({ sym: s.sym, live: s.live, stop: s.stop, tp: s.tp, hitStop: s.hitStop, hitTp: s.hitTp, r: s.r, near: s.near })),
+    stops: ev.stops.map(s => ({ sym: s.sym, live: s.live, stop: s.stop, tp: s.tp, hitStop: s.hitStop, hitTp: s.hitTp, r: s.r, near: s.near, dayStop: s.dayStop || undefined })),
     events: events, alerted: alerted, heartbeatDay: prev.heartbeatDay,
     inboxSince: inbox.last, inboxMerged: merged, inboxNote: inboxNote || undefined,
     journalOpen: [...jOpenSyms],
