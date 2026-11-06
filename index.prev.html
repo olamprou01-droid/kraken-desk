@@ -598,7 +598,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
 </div>
 
 <div class="foot">
-  <span>OWN BOOK <b style="color:var(--txt2)">v4.31 RUN 2</b></span>
+  <span>OWN BOOK <b style="color:var(--txt2)">v4.32 RUN 2</b></span>
   <span id="fbars">—</span><span id="fpx">—</span><span id="fwh">—</span><span id="fwatch" title="The watcher runs the same rule on GitHub every 30 minutes and pushes to your phone. Click to open its channel.">WATCHER —</span>
   <div class="sp"></div>
   <span id="fstore"></span>
@@ -637,7 +637,7 @@ td.n,th.n{text-align:right;font-family:var(--mono);font-variant-numeric:tabular-
    There is exactly one copy of this desk: https://olamprou01-droid.github.io/kraken-desk/
    Opening the file on disk takes you there, so the PC and the phone can never
    drift apart again. Append ?dev=1 to work on the file itself. */
-var APP_VERSION='4.31', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
+var APP_VERSION='4.32', HOSTED='https://olamprou01-droid.github.io/kraken-desk/';
 if(location.protocol==='file:'&&!/[?&]dev=1/.test(location.search)&&navigator.onLine!==false){
   document.write('<div style="position:fixed;inset:0;background:#06090d;color:#dde6ef;font:14px ui-monospace,Menlo,Consolas,monospace;display:flex;align-items:center;justify-content:center;text-align:center;line-height:1.7">OWN BOOK lives at one address now<br><span style="color:#3d9bff">'+HOSTED+'</span><br><span style="opacity:.6">taking you there — bookmark it</span></div>');
   location.replace(HOSTED+'?from=file');
@@ -2337,13 +2337,13 @@ function hdPx(c){return(liveFresh()&&isLivePx(c.sym))?price(c.sym):(c.live!=null
 function hdHeld(s){return opens().filter(function(t){return t.sym===s;});}
 function hdChart(s,c,mob){
  var b=bars(s);if(!b||b.length<262)return '<div class="hd-empty">chart needs the daily bars · tap ↻</div>';
- var cs=b.map(function(x){return x[4];}),N=mob?120:180,i0=b.length-N,pt=[],hu=[],sm=[];
- for(var i=i0;i<b.length;i++){pt.push(cs[i]);hu.push(hdHull(cs,i,55));var t=0;for(var k=i-199;k<=i;k++)t+=cs[k];sm.push(t/200);}
+ var cs=[],lastC=null;b.forEach(function(x){var v=x?+x[4]:NaN;if(!isFinite(v)||v<=0)v=lastC;cs.push(v);if(v!=null)lastC=v;});var N=mob?120:180,i0=b.length-N,pt=[],hu=[],sm=[];
+ for(var i=i0;i<b.length;i++){pt.push(cs[i]);var hv=hdHull(cs,i,55);hu.push(isFinite(hv)?hv:null);var t=0;for(var k=i-199;k<=i;k++)t+=cs[k];sm.push(isFinite(t)?t/200:null);}
  var lv=null;if(c&&c.action==='WAIT'&&c.next)lv=['need',c.next];if(c&&c.stop!=null&&(c.action==='HOLD'||c.action==='BUY'))lv=['stop',c.stop];
- var all=pt.concat(sm,hu.filter(function(v){return v!=null;}));if(lv)all.push(lv[1]);
+ var all=pt.concat(sm,hu).filter(function(v){return v!=null&&isFinite(v);});if(lv&&isFinite(lv[1]))all.push(lv[1]);if(all.length<2)return '<div class="hd-empty">chart needs the daily bars · tap ↻</div>';
  var lo=Math.min.apply(null,all),hi=Math.max.apply(null,all),W=600,H=mob?140:170,p=3,cw=(W-2*p)/(N-1);
  var X=function(j){return p+j*cw;},Y=function(v){return H-p-(v-lo)/((hi-lo)||1)*(H-2*p);};
- var path=function(a){var d='';a.forEach(function(v,j){if(v==null)return;d+=(d?'L':'M')+X(j).toFixed(1)+' '+Y(v).toFixed(1);});return d;};
+ var path=function(a){var d='';a.forEach(function(v,j){if(v==null||!isFinite(v))return;d+=(d?'L':'M')+X(j).toFixed(1)+' '+Y(v).toFixed(1);});return d;};
  var sh='';for(var j=1;j<N;j++)if(hu[j]!=null&&hu[j-1]!=null&&hu[j]>hu[j-1]&&pt[j]>sm[j])sh+='<rect x="'+(X(j)-cw/2).toFixed(1)+'" y="0" width="'+(cw+0.3).toFixed(2)+'" height="'+H+'" fill="rgba(34,201,119,.13)"/>';
  var ln=lv?'<line x1="0" x2="'+W+'" y1="'+Y(lv[1]).toFixed(1)+'" y2="'+Y(lv[1]).toFixed(1)+'" stroke="'+(lv[0]==='stop'?'#ff5568':'#a9b8c8')+'" stroke-dasharray="5 4" stroke-width="1" vector-effect="non-scaling-stroke"/>':'';
  return '<svg class="hd-svg" viewBox="0 0 '+W+' '+H+'" preserveAspectRatio="none" style="height:'+H+'px">'+sh+ln+
