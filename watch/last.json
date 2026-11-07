@@ -1,6 +1,6 @@
 {
- "ran": "2026-11-07T05:11:33.108Z",
- "ms": 1558,
+ "ran": "2026-11-07T05:11:51.663Z",
+ "ms": 576,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -81,25 +81,25 @@
   },
   {
    "sym": "XRP",
-   "live": 1.15408,
+   "live": 1.15483,
    "level": 1.3982,
-   "distPct": 21.152779703313463,
+   "distPct": 21.074097486210096,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ADA",
-   "live": 0.183913,
+   "live": 0.183918,
    "level": 0.23039,
-   "distPct": 25.27118800737307,
+   "distPct": 25.267782381278625,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "SOL",
-   "live": 89.84,
+   "live": 89.85,
    "level": 109.13,
-   "distPct": 21.471504897595707,
+   "distPct": 21.45798553144129,
    "buyable": false,
    "fail": "regime"
   },
@@ -121,9 +121,9 @@
   },
   {
    "sym": "LTC",
-   "live": 52.34,
+   "live": 52.35,
    "level": 62.345,
-   "distPct": 19.11539931218953,
+   "distPct": 19.09264565425024,
    "buyable": false,
    "fail": "regime"
   },
