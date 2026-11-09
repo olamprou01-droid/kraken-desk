@@ -1,6 +1,6 @@
 {
- "ran": "2026-11-09T13:52:57.036Z",
- "ms": 1359,
+ "ran": "2026-11-09T13:53:14.155Z",
+ "ms": 1073,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -30,7 +30,7 @@
     "hull": 77410.61208393458,
     "sma": 73168.91325000006,
     "next": 91342.24210549875,
-    "live": 74595.7,
+    "live": 74612,
     "held": false,
     "notional": null,
     "stop": null,
@@ -45,7 +45,7 @@
     "hull": 2216.0498042070362,
     "sma": 2154.5127500000003,
     "next": 2594.190055796052,
-    "live": 2118.69,
+    "live": 2119.72,
     "held": false,
     "notional": null,
     "stop": null,
@@ -65,17 +65,17 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 74595.7,
+   "live": 74612,
    "level": 84856.07,
-   "distPct": 13.754640012762142,
+   "distPct": 13.729788773923769,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2118.69,
+   "live": 2119.72,
    "level": 2524.38,
-   "distPct": 19.14815286804583,
+   "distPct": 19.090257203781658,
    "buyable": false,
    "fail": "regime"
   },
@@ -89,17 +89,17 @@
   },
   {
    "sym": "ADA",
-   "live": 0.179224,
+   "live": 0.179274,
    "level": 0.23039,
-   "distPct": 28.54863187965899,
+   "distPct": 28.51277932103933,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "SOL",
-   "live": 86.5,
+   "live": 86.55,
    "level": 109.13,
-   "distPct": 26.161849710982654,
+   "distPct": 26.08896591565568,
    "buyable": false,
    "fail": "regime"
   },
@@ -113,25 +113,25 @@
   },
   {
    "sym": "LINK",
-   "live": 10.593,
+   "live": 10.59235,
    "level": 12.798,
-   "distPct": 20.815632965165687,
+   "distPct": 20.82304682152687,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LTC",
-   "live": 51.5,
+   "live": 51.51,
    "level": 62.345,
-   "distPct": 21.058252427184463,
+   "distPct": 21.03475053387691,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "AVAX",
-   "live": 8.707,
+   "live": 8.705,
    "level": 10.046,
-   "distPct": 15.37843114735269,
+   "distPct": 15.40493968983343,
    "buyable": false,
    "fail": "regime"
   },
