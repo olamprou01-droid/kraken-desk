@@ -1,6 +1,6 @@
 {
- "ran": "2026-11-11T00:20:24.935Z",
- "ms": 592,
+ "ran": "2026-11-11T00:20:40.833Z",
+ "ms": 834,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -45,7 +45,7 @@
     "hull": 2187.67682302618,
     "sma": 2152.191950000001,
     "next": 2747.0457453904082,
-    "live": 2049.39,
+    "live": 2049.35,
     "held": false,
     "notional": null,
     "stop": null,
@@ -73,17 +73,17 @@
   },
   {
    "sym": "ETH",
-   "live": 2049.39,
+   "live": 2049.35,
    "level": 2524.38,
-   "distPct": 23.17714051498252,
+   "distPct": 23.179544733696055,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.05478,
+   "live": 1.05467,
    "level": 1.3982,
-   "distPct": 32.5584482072091,
+   "distPct": 32.57227379180219,
    "buyable": false,
    "fail": "regime"
   },
@@ -97,9 +97,9 @@
   },
   {
    "sym": "SOL",
-   "live": 83.37,
+   "live": 83.35,
    "level": 109.13,
-   "distPct": 30.89840470193115,
+   "distPct": 30.92981403719257,
    "buyable": false,
    "fail": "regime"
   },
@@ -129,9 +129,9 @@
   },
   {
    "sym": "AVAX",
-   "live": 8.425,
+   "live": 8.428,
    "level": 10.046,
-   "distPct": 19.24035608308603,
+   "distPct": 19.197911722828653,
    "buyable": false,
    "fail": "regime"
   },
