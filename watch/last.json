@@ -1,6 +1,6 @@
 {
- "ran": "2026-11-12T22:34:37.277Z",
- "ms": 1140,
+ "ran": "2026-11-12T22:34:56.227Z",
+ "ms": 888,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -45,7 +45,7 @@
     "hull": 2169.1058655603656,
     "sma": 2150.8607500000007,
     "next": 2785.7545634118865,
-    "live": 2010.39,
+    "live": 2010.59,
     "held": false,
     "notional": null,
     "stop": null,
@@ -73,33 +73,33 @@
   },
   {
    "sym": "ETH",
-   "live": 2010.39,
+   "live": 2010.59,
    "level": 2480.38,
-   "distPct": 23.37805102492552,
+   "distPct": 23.36577820440766,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.0352,
+   "live": 1.03526,
    "level": 1.3689,
-   "distPct": 32.23531684698611,
+   "distPct": 32.22765295674517,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ADA",
-   "live": 0.173207,
+   "live": 0.173278,
    "level": 0.22672,
-   "distPct": 30.895402610748988,
+   "distPct": 30.841768718475528,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "SOL",
-   "live": 81.33,
+   "live": 81.34,
    "level": 107.41,
-   "distPct": 32.0668879872126,
+   "distPct": 32.05065158593556,
    "buyable": false,
    "fail": "regime"
   },
@@ -113,9 +113,9 @@
   },
   {
    "sym": "LINK",
-   "live": 10.08112,
+   "live": 10.07832,
    "level": 12.603,
-   "distPct": 25.015871252400522,
+   "distPct": 25.050603672040573,
    "buyable": false,
    "fail": "regime"
   },
@@ -153,9 +153,9 @@
   },
   {
    "sym": "UNI",
-   "live": 5.989,
+   "live": 5.9926,
    "level": 7.8127,
-   "distPct": 30.450826515278017,
+   "distPct": 30.372459366552086,
    "buyable": false,
    "fail": "regime"
   }
