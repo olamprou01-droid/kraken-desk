@@ -1,6 +1,6 @@
 {
- "ran": "2026-11-12T16:57:37.794Z",
- "ms": 939,
+ "ran": "2026-11-12T17:27:48.110Z",
+ "ms": 876,
  "liveSrc": "kraken",
  "topic": "ownbook-356ba5c8fc6a5b7454",
  "sigRequired": false,
@@ -30,7 +30,7 @@
     "hull": 76025.52465751908,
     "sma": 73116.36795000006,
     "next": 91650.27240917119,
-    "live": 71767.4,
+    "live": 71947.6,
     "held": false,
     "notional": null,
     "stop": null,
@@ -45,7 +45,7 @@
     "hull": 2169.1058655603656,
     "sma": 2150.8607500000007,
     "next": 2785.7545634118865,
-    "live": 2007.91,
+    "live": 2012.97,
     "held": false,
     "notional": null,
     "stop": null,
@@ -65,97 +65,97 @@
  "coins": [
   {
    "sym": "BTC",
-   "live": 71767.4,
+   "live": 71947.6,
    "level": 84305.25,
-   "distPct": 17.47011874472255,
+   "distPct": 17.175903018307757,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ETH",
-   "live": 2007.91,
+   "live": 2012.97,
    "level": 2480.38,
-   "distPct": 23.53043712118572,
+   "distPct": 23.219918826410723,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "XRP",
-   "live": 1.02529,
+   "live": 1.02653,
    "level": 1.3689,
-   "distPct": 33.51344497654323,
+   "distPct": 33.35216700924475,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ADA",
-   "live": 0.170573,
+   "live": 0.170656,
    "level": 0.22672,
-   "distPct": 32.91669842237634,
+   "distPct": 32.852053253328336,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "SOL",
-   "live": 81.47,
+   "live": 81.49,
    "level": 107.41,
-   "distPct": 31.839941082607083,
+   "distPct": 31.807583752607684,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOGE",
-   "live": 0.0656886,
+   "live": 0.0657351,
    "level": 0.08213,
-   "distPct": 25.029304932667152,
+   "distPct": 24.940861122900838,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LINK",
-   "live": 9.9854,
+   "live": 9.98218,
    "level": 12.603,
-   "distPct": 26.214272838343966,
+   "distPct": 26.2549863857394,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "LTC",
-   "live": 49.37,
+   "live": 49.48,
    "level": 61.916,
-   "distPct": 25.412193639862267,
+   "distPct": 25.133387227162494,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "AVAX",
-   "live": 8.344,
+   "live": 8.346,
    "level": 9.717,
-   "distPct": 16.45493767976991,
+   "distPct": 16.42703091301223,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "DOT",
-   "live": 0.8281,
+   "live": 0.8253,
    "level": 1.2,
-   "distPct": 44.91003501992515,
+   "distPct": 45.40167211922936,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "ATOM",
-   "live": 1.4154,
+   "live": 1.4103,
    "level": 1.815,
-   "distPct": 28.23230182280627,
+   "distPct": 28.69602212295255,
    "buyable": false,
    "fail": "regime"
   },
   {
    "sym": "UNI",
-   "live": 6.0337,
+   "live": 6.0005,
    "level": 7.8127,
-   "distPct": 29.484395975935172,
+   "distPct": 30.200816598616797,
    "buyable": false,
    "fail": "regime"
   }
